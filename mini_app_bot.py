@@ -19,7 +19,6 @@ WEBAPP_URL = os.getenv('WEBAPP_URL')
 bot = Bot(token=BOT_TOKEN)
 dp = Dispatcher()
 
-# ========== Обработчики бота (те же, что в bot.py) ==========
 @dp.message(Command("start"))
 async def cmd_start(message: types.Message):
     user = message.from_user
@@ -27,13 +26,13 @@ async def cmd_start(message: types.Message):
     user_data = get_user(user.id)
     
     keyboard = InlineKeyboardMarkup(inline_keyboard=[
-        [InlineKeyboardButton(text="🚀 Открыть Mini App", web_app=WebAppInfo(url=WEBAPP_URL))],
-        [InlineKeyboardButton(text="💰 Баланс", callback_data="balance")],
-        [InlineKeyboardButton(text="🆔 Мой номер", callback_data="my_number")]
+        [InlineKeyboardButton(text="Открыть Mini App", web_app=WebAppInfo(url=WEBAPP_URL))],
+        [InlineKeyboardButton(text="Счёт", callback_data="balance")],
+        [InlineKeyboardButton(text="Мой номер", callback_data="my_number")]
     ])
     
     await message.answer(
-        f"✅ Добро пожаловать, {user.first_name}!\n\n🆔 Ваш номер: <code>{member_number}</code>\n💰 Баланс: {user_data['balance']}",
+        f"✅ Добро пожаловать, {user.first_name}!\n\n🆔 Ваш номер: <code>{member_number}</code>\nСчёт: {user_data['balance']}",
         reply_markup=keyboard,
         parse_mode="HTML"
     )
@@ -41,7 +40,7 @@ async def cmd_start(message: types.Message):
 @dp.callback_query(lambda c: c.data == "balance")
 async def show_balance(callback: types.CallbackQuery):
     user_data = get_user(callback.from_user.id)
-    await callback.message.answer(f"💰 Баланс: {user_data['balance']} баллов")
+    await callback.message.answer(f"Счёт: {user_data['balance']} баллов")
     await callback.answer()
 
 @dp.callback_query(lambda c: c.data == "my_number")
@@ -106,7 +105,7 @@ async def handle_add_points(request):
     try:
         await bot.send_message(
             target_user['telegram_id'],
-            f"🎉 Вам начислено {amount} баллов!\n💰 Новый баланс: {updated_user['balance']}"
+            f"Вам начислено {amount} баллов!\nНовый счёт: {updated_user['balance']}"
         )
     except:
         pass
@@ -130,7 +129,7 @@ async def main():
     site = web.TCPSite(runner, '0.0.0.0', 8000)
     await site.start()
     
-    print("✅ Веб-сервер запущен на http://0.0.0.0:8000")
+    print("Веб-сервер запущен на http://0.0.0.0:8000")
     
     # Запуск бота
     await dp.start_polling(bot)
