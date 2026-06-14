@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Mini App | Баллы</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/react@18.2.0/umd/react.development.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/react-dom@18.2.0/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+        const tg = window.Telegram.WebApp;
+
+        const App = () => {
+            const [currentTab, setCurrentTab] = useState('profile');
+            const [userData, setUserData] = useState(null);
+            const [memberNumber, setMemberNumber] = useState('');
+            const [points, setPoints] = useState('');
+            const [message, setMessage] = useState({ text: '', type: '' });
+            const [loading, setLoading] = useState(false);
+
+            useEffect(() => {
+                tg.expand();
+                tg.ready();
+                
+                // Получаем данные пользователя из Telegram
+                const fetchUserData = async () => {
+                    try {
+                        const response = await fetch('/api/user', {
+                            headers: {
+                                'X-Telegram-Init-Data': tg.initData
+                            }
+                        });
+                        const data = await response.json();
+                        if (data.success) {
+                            setUserData(data.user);
+                        }
+                    } catch (error) {
+                        console.error('Error fetching user data:', error);
+                    }
+                };
+                
+                fetchUserData();
+            }, []);
+
+            const handleAddPoints = async () => {
+                if (!memberNumber || !points) {
+                    setMessage({ text: 'Заполните все поля', type: 'error' });
+                    return;
+                }
+
+                setLoading(true);
+                try {
+                    const response = await fetch('/api/add-points', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-Telegram-Init-Data': tg.initData
+                        },
+                        body: JSON.stringify({
+                            member_number: memberNumber,
+                            amount: parseInt(points)
+                        })
+                    });
+                    
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        setMessage({ text: `✅ Начислено ${points} баллов пользователю ${memberNumber}`, type: 'success' });
+                        setMemberNumber('');
+                        setPoints('');
+                        
+                        // Обновляем данные текущего пользователя, если он админ
+                        if (userData && userData.is_admin) {
+                            const userResponse = await fetch('/api/user', {
+                                headers: { 'X-Telegram-Init-Data': tg.initData }
+                            });
+                            const userDataResp = await userResponse.json();
+                            if (userDataResp.success) {
+                                setUserData(userDataResp.user);
+                            }
+                        }
+                    } else {
+                        setMessage({ text: data.error || 'Ошибка при начислении', type: 'error' });
+                    }
+                } catch (error) {
+                    setMessage({ text: 'Ошибка сервера', type: 'error' });
+                }
+                setLoading(false);
+                
+                setTimeout(() => setMessage({ text: '', type: '' }), 3000);
+            };
+
+            const ProfileTab = () => (
+                <>
+                    <div className="balance-card">
+                        <div>💰 Ваш баланс</div>
+                        <div className="balance-amount">{userData?.balance || 0}</div>
+                        <div className="member-number">🆔 Номер участника: {userData?.member_number || '—'}</div>
+                    </div>
+                    
+                    <div className="card">
+                        <h3>👤 Личная информация</h3>
+                        <p><strong>Имя:</strong> {userData?.first_name} {userData?.last_name}</p>
+                        <p><strong>Username:</strong> @{userData?.username || 'не указан'}</p>
+                        <p><strong>Telegram ID:</strong> {userData?.telegram_id}</p>
+                    </div>
+                </>
+            );
+
+            const AddPointsTab = () => (
+                <div className="card">
+                    <h2>➕ Начисление баллов</h2>
+                    <p style={{ marginBottom: 16, color: 'var(--tg-theme-hint-color)' }}>
+                        Введите номер участника и количество баллов для начисления
+                    </p>
+                    
+                    <input
+                        type="text"
+                        placeholder="Номер участника (5 цифр)"
+                        value={memberNumber}
+                        onChange={(e) => setMemberNumber(e.target.value)}
+                        maxLength="5"
+                    />
+                    
+                    <input
+                        type="number"
+                        placeholder="Количество баллов"
+                        value={points}
+                        onChange={(e) => setPoints(e.target.value)}
+                    />
+                    
+                    <button onClick={handleAddPoints} disabled={loading}>
+                        {loading ? '⏳ Обработка...' : '✨ Начислить баллы'}
+                    </button>
+                    
+                    {message.text && (
+                        <div className={message.type === 'success' ? 'success' : 'error'}>
+                            {message.text}
+                        </div>
+                    )}
+                </div>
+            );
+
+            const InfoTab = () => (
+                <div className="card">
+                    <h2>ℹ️ О системе</h2>
+                    <p>• Каждый пользователь получает уникальный 5-значный номер участника при регистрации</p>
+                    <p>• Баллы можно начислять через админ-панель в боте или через этот Mini App</p>
+                    <p>• Все транзакции сохраняются в базе данных</p>
+                    <p>• Для администрирования используйте команду /admin в боте</p>
+                </div>
+            );
+
+            if (!userData) {
+                return <div className="container" style={{ textAlign: 'center', paddingTop: 50 }}>Загрузка...</div>;
+            }
+
+            return (
+                <>
+                    <div className="container">
+                        {currentTab === 'profile' && <ProfileTab />}
+                        {currentTab === 'add' && userData?.is_admin && <AddPointsTab />}
+                        {currentTab === 'info' && <InfoTab />}
+                        
+                        {currentTab === 'add' && !userData?.is_admin && (
+                            <div className="card" style={{ textAlign: 'center' }}>
+                                ⛔ У вас нет прав администратора для начисления баллов
+                            </div>
+                        )}
+                    </div>
+                    
+                    <div className="tab-bar">
+                        <button className={`tab ${currentTab === 'profile' ? 'active' : ''}`} onClick={() => setCurrentTab('profile')}>
+                            👤 Профиль
+                        </button>
+                        {userData?.is_admin && (
+                            <button className={`tab ${currentTab === 'add' ? 'active' : ''}`} onClick={() => setCurrentTab('add')}>
+                                ➕ Начислить
+                            </button>
+                        )}
+                        <button className={`tab ${currentTab === 'info' ? 'active' : ''}`} onClick={() => setCurrentTab('info')}>
+                            ℹ️ Инфо
+                        </button>
+                    </div>
+                </>
+            );
+        };
+
+        ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+    </script>
+</body>
+</html>
