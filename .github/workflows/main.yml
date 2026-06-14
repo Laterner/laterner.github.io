@@ -2,23 +2,20 @@ name: Deploy Telegram Mini App to GitHub Pages
 
 on:
   push:
-    branches:
-      - main          # или master, если используете master
-  workflow_dispatch:  # позволяет запускать вручную из интерфейса GitHub
+    branches: [main]
+  workflow_dispatch:
 
-# Разрешения для деплоя
 permissions:
   contents: read
   pages: write
   id-token: write
 
-# Ограничиваем один одновременный деплой
 concurrency:
   group: "pages"
   cancel-in-progress: false
 
 jobs:
-  build-and-deploy:
+  deploy:
     environment:
       name: main
       url: ${{ steps.deployment.outputs.page_url }}
@@ -26,34 +23,24 @@ jobs:
     runs-on: ubuntu-latest
     
     steps:
-      - name: Install dependencies
-        run: npm cd static
-
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - uses: actions/checkout@v4
+      
+      - name: Prepare deployment
+        run: |
+          # Копируем статику во временную папку
+          mkdir -p deploy_temp
+          cp -r static/* deploy_temp/
+          # Добавляем .nojekyll, чтобы GitHub не игнорировал файлы с подчеркиванием
+          touch deploy_temp/.nojekyll
+          # Если хотите, чтобы index.html был в корне, создаем index.html
+          # (он уже есть в static, просто копируем)
+          ls -la deploy_temp/
+      
+      - uses: actions/configure-pages@v4
+      
+      - uses: actions/upload-pages-artifact@v3
         with:
-          node-version: '20'
-          cache: 'npm'
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Build React app
-        run: npm run build
-        env:
-          CI: false  # Отключаем предупреждения как ошибки
-
-      - name: Setup Pages
-        uses: actions/configure-pages@v4
-
-      - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: './build'  # Путь к собранному React-приложению
-
-      - name: Deploy to GitHub Pages
+          path: './deploy_temp'
+      
+      - uses: actions/deploy-pages@v4
         id: deployment
-        uses: actions/deploy-pages@v4
