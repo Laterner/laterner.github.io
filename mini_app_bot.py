@@ -32,7 +32,7 @@ async def cmd_start(message: types.Message):
     ])
     
     await message.answer(
-        f"✅ Добро пожаловать, {user.first_name}!\n\n🆔 Ваш номер: <code>{member_number}</code>\nСчёт: {user_data['balance']}",
+        f"✅ Добро пожаловать, {user.first_name}!\n\nВаш номер: <code>{member_number}</code>\nСчёт: {user_data['balance']}",
         reply_markup=keyboard,
         parse_mode="HTML"
     )
@@ -46,7 +46,7 @@ async def show_balance(callback: types.CallbackQuery):
 @dp.callback_query(lambda c: c.data == "my_number")
 async def show_number(callback: types.CallbackQuery):
     user_data = get_user(callback.from_user.id)
-    await callback.message.answer(f"🆔 Номер: <code>{user_data['member_number']}</code>", parse_mode="HTML")
+    await callback.message.answer(f"Номер: <code>{user_data['member_number']}</code>", parse_mode="HTML")
     await callback.answer()
 
 # ========== Веб-сервер для Mini App ==========

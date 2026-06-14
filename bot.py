@@ -6,13 +6,18 @@ from aiogram.types import WebAppInfo, InlineKeyboardMarkup, InlineKeyboardButton
 from aiogram.filters import Command
 from database import register_user, get_user, update_balance, get_user_by_member_number
 
+from dotenv import load_dotenv
+import os
+
+
 # Настройка логирования
 logging.basicConfig(level=logging.INFO)
 
-# Токен вашего бота (получите у @BotFather)
-BOT_TOKEN = "8635221010:AAHzOmYisA2xukDEeFZoSsK5W4ueZ77zWlg"
-# URL вашего Mini App (должен быть HTTPS)
-WEBAPP_URL = "https://your-domain.com/index.html"
+load_dotenv()
+
+# Конфигурация
+BOT_TOKEN = os.getenv('BOT_TOKEN')
+WEBAPP_URL = os.getenv('WEBAPP_URL')
 
 bot = Bot(token=BOT_TOKEN)
 dp = Dispatcher()
@@ -35,29 +40,29 @@ async def cmd_start(message: types.Message):
     
     # Создаём клавиатуру с кнопкой Mini App
     keyboard = InlineKeyboardMarkup(inline_keyboard=[
-        [InlineKeyboardButton(text="🚀 Открыть Mini App", web_app=WebAppInfo(url=WEBAPP_URL))],
-        [InlineKeyboardButton(text="📊 Мой баланс", callback_data="balance")],
-        [InlineKeyboardButton(text="🆔 Мой номер", callback_data="my_number")]
+        [InlineKeyboardButton(text="Открыть Mini App", web_app=WebAppInfo(url=WEBAPP_URL))],
+        [InlineKeyboardButton(text="Мой счёт", callback_data="balance")],
+        [InlineKeyboardButton(text="Мой номер", callback_data="my_number")]
     ])
     
     welcome_text = (
-        f"🎉 Добро пожаловать, {user.first_name}!\n\n"
-        f"✅ Вы успешно зарегистрированы!\n"
-        f"🆔 Ваш номер участника: <code>{member_number}</code>\n"
-        f"💰 Баланс: {user_data['balance']} баллов\n\n"
-        f"📱 Нажмите кнопку ниже, чтобы открыть Mini App"
+        f"Добро пожаловать, {user.first_name}!\n\n"
+        f"Вы успешно зарегистрированы!\n"
+        f"Ваш номер участника: <code>{member_number}</code>\n"
+        f"Счёт: {user_data['balance']} баллов\n\n"
+        f"Нажмите кнопку ниже, чтобы открыть Mini App"
     )
     
     await message.answer(welcome_text, reply_markup=keyboard, parse_mode="HTML")
 
 @dp.callback_query(lambda c: c.data == "balance")
 async def show_balance(callback: types.CallbackQuery):
-    """Показать баланс пользователя"""
+    """Показать счёт пользователя"""
     user_data = get_user(callback.from_user.id)
     if user_data:
         text = (
-            f"💰 Ваш баланс: <b>{user_data['balance']}</b> баллов\n"
-            f"🆔 Номер участника: <code>{user_data['member_number']}</code>"
+            f"Ваш счёт: <b>{user_data['balance']}</b> баллов\n"
+            f"Номер участника: <code>{user_data['member_number']}</code>"
         )
         await callback.message.answer(text, parse_mode="HTML")
     else:
@@ -69,10 +74,10 @@ async def show_member_number(callback: types.CallbackQuery):
     """Показать номер участника"""
     user_data = get_user(callback.from_user.id)
     if user_data:
-        text = f"🆔 Ваш номер участника: <code>{user_data['member_number']}</code>"
+        text = f"Ваш номер участника: <code>{user_data['member_number']}</code>"
         await callback.message.answer(text, parse_mode="HTML")
     else:
-        await callback.message.answer("❌ Пользователь не найден. Используйте /start для регистрации.")
+        await callback.message.answer("Пользователь не найден. Используйте /start для регистрации.")
     await callback.answer()
 
 @dp.message(Command("admin"))
@@ -88,9 +93,9 @@ async def admin_panel(message: types.Message):
         return
     
     keyboard = InlineKeyboardMarkup(inline_keyboard=[
-        [InlineKeyboardButton(text="📊 Все пользователи", callback_data="admin_users")],
-        [InlineKeyboardButton(text="➕ Начислить баллы", callback_data="admin_add_points")],
-        [InlineKeyboardButton(text="📈 Топ пользователей", callback_data="admin_top")]
+        [InlineKeyboardButton(text="Все пользователи", callback_data="admin_users")],
+        [InlineKeyboardButton(text="Начислить баллы", callback_data="admin_add_points")],
+        [InlineKeyboardButton(text="Топ пользователей", callback_data="admin_top")]
     ])
     
     await message.answer("👑 Админ-панель\nВыберите действие:", reply_markup=keyboard)
@@ -102,13 +107,13 @@ async def list_users(callback: types.CallbackQuery):
     users = get_all_users()
     
     if not users:
-        await callback.message.answer("📭 Пользователей пока нет.")
+        await callback.message.answer("Пользователей пока нет.")
         await callback.answer()
         return
     
-    text = "📋 <b>Список пользователей:</b>\n\n"
+    text = "<b>Список пользователей:</b>\n\n"
     for i, user in enumerate(users[:20], 1):  # Показываем первые 20
-        text += f"{i}. {user['name']}\n   🆔 {user['member_number']} | 💰 {user['balance']} баллов\n"
+        text += f"{i}. {user['name']}\n   {user['member_number']} | {user['balance']} баллов\n"
     
     await callback.message.answer(text, parse_mode="HTML")
     await callback.answer()
@@ -120,13 +125,13 @@ async def top_users(callback: types.CallbackQuery):
     users = get_all_users()
     
     if not users:
-        await callback.message.answer("📭 Пользователей пока нет.")
+        await callback.message.answer("Пользователей пока нет.")
         await callback.answer()
         return
     
     text = "🏆 <b>Топ пользователей по баллам:</b>\n\n"
     for i, user in enumerate(users[:10], 1):
-        text += f"{i}. {user['name']} — {user['balance']} 💰\n"
+        text += f"{i}. {user['name']} — {user['balance']} \n"
     
     await callback.message.answer(text, parse_mode="HTML")
     await callback.answer()
@@ -134,7 +139,7 @@ async def top_users(callback: types.CallbackQuery):
 @dp.callback_query(lambda c: c.data == "admin_add_points")
 async def request_member_number(callback: types.CallbackQuery):
     """Запрос номера участника для начисления баллов"""
-    await callback.message.answer("📝 Введите номер участника и количество баллов в формате:\n\n`НОМЕР СУММА`\n\nНапример: `12345 100`", parse_mode="HTML")
+    await callback.message.answer("Введите номер участника и количество баллов в формате:\n\n`НОМЕР СУММА`\n\nНапример: `12345 100`", parse_mode="HTML")
     await callback.answer()
 
 @dp.message()
@@ -164,18 +169,18 @@ async def handle_points_addition(message: types.Message):
                 )
                 
                 await message.answer(
-                    f"✅ Успешно!\n"
+                    f"Успешно!\n"
                     f"Пользователю {target_user['first_name']} {target_user.get('last_name', '')}\n"
-                    f"🆔 {member_number}\n"
-                    f"💰 Начислено {amount} баллов\n"
-                    f"📊 Новый баланс: {updated_user['balance']} баллов"
+                    f"{member_number}\n"
+                    f"Начислено {amount} баллов\n"
+                    f"Новый счёт: {updated_user['balance']} баллов"
                 )
                 
                 # Отправляем уведомление пользователю
                 try:
                     await bot.send_message(
                         target_user['telegram_id'],
-                        f"🎉 Вам начислено {amount} баллов!\n💰 Ваш новый баланс: {updated_user['balance']}"
+                        f"🎉 Вам начислено {amount} баллов!\nВаш новый счёт: {updated_user['balance']}"
                     )
                 except:
                     pass
@@ -190,7 +195,7 @@ async def handle_points_addition(message: types.Message):
 
 async def main():
     """Запуск бота"""
-    print("🤖 Бот запущен...")
+    print("Бот запущен...")
     await dp.start_polling(bot)
 
 if __name__ == "__main__":
