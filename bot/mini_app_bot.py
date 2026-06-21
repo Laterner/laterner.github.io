@@ -112,6 +112,8 @@ async def handle_add_points(request):
     
     return web.json_response({"success": True, "new_balance": updated_user['balance']})
 
+
+### рендер html файла ###
 async def serve_html(request):
     """Отдача HTML файла"""
     with open('static/index.html', 'r', encoding='utf-8') as f:
