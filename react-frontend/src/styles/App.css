@@ -1,0 +1,163 @@
+/* Общие стили */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background-color: var(--tg-theme-bg-color, #ffffff);
+  color: var(--tg-theme-text-color, #000000);
+  padding-bottom: 70px;
+}
+
+.app {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 20px 16px;
+}
+
+/* Карточки */
+.card {
+  background-color: var(--tg-theme-secondary-bg-color, #f5f5f5);
+  border-radius: 16px;
+  padding: 20px;
+  margin-bottom: 16px;
+}
+
+.card h2 {
+  margin-bottom: 12px;
+  font-size: 20px;
+}
+
+.card h3 {
+  margin-bottom: 12px;
+  font-size: 18px;
+}
+
+.card p {
+  margin: 8px 0;
+  color: var(--tg-theme-hint-color, #666);
+}
+
+.hint {
+  color: var(--tg-theme-hint-color, #666);
+  margin-bottom: 16px;
+}
+
+/* Баланс */
+.balance-card {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border-radius: 20px;
+  padding: 24px;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.balance-label {
+  font-size: 14px;
+  opacity: 0.9;
+}
+
+.balance-amount {
+  font-size: 48px;
+  font-weight: bold;
+  margin: 10px 0;
+}
+
+.member-number {
+  font-size: 14px;
+  opacity: 0.9;
+  font-family: monospace;
+}
+
+/* Формы */
+input {
+  width: 100%;
+  padding: 12px;
+  border-radius: 12px;
+  font-size: 16px;
+  background: var(--tg-theme-bg-color, #fff);
+  border: 1px solid var(--tg-theme-hint-color, #ddd);
+  color: var(--tg-theme-text-color, #000);
+  margin-bottom: 12px;
+}
+
+input:focus {
+  outline: 2px solid var(--tg-theme-button-color, #2481cc);
+}
+
+button {
+  width: 100%;
+  padding: 12px;
+  border-radius: 12px;
+  font-size: 16px;
+  background-color: var(--tg-theme-button-color, #2481cc);
+  color: var(--tg-theme-button-text-color, #fff);
+  border: none;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+button:active {
+  opacity: 0.7;
+}
+
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Таб-бар */
+.tab-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: var(--tg-theme-secondary-bg-color, #f9f9f9);
+  border-top: 0.5px solid var(--tg-theme-hint-color, #ddd);
+  display: flex;
+  padding: 8px 12px 20px;
+  z-index: 100;
+}
+
+.tab {
+  flex: 1;
+  text-align: center;
+  padding: 8px;
+  background: none;
+  border: none;
+  color: var(--tg-theme-hint-color, #888);
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.tab.active {
+  color: var(--tg-theme-button-color, #2481cc);
+  font-weight: 600;
+}
+
+.tab-icon {
+  font-size: 24px;
+  display: block;
+  margin-bottom: 4px;
+}
+
+.tab-label {
+  font-size: 12px;
+}
+
+/* Сообщения */
+.success {
+  color: #4caf50;
+  margin-top: 10px;
+  text-align: center;
+}
+
+.error {
+  color: #f44336;
+  margin-top: 10px;
+  text-align: center;
+}
