@@ -58,9 +58,12 @@ security = HTTPBearer()
 @app.get("/", response_class=HTMLResponse)
 async def home(request: Request):
     """Главная страница с формой добавления очков"""
+    # return templates.TemplateResponse(
+    #     "index.html",
+    #     {"request": request, "title": "Добавление очков"}
+    # )
     return templates.TemplateResponse(
-        "index.html",
-        {"request": request, "title": "Добавление очков"}
+        request=request, name="index.html", context={"title": "Добавление очков"}
     )
 
 @app.post("/api/add_score")
@@ -179,15 +182,26 @@ async def admin_dashboard(request: Request):
     # Получаем всех пользователей
     users = await db.get_all_users()
     
+    
     return templates.TemplateResponse(
-        "admin.html",
-        {
-            "request": request,
+        request=request, 
+        name="admin.html", 
+        context={
             "title": "Админ панель",
             "users": users,
             "message": None
         }
     )
+    
+    # return templates.TemplateResponse(
+    #     "admin.html",
+    #     {
+    #         "request": request,
+    #         "title": "Админ панель",
+    #         "users": users,
+    #         "message": None
+    #     }
+    # )
 
 @app.post("/admin/api/update_name")
 async def admin_update_name(
@@ -313,11 +327,11 @@ async def admin_logout():
     return response
 
 # Middleware для логирования
-@app.middleware("http")
-async def log_requests(request: Request, call_next):
-    logger.info(f"{request.method} {request.url.path}")
-    response = None # await call_next(request)
-    return response
+# @app.middleware("http")
+# async def log_requests(request: Request, call_next):
+#     logger.info(f"{request.method} {request.url.path}")
+#     response = None # await call_next(request)
+#     return response
 
 if __name__ == "__main__":
     import uvicorn

@@ -200,7 +200,8 @@
     <div class="container">
         <div class="header">
             <div class="logo">🎮</div>
-            <h1>Добавление очков <span>fstbot.ru</span></h1>
+            <!-- <span>fstbot.ru</span> -->
+            <h1>Добавление очков участникам</h1>
         </div>
         
         <form id="scoreForm">
@@ -227,7 +228,7 @@
             </div>
             
             <button type="submit" class="button" id="submitBtn">
-                ✅ Добавить очки
+                Добавить очки
             </button>
         </form>
         
@@ -343,7 +344,7 @@
             } finally {
                 // Включаем кнопку
                 submitBtn.disabled = false;
-                submitBtn.innerHTML = '✅ Добавить очки';
+                submitBtn.innerHTML = 'Добавить очки';
             }
         });
         

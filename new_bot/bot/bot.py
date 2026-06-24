@@ -389,7 +389,7 @@ async def open_miniapp_button(message: types.Message):
         f"ID: {format_player_id(user['player_id'])}\n"
         f"Команда: {TEAMS[user['team']]['emoji']} {TEAMS[user['team']]['name']}",
         parse_mode="HTML",
-        reply_markup=get_main_keyboard()
+        reply_markup=get_profile_keyboard()
     )
     
     await db.add_history(user_id, "open_miniapp", "Открытие Mini App")
@@ -514,7 +514,7 @@ async def process_team_selection(callback: types.CallbackQuery, state: FSMContex
             "Теперь ты можешь использовать бота.\n"
             "Нажми на кнопку ниже, чтобы открыть Mini App:",
             parse_mode="HTML",
-            reply_markup=get_main_keyboard()
+            reply_markup=get_profile_keyboard()
         )
         
         await db.add_history(user_id, "register", 
