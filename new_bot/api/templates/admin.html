@@ -1,0 +1,575 @@
+<!-- api/templates/admin.html -->
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }}</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+            background: #f5f5f5;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            background: white;
+            padding: 20px 30px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .header h1 {
+            font-size: 24px;
+            color: #333;
+        }
+        
+        .header h1 span {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .header-actions {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-block;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(118, 75, 162, 0.3);
+        }
+        
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+        
+        .btn-danger:hover {
+            background: #c82333;
+        }
+        
+        .btn-outline {
+            background: transparent;
+            color: #764ba2;
+            border: 2px solid #764ba2;
+        }
+        
+        .btn-outline:hover {
+            background: #764ba2;
+            color: white;
+        }
+        
+        .btn-sm {
+            padding: 5px 12px;
+            font-size: 12px;
+        }
+        
+        .search-bar {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+            display: flex;
+            gap: 15px;
+        }
+        
+        .search-bar input {
+            flex: 1;
+            padding: 10px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+        
+        .search-bar input:focus {
+            outline: none;
+            border-color: #764ba2;
+        }
+        
+        .table-container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        thead {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        th {
+            padding: 15px 20px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 14px;
+        }
+        
+        td {
+            padding: 15px 20px;
+            border-bottom: 1px solid #f0f0f0;
+            font-size: 14px;
+        }
+        
+        tr:hover {
+            background: #f8f9fa;
+        }
+        
+        .team-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        
+        .team-red {
+            background: #fee;
+            color: #c00;
+        }
+        
+        .team-blue {
+            background: #eef;
+            color: #00c;
+        }
+        
+        .team-green {
+            background: #efe;
+            color: #0c0;
+        }
+        
+        .player-id {
+            font-family: monospace;
+            background: #f0f0f0;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-weight: 600;
+        }
+        
+        .edit-form {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+        
+        .edit-form input {
+            padding: 5px 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 13px;
+            width: 120px;
+        }
+        
+        .edit-form input:focus {
+            outline: none;
+            border-color: #764ba2;
+        }
+        
+        .edit-form .btn {
+            padding: 5px 12px;
+            font-size: 12px;
+        }
+        
+        .message {
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        
+        .message-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .message-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        
+        .stat-card .number {
+            font-size: 32px;
+            font-weight: 700;
+            color: #764ba2;
+        }
+        
+        .stat-card .label {
+            color: #666;
+            font-size: 14px;
+            margin-top: 5px;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+        }
+        
+        .empty-state .icon {
+            font-size: 48px;
+            margin-bottom: 10px;
+        }
+        
+        @media (max-width: 768px) {
+            .header {
+                flex-direction: column;
+                gap: 15px;
+                text-align: center;
+            }
+            
+            .search-bar {
+                flex-direction: column;
+            }
+            
+            .edit-form {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .edit-form input {
+                width: 100%;
+            }
+            
+            table {
+                font-size: 12px;
+            }
+            
+            th, td {
+                padding: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔐 Админ панель <span>fstbot.ru</span></h1>
+            <div class="header-actions">
+                <a href="/" class="btn btn-outline btn-sm">🏠 На главную</a>
+                <a href="/admin/logout" class="btn btn-danger btn-sm">🚪 Выйти</a>
+            </div>
+        </div>
+        
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="number">{{ users|length }}</div>
+                <div class="label">👥 Всего игроков</div>
+            </div>
+            <div class="stat-card">
+                <div class="number">
+                    {% set total_score = namespace(value=0) %}
+                    {% for user in users %}
+                        {% set total_score.value = total_score.value + user.score %}
+                    {% endfor %}
+                    {{ total_score.value }}
+                </div>
+                <div class="label">⭐ Всего очков</div>
+            </div>
+            <div class="stat-card">
+                <div class="number">
+                    {% set total_wins = namespace(value=0) %}
+                    {% for user in users %}
+                        {% set total_wins.value = total_wins.value + user.wins %}
+                    {% endfor %}
+                    {{ total_wins.value }}
+                </div>
+                <div class="label">🏆 Всего побед</div>
+            </div>
+        </div>
+        
+        {% if message %}
+        <div class="message message-success">{{ message }}</div>
+        {% endif %}
+        
+        <div id="messageDiv" style="display: none;" class="message"></div>
+        
+        <div class="search-bar">
+            <input 
+                type="text" 
+                id="searchInput" 
+                placeholder="🔍 Поиск по имени или Player ID..." 
+                oninput="searchUsers(this.value)"
+            >
+            <button class="btn btn-primary" onclick="searchUsers(document.getElementById('searchInput').value)">
+                🔍 Искать
+            </button>
+        </div>
+        
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Имя</th>
+                        <th>Player ID</th>
+                        <th>Команда</th>
+                        <th>Очки</th>
+                        <th>Победы</th>
+                        <th>Игр</th>
+                        <th>Действия</th>
+                    </tr>
+                </thead>
+                <tbody id="usersTableBody">
+                    {% if users %}
+                        {% for user in users %}
+                        <tr data-player-id="{{ user.player_id }}">
+                            <td>{{ loop.index }}</td>
+                            <td>
+                                <form class="edit-form" onsubmit="return updateName(this, '{{ user.player_id }}')">
+                                    <input type="text" value="{{ user.name }}" class="name-input" required>
+                                    <button type="submit" class="btn btn-primary btn-sm">✏️</button>
+                                </form>
+                            </td>
+                            <td><span class="player-id">{{ user.player_id }}</span></td>
+                            <td>
+                                <span class="team-badge team-{{ user.team }}">
+                                    {% if user.team == 'red' %}🔴{% elif user.team == 'blue' %}🔵{% else %}🟢{% endif %}
+                                    {{ user.team|capitalize }}
+                                </span>
+                            </td>
+                            <td>
+                                <form class="edit-form" onsubmit="return updateScore(this, '{{ user.player_id }}')">
+                                    <input type="number" value="{{ user.score }}" class="score-input" min="0" required>
+                                    <button type="submit" class="btn btn-primary btn-sm">💾</button>
+                                </form>
+                            </td>
+                            <td>{{ user.wins }}</td>
+                            <td>{{ user.games_played }}</td>
+                            <td>
+                                <span style="color: #999; font-size: 12px;">
+                                    {{ user.registered_date[:16] if user.registered_date else '-' }}
+                                </span>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr>
+                            <td colspan="8">
+                                <div class="empty-state">
+                                    <div class="icon">📭</div>
+                                    <p>Нет зарегистрированных игроков</p>
+                                </div>
+                            </td>
+                        </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    
+    <script>
+        function showMessage(text, type = 'success') {
+            const div = document.getElementById('messageDiv');
+            div.textContent = text;
+            div.className = 'message message-' + type;
+            div.style.display = 'block';
+            
+            setTimeout(() => {
+                div.style.display = 'none';
+            }, 3000);
+        }
+        
+        async function updateName(form, playerId) {
+            event.preventDefault();
+            const input = form.querySelector('.name-input');
+            const newName = input.value.trim();
+            
+            if (!newName) {
+                showMessage('❌ Имя не может быть пустым', 'error');
+                return false;
+            }
+            
+            try {
+                const formData = new FormData();
+                formData.append('player_id', playerId);
+                formData.append('new_name', newName);
+                
+                const response = await fetch('/admin/api/update_name', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showMessage('✅ ' + data.message, 'success');
+                } else {
+                    showMessage('❌ ' + data.message, 'error');
+                }
+            } catch (error) {
+                showMessage('❌ Ошибка: ' + error.message, 'error');
+            }
+            
+            return false;
+        }
+        
+        async function updateScore(form, playerId) {
+            event.preventDefault();
+            const input = form.querySelector('.score-input');
+            const newScore = parseInt(input.value);
+            
+            if (isNaN(newScore) || newScore < 0) {
+                showMessage('❌ Введите корректное количество очков', 'error');
+                return false;
+            }
+            
+            try {
+                const formData = new FormData();
+                formData.append('player_id', playerId);
+                formData.append('new_score', newScore);
+                
+                const response = await fetch('/admin/api/update_score', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showMessage('✅ ' + data.message, 'success');
+                } else {
+                    showMessage('❌ ' + data.message, 'error');
+                }
+            } catch (error) {
+                showMessage('❌ Ошибка: ' + error.message, 'error');
+            }
+            
+            return false;
+        }
+        
+        async function searchUsers(query) {
+            if (!query || query.length < 2) {
+                // Если запрос пустой или короткий, перезагружаем страницу
+                window.location.reload();
+                return;
+            }
+            
+            try {
+                const response = await fetch(`/admin/api/search?query=${encodeURIComponent(query)}`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    const tbody = document.getElementById('usersTableBody');
+                    
+                    if (data.users.length === 0) {
+                        tbody.innerHTML = `
+                            <tr>
+                                <td colspan="8">
+                                    <div class="empty-state">
+                                        <div class="icon">🔍</div>
+                                        <p>По запросу "${query}" ничего не найдено</p>
+                                    </div>
+                                </td>
+                            </tr>
+                        `;
+                        return;
+                    }
+                    
+                    let html = '';
+                    data.users.forEach((user, index) => {
+                        const teamClass = user.team;
+                        const teamEmoji = user.team === 'red' ? '🔴' : user.team === 'blue' ? '🔵' : '🟢';
+                        
+                        html += `
+                            <tr data-player-id="${user.player_id}">
+                                <td>${index + 1}</td>
+                                <td>
+                                    <form class="edit-form" onsubmit="return updateName(this, '${user.player_id}')">
+                                        <input type="text" value="${user.name}" class="name-input" required>
+                                        <button type="submit" class="btn btn-primary btn-sm">✏️</button>
+                                    </form>
+                                </td>
+                                <td><span class="player-id">${user.player_id}</span></td>
+                                <td>
+                                    <span class="team-badge team-${teamClass}">
+                                        ${teamEmoji} ${user.team.charAt(0).toUpperCase() + user.team.slice(1)}
+                                    </span>
+                                </td>
+                                <td>
+                                    <form class="edit-form" onsubmit="return updateScore(this, '${user.player_id}')">
+                                        <input type="number" value="${user.score}" class="score-input" min="0" required>
+                                        <button type="submit" class="btn btn-primary btn-sm">💾</button>
+                                    </form>
+                                </td>
+                                <td>${user.wins}</td>
+                                <td>${user.games_played}</td>
+                                <td>
+                                    <span style="color: #999; font-size: 12px;">
+                                        ${user.registered_date ? user.registered_date.slice(0, 16) : '-'}
+                                    </span>
+                                </td>
+                            </tr>
+                        `;
+                    });
+                    
+                    tbody.innerHTML = html;
+                }
+            } catch (error) {
+                console.error('Search error:', error);
+            }
+        }
+        
+        // Поиск при нажатии Enter
+        document.getElementById('searchInput').addEventListener('keyup', function(e) {
+            if (e.key === 'Enter') {
+                searchUsers(this.value);
+            }
+        });
+    </script>
+</body>
+</html>

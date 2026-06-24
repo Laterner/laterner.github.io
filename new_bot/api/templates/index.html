@@ -1,0 +1,367 @@
+<!-- api/templates/index.html -->
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }}</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 500px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .logo {
+            font-size: 48px;
+            margin-bottom: 10px;
+        }
+        
+        h1 {
+            font-size: 24px;
+            color: #333;
+        }
+        
+        h1 span {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            font-weight: 600;
+            color: #555;
+            margin-bottom: 5px;
+        }
+        
+        input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+        
+        input:focus {
+            outline: none;
+            border-color: #764ba2;
+        }
+        
+        .button {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(118, 75, 162, 0.4);
+        }
+        
+        .button:active {
+            transform: translateY(0);
+        }
+        
+        .button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 10px;
+            display: none;
+        }
+        
+        .result.success {
+            display: block;
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        
+        .result.error {
+            display: block;
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        
+        .result.info {
+            display: block;
+            background: #d1ecf1;
+            border: 1px solid #bee5eb;
+            color: #0c5460;
+        }
+        
+        .player-info {
+            margin-top: 15px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            display: none;
+        }
+        
+        .player-info.visible {
+            display: block;
+        }
+        
+        .player-info .info-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 5px 0;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .player-info .info-item:last-child {
+            border-bottom: none;
+        }
+        
+        .info-label {
+            color: #666;
+        }
+        
+        .info-value {
+            font-weight: 600;
+            color: #333;
+        }
+        
+        .footer {
+            text-align: center;
+            margin-top: 25px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+        }
+        
+        .footer a {
+            color: #764ba2;
+            text-decoration: none;
+            font-weight: 500;
+        }
+        
+        .footer a:hover {
+            text-decoration: underline;
+        }
+        
+        .spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">🎮</div>
+            <h1>Добавление очков <span>fstbot.ru</span></h1>
+        </div>
+        
+        <form id="scoreForm">
+            <div class="form-group">
+                <label for="playerId">🎯 Player ID</label>
+                <input 
+                    type="text" 
+                    id="playerId" 
+                    placeholder="Например: A7K9F" 
+                    required
+                    autocomplete="off"
+                >
+            </div>
+            
+            <div class="form-group">
+                <label for="amount">⭐ Количество очков</label>
+                <input 
+                    type="number" 
+                    id="amount" 
+                    placeholder="Введите число" 
+                    required
+                    min="1"
+                >
+            </div>
+            
+            <button type="submit" class="button" id="submitBtn">
+                ✅ Добавить очки
+            </button>
+        </form>
+        
+        <div id="result" class="result"></div>
+        
+        <div id="playerInfo" class="player-info">
+            <h3 style="margin-bottom: 10px; color: #333;">👤 Информация об игроке</h3>
+            <div class="info-item">
+                <span class="info-label">Имя:</span>
+                <span class="info-value" id="infoName">-</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">Текущие очки:</span>
+                <span class="info-value" id="infoScore">-</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">Команда:</span>
+                <span class="info-value" id="infoTeam">-</span>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <a href="/admin">🔐 Админ панель</a>
+            <span style="color: #ccc; margin: 0 10px;">|</span>
+            <a href="https://t.me/fstbot_bot" target="_blank">🤖 Бот</a>
+        </div>
+    </div>
+    
+    <script>
+        const form = document.getElementById('scoreForm');
+        const playerIdInput = document.getElementById('playerId');
+        const amountInput = document.getElementById('amount');
+        const submitBtn = document.getElementById('submitBtn');
+        const resultDiv = document.getElementById('result');
+        const playerInfoDiv = document.getElementById('playerInfo');
+        
+        // Проверка игрока при вводе
+        let checkTimeout;
+        playerIdInput.addEventListener('input', function() {
+            clearTimeout(checkTimeout);
+            const playerId = this.value.trim().toUpperCase();
+            
+            if (playerId.length >= 3) {
+                checkTimeout = setTimeout(() => checkPlayer(playerId), 500);
+            } else {
+                playerInfoDiv.classList.remove('visible');
+            }
+        });
+        
+        async function checkPlayer(playerId) {
+            try {
+                const response = await fetch(`/api/check_player/${playerId}`);
+                const data = await response.json();
+                
+                if (data.exists) {
+                    document.getElementById('infoName').textContent = data.name;
+                    document.getElementById('infoScore').textContent = data.score;
+                    document.getElementById('infoTeam').textContent = data.team;
+                    playerInfoDiv.classList.add('visible');
+                } else {
+                    playerInfoDiv.classList.remove('visible');
+                }
+            } catch (error) {
+                console.error('Error checking player:', error);
+            }
+        }
+        
+        form.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const playerId = playerIdInput.value.trim().toUpperCase();
+            const amount = parseInt(amountInput.value);
+            
+            if (!playerId) {
+                showResult('❌ Введите Player ID', 'error');
+                return;
+            }
+            
+            if (!amount || amount < 1) {
+                showResult('❌ Введите корректное количество очков (минимум 1)', 'error');
+                return;
+            }
+            
+            // Отключаем кнопку
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<span class="spinner"></span> Обработка...';
+            
+            try {
+                const formData = new FormData();
+                formData.append('player_id', playerId);
+                formData.append('amount', amount);
+                
+                const response = await fetch('/api/add_score', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showResult(`✅ ${data.message}`, 'success');
+                    // Обновляем информацию об игроке
+                    if (data.player) {
+                        document.getElementById('infoScore').textContent = data.player.new_score;
+                    }
+                    // Очищаем поле количества
+                    amountInput.value = '';
+                } else {
+                    showResult(`❌ ${data.message}`, 'error');
+                }
+            } catch (error) {
+                showResult(`❌ Ошибка: ${error.message}`, 'error');
+            } finally {
+                // Включаем кнопку
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '✅ Добавить очки';
+            }
+        });
+        
+        function showResult(message, type) {
+            resultDiv.textContent = message;
+            resultDiv.className = 'result ' + type;
+            resultDiv.style.display = 'block';
+            
+            // Автоматически скрываем через 5 секунд
+            setTimeout(() => {
+                resultDiv.style.display = 'none';
+            }, 5000);
+        }
+        
+        // Автоматическое преобразование в верхний регистр
+        playerIdInput.addEventListener('blur', function() {
+            this.value = this.value.trim().toUpperCase();
+        });
+    </script>
+</body>
+</html>
