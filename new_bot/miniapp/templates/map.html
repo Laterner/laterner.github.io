@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block content %}
+<style>
+    body{
+        justify-content: baseline;
+        text-align: left;
+    }
+    .container {
+        text-align: left;
+    }
+    img {
+        width: calc(100% - 36px);
+        height: 100%;
+        object-fit: cover;
+    }
+</style>
+<div class="container">
+    <img src="/static/map.png">
+</div>
+    
+{% endblock %}
