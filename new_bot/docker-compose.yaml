@@ -1,8 +1,18 @@
 version: '3.8'
 
 services:
-  # bot:
-    # build: ./bot/Dockerfile
+  bot:
+    build: ./bot
+    container_name: fastapi_bot
+    restart: always
+    env_file:
+      - .env
+    volumes:
+      - ./bot:/bot
+    # expose:
+    #   - "8000"
+    networks:
+      - app_network
 
   fastapi:
     build: ./api
