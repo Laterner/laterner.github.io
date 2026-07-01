@@ -9,8 +9,7 @@ services:
       - .env
     volumes:
       - ./bot:/bot
-    # expose:
-    #   - "8000"
+      - ./user.db:/bot/user.db  # Общая БД
     networks:
       - app_network
 
@@ -24,6 +23,7 @@ services:
       - ./api:/app
       - ./static:/app/static
       - ./media:/app/media
+      - ./user.db:/app/user.db  # Общая БД
     expose:
       - "8000"
     networks:
