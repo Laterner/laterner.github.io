@@ -10,6 +10,7 @@
     }
     .container {
         text-align: left;
+        margin: 15px 10px 0 10px;
     }
 </style>
 <div class="container">
@@ -21,5 +22,21 @@
         <p> Игр сыграно: {{user.games_played}} </p>
     </div>
 </div>
-    
+
+<div class="container">
+    <div class="user">
+        <h1> Комамндный рейтинг</h1>
+        <p> Комамнда red: {{user.score}}</p>
+        <p>{{user.name}}: {{user.score}}</p>
+        <p> Комамнда blue: 0</p>
+        <p> Комамнда green: 0</p>
+    </div>
+</div>
+<div class="container">
+    <div class="user">
+        <h1> Личный рейтинг</h1>
+        <p>{{user.name}}: {{user.score}}</p>
+    </div>
+</div>
+
 {% endblock %}

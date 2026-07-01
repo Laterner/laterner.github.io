@@ -9,8 +9,8 @@ from contextlib import asynccontextmanager
 from typing import Optional
 import logging
 
-from .database import db
-from .auth import (
+from database import db
+from auth import (
     check_admin_password, 
     create_access_token, 
     verify_token,

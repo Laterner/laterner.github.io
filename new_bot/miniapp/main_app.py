@@ -70,6 +70,48 @@ def quize_page(request: Request):
 def answer(ans: int ):
     return {'ans':ans}
 
+@app.post("/api/add_score")
+async def add_score(
+    player_id: str = Form(...),
+    amount: int = Form(...)
+):
+    """API для добавления очков"""
+    try:
+        # Проверяем игрока
+        user = await db.get_user_by_player_id(player_id)
+        if not user:
+            return JSONResponse(
+                status_code=404,
+                content={"success": False, "message": f"Игрок с ID {player_id} не найден"}
+            )
+        
+        # Добавляем очки
+        success = await db.add_score(player_id, amount)
+        
+        if success:
+            return JSONResponse(
+                content={
+                    "success": True,
+                    "message": f"Добавлено {amount} очков игроку {user['name']} (ID: {player_id})",
+                    "player": {
+                        "name": user['name'],
+                        "player_id": player_id,
+                        "new_score": user['score'] + amount
+                    }
+                }
+            )
+        else:
+            return JSONResponse(
+                status_code=500,
+                content={"success": False, "message": "Ошибка при добавлении очков"}
+            )
+    except Exception as e:
+        print(f"Error adding score: {e}")
+        return JSONResponse(
+            status_code=500,
+            content={"success": False, "message": str(e)}
+        )
+
 @app.get("/faq", response_class=HTMLResponse)
 def faq_page(request: Request):
     return templates.TemplateResponse(
