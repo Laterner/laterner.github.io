@@ -8,6 +8,7 @@ from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from contextlib import asynccontextmanager
 from typing import Optional
 import logging
+import uvicorn
 
 from database import db
 from auth import (
@@ -192,16 +193,6 @@ async def admin_dashboard(request: Request):
             "message": None
         }
     )
-    
-    # return templates.TemplateResponse(
-    #     "admin.html",
-    #     {
-    #         "request": request,
-    #         "title": "Админ панель",
-    #         "users": users,
-    #         "message": None
-    #     }
-    # )
 
 @app.post("/admin/api/update_name")
 async def admin_update_name(
@@ -334,9 +325,8 @@ async def admin_logout():
 #     return response
 
 if __name__ == "__main__":
-    import uvicorn
     uvicorn.run(
-        "api.main:app",
+        "main:app",
         host="0.0.0.0",
         port=8000,
         reload=True

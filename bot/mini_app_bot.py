@@ -121,17 +121,17 @@ async def serve_html(request):
 
 async def main():
     # Запуск веб-сервера
-    app = web.Application()
-    app.router.add_get('/api/user', handle_user)
-    app.router.add_post('/api/add-points', handle_add_points)
-    app.router.add_get('/', serve_html)
+    # app = web.Application()
+    # app.router.add_get('/api/user', handle_user)
+    # app.router.add_post('/api/add-points', handle_add_points)
+    # app.router.add_get('/', serve_html)
     
-    runner = web.AppRunner(app)
-    await runner.setup()
-    site = web.TCPSite(runner, '0.0.0.0', 8000)
-    await site.start()
+    # runner = web.AppRunner(app)
+    # await runner.setup()
+    # site = web.TCPSite(runner, '0.0.0.0', 8000)
+    # await site.start()
     
-    print("Веб-сервер запущен на http://0.0.0.0:8000")
+    # print("Веб-сервер запущен на http://0.0.0.0:8000")
     
     # Запуск бота
     await dp.start_polling(bot)
