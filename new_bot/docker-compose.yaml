@@ -1,17 +1,17 @@
 version: '3.8'
 
 services:
-  bot:
-    build: ./bot
-    container_name: fastapi_bot
-    restart: always
-    env_file:
-      - .env
-    volumes:
-      - ./bot:/bot
-      - ./user.db:/bot/user.db  # Общая БД
-    networks:
-      - app_network
+  # bot:
+  #   build: ./bot
+  #   container_name: fastapi_bot
+  #   restart: always
+  #   env_file:
+  #     - .env
+  #   volumes:
+  #     - ./bot:/bot
+  #     - ./user.db:/bot/user.db  # Общая БД
+  #   networks:
+  #     - app_network
 
   fastapi:
     build: ./api
