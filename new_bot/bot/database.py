@@ -31,7 +31,10 @@ class Database:
         )
 
     async def init_db(self):
-        """Инициализация базы данных (создание таблиц)"""
+        """Инициализация базы данных"""
+        if self.pool is None:
+            await self.init_pool()
+            
         async with self.pool.acquire() as conn:
             # Таблица пользователей
             await conn.execute('''
