@@ -22,3 +22,4 @@ uvicorn
 fastapi[all]
 passlib
 python-jose
+asyncpg

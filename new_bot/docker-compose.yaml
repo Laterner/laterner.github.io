@@ -12,6 +12,41 @@ services:
   #     - ./user.db:/bot/user.db  # Общая БД
   #   networks:
   #     - app_network
+  postgres:
+    image: postgres:16-alpine
+    container_name: my_postgres
+    restart: unless-stopped
+    env_file:
+      - .env
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U admin -d user_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - app_network
+
+  # Опционально: pgAdmin для управления БД
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: pgadmin
+    restart: unless-stopped
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@admin.com
+      PGADMIN_DEFAULT_PASSWORD: admin123
+    ports:
+      - "5050:80"
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+    depends_on:
+      - postgres
+    networks:
+      - app_network
 
   fastapi:
     build: ./api
@@ -23,18 +58,19 @@ services:
       - ./api:/app
       - ./static:/app/static
       - ./media:/app/media
-      # - ./user.db:/app/user.db  # Общая БД
     expose:
       - "8000"
     networks:
       - app_network
+    depends_on:
+      - postgres
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
       interval: 30s
       timeout: 10s
       retries: 3
       start_period: 40s
-  
+
   nginx:
     image: nginx:alpine
     container_name: nginx
@@ -73,3 +109,4 @@ networks:
 
 volumes:
   postgres_data:
+  pgadmin_data:

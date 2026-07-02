@@ -1,38 +1,62 @@
-# database.py
-import sqlite3
-import json
+import asyncpg
 from datetime import datetime
 from typing import Optional, Dict, List, Any
-import aiosqlite
+import os
 
-DB_NAME = "users.db"
+# Конфигурация из переменных окружения
+DB_CONFIG = {
+    "host": os.getenv("DB_HOST", "postgres"),
+    "port": os.getenv("DB_PORT", "5432"),
+    "database": os.getenv("DB_NAME", "user_db"),
+    "user": os.getenv("DB_USER", "admin"),
+    "password": os.getenv("DB_PASSWORD", ""),
+}
 
 class Database:
-    def __init__(self, db_name: str = DB_NAME):
-        self.db_name = db_name
+    def __init__(self, config: Dict[str, str] = None):
+        self.config = config or DB_CONFIG
+        self.pool = None
+        # print("DB_CONFIG ::::::::::::>", DB_CONFIG)
+
+    async def init_pool(self):
+        """Инициализация пула соединений"""
+        if self.pool is None:
+            self.pool = await asyncpg.create_pool(
+                host=self.config["host"],
+                port=self.config["port"],
+                database=self.config["database"],
+                user=self.config["user"],
+                password=self.config["password"],
+                min_size=1,
+                max_size=10,
+            )
+        return self.pool
 
     async def init_db(self):
         """Инициализация базы данных"""
-        async with aiosqlite.connect(self.db_name) as db:
+        if self.pool is None:
+            await self.init_pool()
+            
+        async with self.pool.acquire() as conn:
             # Таблица пользователей
-            await db.execute('''
+            await conn.execute('''
                 CREATE TABLE IF NOT EXISTS users (
-                    user_id INTEGER PRIMARY KEY,
+                    user_id BIGINT PRIMARY KEY,
                     name TEXT NOT NULL,
                     player_id TEXT UNIQUE NOT NULL,
                     team TEXT NOT NULL,
-                    registered BOOLEAN DEFAULT 1,
-                    registered_date TEXT NOT NULL,
+                    registered BOOLEAN DEFAULT TRUE,
+                    registered_date TIMESTAMP NOT NULL,
                     score INTEGER DEFAULT 0,
                     games_played INTEGER DEFAULT 0,
                     wins INTEGER DEFAULT 0,
                     losses INTEGER DEFAULT 0,
-                    last_active TEXT
+                    last_active TIMESTAMP
                 )
             ''')
             
             # Таблица для статистики по командам
-            await db.execute('''
+            await conn.execute('''
                 CREATE TABLE IF NOT EXISTS team_stats (
                     team TEXT PRIMARY KEY,
                     total_players INTEGER DEFAULT 0,
@@ -42,239 +66,181 @@ class Database:
             ''')
             
             # Таблица для истории действий
-            await db.execute('''
+            await conn.execute('''
                 CREATE TABLE IF NOT EXISTS user_history (
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    user_id INTEGER,
+                    id SERIAL PRIMARY KEY,
+                    user_id BIGINT,
                     action TEXT,
                     details TEXT,
-                    timestamp TEXT,
-                    FOREIGN KEY (user_id) REFERENCES users (user_id)
+                    timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    FOREIGN KEY (user_id) REFERENCES users (user_id) ON DELETE CASCADE
                 )
             ''')
             
-            await db.commit()
-
-    async def add_user(self, user_id: int, name: str, player_id: str, team: str) -> bool:
-        """Добавление нового пользователя"""
-        try:
-            async with aiosqlite.connect(self.db_name) as db:
-                await db.execute('''
-                    INSERT INTO users (
-                        user_id, name, player_id, team, registered, 
-                        registered_date, score, games_played, wins, losses, last_active
-                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-                ''', (
-                    user_id, 
-                    name, 
-                    player_id, 
-                    team, 
-                    1,
-                    datetime.now().isoformat(),
-                    0,
-                    0,
-                    0,
-                    0,
-                    datetime.now().isoformat()
-                ))
-                await db.commit()
-                
-                # Обновляем статистику команды
-                await self.update_team_stats(team, add_player=True)
-                
-                return True
-        except sqlite3.IntegrityError:
-            return False
-
-    async def get_user(self, user_id: int) -> Optional[Dict[str, Any]]:
-        """Получение данных пользователя"""
-        async with aiosqlite.connect(self.db_name) as db:
-            db.row_factory = aiosqlite.Row
-            cursor = await db.execute(
-                'SELECT * FROM users WHERE user_id = ?', 
-                (user_id,)
-            )
-            row = await cursor.fetchone()
-            return dict(row) if row else None
+            # Индексы для оптимизации
+            await conn.execute('''
+                CREATE INDEX IF NOT EXISTS idx_users_player_id ON users(player_id);
+                CREATE INDEX IF NOT EXISTS idx_users_score ON users(score DESC);
+                CREATE INDEX IF NOT EXISTS idx_user_history_user_id ON user_history(user_id);
+            ''')
 
     async def get_user_by_player_id(self, player_id: str) -> Optional[Dict[str, Any]]:
         """Получение пользователя по player_id"""
-        async with aiosqlite.connect(self.db_name) as db:
-            db.row_factory = aiosqlite.Row
-            cursor = await db.execute(
-                'SELECT * FROM users WHERE player_id = ?', 
-                (player_id,)
+        if self.pool is None:
+            await self.init_pool()
+            
+        async with self.pool.acquire() as conn:
+            row = await conn.fetchrow(
+                'SELECT * FROM users WHERE player_id = $1',
+                player_id
             )
-            row = await cursor.fetchone()
             return dict(row) if row else None
 
-    async def update_user_team(self, user_id: int, new_team: str) -> bool:
-        """Обновление команды пользователя"""
-        try:
-            # Получаем старую команду
-            user = await self.get_user(user_id)
-            if not user:
-                return False
+    async def get_user(self, user_id: int) -> Optional[Dict[str, Any]]:
+        """Получение пользователя по user_id"""
+        if self.pool is None:
+            await self.init_pool()
             
-            old_team = user['team']
-            
-            async with aiosqlite.connect(self.db_name) as db:
-                await db.execute(
-                    'UPDATE users SET team = ?, last_active = ? WHERE user_id = ?',
-                    (new_team, datetime.now().isoformat(), user_id)
-                )
-                await db.commit()
-                
-                # Обновляем статистику команд
-                await self.update_team_stats(old_team, add_player=False)
-                await self.update_team_stats(new_team, add_player=True)
-                
-                return True
-        except Exception as e:
-            print(f"Error updating team: {e}")
-            return False
-
-    async def update_user_stats(self, user_id: int, won: bool = False):
-        """Обновление статистики пользователя"""
-        async with aiosqlite.connect(self.db_name) as db:
-            if won:
-                await db.execute('''
-                    UPDATE users 
-                    SET games_played = games_played + 1,
-                        wins = wins + 1,
-                        last_active = ?
-                    WHERE user_id = ?
-                ''', (datetime.now().isoformat(), user_id))
-                
-                # Обновляем статистику команды
-                user = await self.get_user(user_id)
-                if user:
-                    await db.execute('''
-                        UPDATE team_stats 
-                        SET total_games = total_games + 1,
-                            total_wins = total_wins + 1
-                        WHERE team = ?
-                    ''', (user['team'],))
-            else:
-                await db.execute('''
-                    UPDATE users 
-                    SET games_played = games_played + 1,
-                        losses = losses + 1,
-                        last_active = ?
-                    WHERE user_id = ?
-                ''', (datetime.now().isoformat(), user_id))
-                
-                # Обновляем статистику команды
-                user = await self.get_user(user_id)
-                if user:
-                    await db.execute('''
-                        UPDATE team_stats 
-                        SET total_games = total_games + 1
-                        WHERE team = ?
-                    ''', (user['team'],))
-            
-            await db.commit()
-
-    async def update_team_stats(self, team: str, add_player: bool = True):
-        """Обновление статистики команды"""
-        async with aiosqlite.connect(self.db_name) as db:
-            if add_player:
-                await db.execute('''
-                    INSERT INTO team_stats (team, total_players, total_wins, total_games)
-                    VALUES (?, 1, 0, 0)
-                    ON CONFLICT(team) DO UPDATE SET
-                        total_players = total_players + 1
-                ''', (team,))
-            else:
-                await db.execute('''
-                    UPDATE team_stats 
-                    SET total_players = total_players - 1
-                    WHERE team = ? AND total_players > 0
-                ''', (team,))
-            await db.commit()
-
-    async def get_team_stats(self, team: str) -> Optional[Dict[str, Any]]:
-        """Получение статистики команды"""
-        async with aiosqlite.connect(self.db_name) as db:
-            db.row_factory = aiosqlite.Row
-            cursor = await db.execute(
-                'SELECT * FROM team_stats WHERE team = ?',
-                (team,)
+        async with self.pool.acquire() as conn:
+            row = await conn.fetchrow(
+                'SELECT * FROM users WHERE user_id = $1',
+                user_id
             )
-            row = await cursor.fetchone()
             return dict(row) if row else None
 
-    async def get_all_teams_stats(self) -> List[Dict[str, Any]]:
-        """Получение статистики всех команд"""
-        async with aiosqlite.connect(self.db_name) as db:
-            db.row_factory = aiosqlite.Row
-            cursor = await db.execute('SELECT * FROM team_stats')
-            rows = await cursor.fetchall()
+    async def get_all_users(self) -> List[Dict[str, Any]]:
+        """Получение всех пользователей"""
+        if self.pool is None:
+            await self.init_pool()
+            
+        async with self.pool.acquire() as conn:
+            rows = await conn.fetch(
+                'SELECT * FROM users ORDER BY score DESC'
+            )
             return [dict(row) for row in rows]
 
-    async def add_history(self, user_id: int, action: str, details: str = ""):
-        """Добавление записи в историю"""
-        async with aiosqlite.connect(self.db_name) as db:
-            await db.execute('''
-                INSERT INTO user_history (user_id, action, details, timestamp)
-                VALUES (?, ?, ?, ?)
-            ''', (user_id, action, details, datetime.now().isoformat()))
-            await db.commit()
+    async def add_score(self, player_id: str, amount: int) -> bool:
+        """Добавление очков игроку"""
+        try:
+            if self.pool is None:
+                await self.init_pool()
+                
+            async with self.pool.acquire() as conn:
+                async with conn.transaction():
+                    result = await conn.execute(
+                        'UPDATE users SET score = score + $1 WHERE player_id = $2',
+                        amount, player_id
+                    )
+                    
+                    if result != "UPDATE 0":
+                        # Добавляем в историю
+                        user = await self.get_user_by_player_id(player_id)
+                        if user:
+                            await conn.execute('''
+                                INSERT INTO user_history (user_id, action, details)
+                                VALUES ($1, $2, $3)
+                            ''', (
+                                user['user_id'],
+                                "add_score",
+                                f"Добавлено {amount} очков (через API)"
+                            ))
+                        return True
+                return False
+        except Exception as e:
+            print(f"Error adding score: {e}")
+            return False
 
-    async def get_user_history(self, user_id: int, limit: int = 10) -> List[Dict[str, Any]]:
-        """Получение истории пользователя"""
-        async with aiosqlite.connect(self.db_name) as db:
-            db.row_factory = aiosqlite.Row
-            cursor = await db.execute('''
-                SELECT * FROM user_history 
-                WHERE user_id = ? 
-                ORDER BY timestamp DESC 
-                LIMIT ?
-            ''', (user_id, limit))
-            rows = await cursor.fetchall()
+    async def update_user_name(self, player_id: str, new_name: str) -> bool:
+        """Обновление имени пользователя"""
+        try:
+            if self.pool is None:
+                await self.init_pool()
+                
+            async with self.pool.acquire() as conn:
+                async with conn.transaction():
+                    result = await conn.execute(
+                        'UPDATE users SET name = $1 WHERE player_id = $2',
+                        new_name, player_id
+                    )
+                    
+                    if result != "UPDATE 0":
+                        user = await self.get_user_by_player_id(player_id)
+                        if user:
+                            await conn.execute('''
+                                INSERT INTO user_history (user_id, action, details)
+                                VALUES ($1, $2, $3)
+                            ''', (
+                                user['user_id'],
+                                "update_name",
+                                f"Имя изменено на '{new_name}' (через API)"
+                            ))
+                        return True
+                return False
+        except Exception as e:
+            print(f"Error updating name: {e}")
+            return False
+
+    async def update_user_score(self, player_id: str, new_score: int) -> bool:
+        """Обновление очков пользователя"""
+        try:
+            if self.pool is None:
+                await self.init_pool()
+                
+            async with self.pool.acquire() as conn:
+                async with conn.transaction():
+                    result = await conn.execute(
+                        'UPDATE users SET score = $1 WHERE player_id = $2',
+                        new_score, player_id
+                    )
+                    
+                    if result != "UPDATE 0":
+                        user = await self.get_user_by_player_id(player_id)
+                        if user:
+                            await conn.execute('''
+                                INSERT INTO user_history (user_id, action, details)
+                                VALUES ($1, $2, $3)
+                            ''', (
+                                user['user_id'],
+                                "update_score",
+                                f"Очки установлены на {new_score} (через API)"
+                            ))
+                        return True
+                return False
+        except Exception as e:
+            print(f"Error updating score: {e}")
+            return False
+
+    async def search_users(self, query: str) -> List[Dict[str, Any]]:
+        """Поиск пользователей по имени или player_id"""
+        if self.pool is None:
+            await self.init_pool()
+            
+        async with self.pool.acquire() as conn:
+            rows = await conn.fetch('''
+                SELECT * FROM users 
+                WHERE name ILIKE $1 OR player_id ILIKE $1
+                ORDER BY score DESC
+            ''', (f'%{query}%',))
             return [dict(row) for row in rows]
 
     async def get_top_players(self, limit: int = 10) -> List[Dict[str, Any]]:
-        """Получение топ игроков по очкам"""
-        async with aiosqlite.connect(self.db_name) as db:
-            db.row_factory = aiosqlite.Row
-            cursor = await db.execute('''
-                SELECT user_id, name, player_id, team, score, wins, games_played
-                FROM users 
+        """Получение топ игроков"""
+        if self.pool is None:
+            await self.init_pool()
+            
+        async with self.pool.acquire() as conn:
+            rows = await conn.fetch('''
+                SELECT * FROM users 
                 ORDER BY score DESC 
-                LIMIT ?
-            ''', (limit,))
-            rows = await cursor.fetchall()
+                LIMIT $1
+            ''', limit)
             return [dict(row) for row in rows]
 
-    async def delete_user(self, user_id: int) -> bool:
-        """Удаление пользователя"""
-        try:
-            user = await self.get_user(user_id)
-            if not user:
-                return False
-            
-            async with aiosqlite.connect(self.db_name) as db:
-                await db.execute('DELETE FROM users WHERE user_id = ?', (user_id,))
-                await db.commit()
-                
-                # Обновляем статистику команды
-                await self.update_team_stats(user['team'], add_player=False)
-                
-                return True
-        except Exception as e:
-            print(f"Error deleting user: {e}")
-            return False
-
-    async def user_exists(self, user_id: int) -> bool:
-        """Проверка существования пользователя"""
-        user = await self.get_user(user_id)
-        return user is not None
-
-    async def is_registered(self, user_id: int) -> bool:
-        """Проверка регистрации пользователя"""
-        user = await self.get_user(user_id)
-        return user is not None and user.get('registered', False) == 1
+    async def close(self):
+        """Закрытие пула соединений"""
+        if self.pool:
+            await self.pool.close()
+            self.pool = None
 
 # Создаем экземпляр базы данных
 db = Database()
