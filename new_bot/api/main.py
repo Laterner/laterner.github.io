@@ -59,12 +59,8 @@ security = HTTPBearer()
 @app.get("/", response_class=HTMLResponse)
 async def home(request: Request):
     """Главная страница с формой добавления очков"""
-    # return templates.TemplateResponse(
-    #     "index.html",
-    #     {"request": request, "title": "Добавление очков"}
-    # )
     return templates.TemplateResponse(
-        request=request, name="index.html", context={"title": "Добавление очков"}
+        request=request, name="admin_add_points.html", context={"title": "Добавление очков"}
     )
 
 @app.post("/api/add_score")

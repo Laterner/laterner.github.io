@@ -50,7 +50,7 @@ services:
 
   fastapi:
     build: ./api
-    container_name: fastapi_api
+    container_name: fastapi
     restart: always
     env_file:
       - .env
@@ -58,18 +58,18 @@ services:
       - ./api:/app
       - ./static:/app/static
       - ./media:/app/media
-    expose:
-      - "8000"
+    ports:
+      - "8000:8000"
     networks:
       - app_network
     depends_on:
       - postgres
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 40s
+    # healthcheck:
+    #   test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+    #   interval: 30s
+    #   timeout: 10s
+    #   retries: 3
+    #   start_period: 40s
 
   nginx:
     image: nginx:alpine
@@ -85,8 +85,8 @@ services:
       - ./certs:/etc/nginx/certs:ro
       - ./logs/nginx:/var/log/nginx
     depends_on:
-      fastapi:
-        condition: service_healthy
+      - fastapi
+        # condition: service_healthy
     networks:
       - app_network
 
