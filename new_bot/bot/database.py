@@ -2,8 +2,7 @@ import os
 import json
 from datetime import datetime
 from typing import Optional, Dict, List, Any
-import asyncpg
-from asyncpg import Pool, Record
+from asyncpg import Pool, create_pool, IntegrityConstraintViolationError
 
 # Конфигурация из переменных окружения
 DB_CONFIG = {
@@ -15,31 +14,30 @@ DB_CONFIG = {
 }
 
 class Database:
-    def __init__(self, config: Dict[str, str] = None):
-        self.config = config or DB_CONFIG
+    def __init__(self):
         self.pool: Optional[Pool] = None
 
     async def init_pool(self):
-        """Инициализация пула соединений"""
-        if self.pool is None:
-            self.pool = await asyncpg.create_pool(
-                host=self.config["host"],
-                port=self.config["port"],
-                database=self.config["database"],
-                user=self.config["user"],
-                password=self.config["password"],
-                min_size=1,
-                max_size=10,
-            )
-        return self.pool
+        """Создание пула соединений с PostgreSQL"""
+        self.pool = await create_pool(
+            host=DB_CONFIG["host"],
+            port=DB_CONFIG["port"],
+            database=DB_CONFIG["database"],
+            user=DB_CONFIG["user"],
+            password=DB_CONFIG["password"],
+            min_size=1,
+            max_size=10,
+        )
 
-    async def init_db(self):
-        """Инициализация базы данных"""
+    async def _ensure_pool(self):
+        """Гарантирует, что пул соединений создан."""
         if self.pool is None:
             await self.init_pool()
-            
+
+    async def init_db(self):
+        """Инициализация базы данных (создание таблиц)"""
+        await self._ensure_pool()
         async with self.pool.acquire() as conn:
-            # Таблица пользователей
             await conn.execute('''
                 CREATE TABLE IF NOT EXISTS users (
                     user_id BIGINT PRIMARY KEY,
@@ -55,8 +53,6 @@ class Database:
                     last_active TEXT
                 )
             ''')
-            
-            # Таблица для статистики по командам
             await conn.execute('''
                 CREATE TABLE IF NOT EXISTS team_stats (
                     team TEXT PRIMARY KEY,
@@ -65,8 +61,6 @@ class Database:
                     total_games INTEGER DEFAULT 0
                 )
             ''')
-            
-            # Таблица для истории действий
             await conn.execute('''
                 CREATE TABLE IF NOT EXISTS user_history (
                     id SERIAL PRIMARY KEY,
@@ -79,6 +73,8 @@ class Database:
 
     async def add_user(self, user_id: int, name: str, player_id: str, team: str) -> bool:
         """Добавление нового пользователя"""
+        await self._ensure_pool()
+        
         try:
             async with self.pool.acquire() as conn:
                 await conn.execute('''
@@ -104,11 +100,13 @@ class Database:
                 await self.update_team_stats(team, add_player=True)
                 
                 return True
-        except asyncpg.IntegrityConstraintViolationError:
+        except IntegrityConstraintViolationError:
             return False
 
     async def get_user(self, user_id: int) -> Optional[Dict[str, Any]]:
         """Получение данных пользователя"""
+        await self._ensure_pool()
+        
         async with self.pool.acquire() as conn:
             row = await conn.fetchrow(
                 'SELECT * FROM users WHERE user_id = $1',
@@ -118,6 +116,8 @@ class Database:
 
     async def get_user_by_player_id(self, player_id: str) -> Optional[Dict[str, Any]]:
         """Получение пользователя по player_id"""
+        await self._ensure_pool()
+        
         async with self.pool.acquire() as conn:
             row = await conn.fetchrow(
                 'SELECT * FROM users WHERE player_id = $1',
@@ -127,6 +127,8 @@ class Database:
 
     async def update_user_team(self, user_id: int, new_team: str) -> bool:
         """Обновление команды пользователя"""
+        await self._ensure_pool()
+        
         try:
             # Получаем старую команду
             user = await self.get_user(user_id)
@@ -152,6 +154,8 @@ class Database:
 
     async def update_user_stats(self, user_id: int, won: bool = False):
         """Обновление статистики пользователя"""
+        await self._ensure_pool()
+        
         async with self.pool.acquire() as conn:
             if won:
                 await conn.execute('''
@@ -191,6 +195,8 @@ class Database:
 
     async def update_team_stats(self, team: str, add_player: bool = True):
         """Обновление статистики команды"""
+        await self._ensure_pool()
+        
         async with self.pool.acquire() as conn:
             if add_player:
                 await conn.execute('''
@@ -208,6 +214,8 @@ class Database:
 
     async def get_team_stats(self, team: str) -> Optional[Dict[str, Any]]:
         """Получение статистики команды"""
+        await self._ensure_pool()
+        
         async with self.pool.acquire() as conn:
             row = await conn.fetchrow(
                 'SELECT * FROM team_stats WHERE team = $1',
@@ -217,12 +225,16 @@ class Database:
 
     async def get_all_teams_stats(self) -> List[Dict[str, Any]]:
         """Получение статистики всех команд"""
+        await self._ensure_pool()
+        
         async with self.pool.acquire() as conn:
             rows = await conn.fetch('SELECT * FROM team_stats')
             return [dict(row) for row in rows]
 
     async def add_history(self, user_id: int, action: str, details: str = ""):
         """Добавление записи в историю"""
+        await self._ensure_pool()
+        
         async with self.pool.acquire() as conn:
             await conn.execute('''
                 INSERT INTO user_history (user_id, action, details, timestamp)
@@ -231,6 +243,8 @@ class Database:
 
     async def get_user_history(self, user_id: int, limit: int = 10) -> List[Dict[str, Any]]:
         """Получение истории пользователя"""
+        await self._ensure_pool()
+        
         async with self.pool.acquire() as conn:
             rows = await conn.fetch('''
                 SELECT * FROM user_history
@@ -242,6 +256,8 @@ class Database:
 
     async def get_top_players(self, limit: int = 10) -> List[Dict[str, Any]]:
         """Получение топ игроков по очкам"""
+        await self._ensure_pool()
+        
         async with self.pool.acquire() as conn:
             rows = await conn.fetch('''
                 SELECT user_id, name, player_id, team, score, wins, games_played
@@ -253,6 +269,8 @@ class Database:
 
     async def delete_user(self, user_id: int) -> bool:
         """Удаление пользователя"""
+        await self._ensure_pool()
+        
         try:
             user = await self.get_user(user_id)
             if not user:
@@ -271,11 +289,15 @@ class Database:
 
     async def user_exists(self, user_id: int) -> bool:
         """Проверка существования пользователя"""
+        await self._ensure_pool()
+        
         user = await self.get_user(user_id)
         return user is not None
 
     async def is_registered(self, user_id: int) -> bool:
         """Проверка регистрации пользователя"""
+        await self._ensure_pool()
+        
         user = await self.get_user(user_id)
         return user is not None and user.get('registered', False) is True
 
