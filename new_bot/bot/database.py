@@ -74,9 +74,9 @@ class Database:
     async def add_user(self, user_id: int, name: str, player_id: str, team: str) -> bool:
         """Добавление нового пользователя"""
         await self._ensure_pool()
-        
         try:
             async with self.pool.acquire() as conn:
+                now = datetime.now()  # объект datetime, а не строка
                 await conn.execute('''
                     INSERT INTO users (
                         user_id, name, player_id, team, registered,
@@ -88,17 +88,14 @@ class Database:
                     player_id,
                     team,
                     True,
-                    datetime.now().isoformat(),
+                    now,  # datetime объект
                     0,
                     0,
                     0,
                     0,
-                    datetime.now().isoformat()
+                    now   # datetime объект
                 )
-                
-                # Обновляем статистику команды
                 await self.update_team_stats(team, add_player=True)
-                
                 return True
         except IntegrityConstraintViolationError:
             return False
