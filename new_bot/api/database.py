@@ -1,4 +1,4 @@
-import asyncpg
+from asyncpg import Pool, create_pool
 from datetime import datetime
 from typing import Optional, Dict, List, Any
 import os
@@ -15,13 +15,13 @@ DB_CONFIG = {
 class Database:
     def __init__(self, config: Dict[str, str] = None):
         self.config = config or DB_CONFIG
-        self.pool = None
+        self.pool: Optional[Pool] = None
         print("DB_CONFIG ::::::::::::>", DB_CONFIG)
 
     async def init_pool(self):
         """Инициализация пула соединений"""
         if self.pool is None:
-            self.pool = await asyncpg.create_pool(
+            self.pool = await create_pool(
                 host=self.config["host"],
                 port=self.config["port"],
                 database=self.config["database"],

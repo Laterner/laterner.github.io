@@ -15,20 +15,23 @@ DB_CONFIG = {
 }
 
 class Database:
-    def __init__(self):
+    def __init__(self, config: Dict[str, str] = None):
+        self.config = config or DB_CONFIG
         self.pool: Optional[Pool] = None
 
     async def init_pool(self):
-        """Создание пула соединений с PostgreSQL"""
-        self.pool = await asyncpg.create_pool(
-            host=DB_CONFIG["host"],
-            port=DB_CONFIG["port"],
-            database=DB_CONFIG["database"],
-            user=DB_CONFIG["user"],
-            password=DB_CONFIG["password"],
-            min_size=1,
-            max_size=10,
-        )
+        """Инициализация пула соединений"""
+        if self.pool is None:
+            self.pool = await asyncpg.create_pool(
+                host=self.config["host"],
+                port=self.config["port"],
+                database=self.config["database"],
+                user=self.config["user"],
+                password=self.config["password"],
+                min_size=1,
+                max_size=10,
+            )
+        return self.pool
 
     async def init_db(self):
         """Инициализация базы данных"""
