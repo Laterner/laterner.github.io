@@ -65,7 +65,7 @@ services:
       - ./static:/usr/share/nginx/html/static:ro
       - ./media:/usr/share/nginx/html/media:ro
       # *** ИСПРАВЛЕНО: монтируем сертификаты в стандартную папку Let's Encrypt ***
-      - ./certs:/etc/letsencrypt:ro
+      - ./certs:/etc/nginx/certs/fstbot.ru:ro
       - ./logs/nginx:/var/log/nginx
     depends_on:
       - fastapi
