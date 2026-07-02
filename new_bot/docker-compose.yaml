@@ -1,16 +1,6 @@
 version: '3.8'
 
 services:
-  # bot:
-  #   build: ./bot
-  #   container_name: fastapi_bot
-  #   restart: always
-  #   env_file:
-  #     - .env
-  #   volumes:
-  #     - ./bot:/bot
-  #   networks:
-  #     - app_network
   postgres:
     image: postgres:16-alpine
     container_name: my_postgres
@@ -30,7 +20,6 @@ services:
     networks:
       - app_network
 
-  # Опционально: pgAdmin для управления БД
   pgadmin:
     image: dpage/pgadmin4:latest
     container_name: pgadmin
@@ -63,12 +52,6 @@ services:
       - app_network
     depends_on:
       - postgres
-    # healthcheck:
-    #   test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
-    #   interval: 30s
-    #   timeout: 10s
-    #   retries: 3
-    #   start_period: 40s
 
   nginx:
     image: nginx:alpine
@@ -81,26 +64,31 @@ services:
       - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
       - ./static:/usr/share/nginx/html/static:ro
       - ./media:/usr/share/nginx/html/media:ro
-      - ./certs:/etc/nginx/certs:ro
+      # *** ИСПРАВЛЕНО: монтируем сертификаты в стандартную папку Let's Encrypt ***
+      - ./certs:/etc/letsencrypt:ro
       - ./logs/nginx:/var/log/nginx
     depends_on:
-      fastapi:
-        condition: service_started 
+      - fastapi
     networks:
       - app_network
 
-  # Certbot для SSL сертификатов
+  # Сервис для первоначального получения и автоматического обновления сертификатов
   certbot:
     image: certbot/certbot
     container_name: certbot
     volumes:
       - ./certs:/etc/letsencrypt
-      - ./static:/var/www/certbot
-    entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"
+      - ./static:/var/www/certbot   # для проверки через веб-сервер
+    # Вместо бесконечного цикла оставляем команду для разового получения
+    # (запустите вручную или измените на цикл, если нужно)
+    entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew --webroot -w /var/www/certbot --quiet; sleep 12h & wait $${!}; done;'"
     networks:
       - app_network
     depends_on:
       - nginx
+    # Не запускаем автоматически, лучше выполнить вручную первый раз
+    profiles:
+      - certbot   # запускать только с --profile certbot, если нужен авторежим
 
 networks:
   app_network:
