@@ -1,0 +1,302 @@
+{% extends "base.html" %}
+{% block content %}
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>QR-сканнер с распознаванием слов</title>
+    <!-- Подключаем библиотеку Instascan для работы с камерой и QR-кодами -->
+    <script src="https://cdn.jsdelivr.net/npm/instascan@1.0.0/instascan.min.js"></script>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            padding: 20px;
+        }
+        .sub {
+            color: #8892a8;
+            margin-bottom: 24px;
+            font-size: 1rem;
+        }
+        #video-container {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 1 / 1;
+            background: #0f131c;
+            border-radius: 18px;
+            overflow: hidden;
+            border: 2px solid #2f3748;
+            margin-bottom: 24px;
+        }
+        #video-container video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+        #scan-status {
+            color: #b9c2d9;
+            font-size: 0.95rem;
+            margin: 12px 0 18px;
+            min-height: 1.8rem;
+        }
+        .controls {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 14px;
+            margin-bottom: 10px;
+        }
+        .word-list {
+            background: #121824;
+            border-radius: 40px;
+            padding: 14px 22px;
+            margin-top: 22px;
+            display: inline-flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 18px 36px;
+            border: 1px solid #2a3246;
+        }
+        .word-badge {
+            color: #b9c6e6;
+            font-size: 1.1rem;
+            letter-spacing: 0.3px;
+        }
+        .word-badge span {
+            font-weight: 700;
+            color: #d6defa;
+            background: #242d3f;
+            padding: 4px 16px;
+            border-radius: 40px;
+            margin-left: 6px;
+        }
+        .footer {
+            margin-top: 18px;
+            color: #5f6a82;
+            font-size: 0.85rem;
+        }
+    </style>
+</head>
+
+<div class="container">
+    <h1>📷 QR‑сканер</h1>
+    <p class="sub">Распознаёт одно из трёх слов</p>
+
+    <div id="video-container">
+        <!-- сюда вставится видео с камеры -->
+    </div>
+
+    <div id="scan-status">⚡ Наведите на QR-код</div>
+
+    <div class="controls">
+        <button class="btn btn-primary" id="startBtn">▶ Запустить камеру</button>
+        <button class="btn btn-danger" id="stopBtn">⏹ Остановить</button>
+    </div>
+
+    <div class="footer">После сканирования появится alert с соответствующим сообщением</div>
+</div>
+
+<script>
+    (function() {
+        const TARGET_WORDS = ['QR_TEST_1', 'QR_TEST_2', 'QR_TEST_3'];
+
+        // ------------------------------------------------------------
+        // 2. Сообщения для alert (в зависимости от слова)
+        function getAlertMessage(word) {
+            // Можно задать любые свои варианты
+            const map = {
+                'QR_TEST_1':  'Ты ввел(а) слово "apple" — яблоко!',
+                'QR_TEST_2': 'Обнаружено слово "banana" — банан!',
+                'QR_TEST_3': 'Слово "cherry" — вишня!'
+            };
+            return map[word] || `⚠️ Распознано слово: "${word}" (не из списка)`;
+        }
+
+        // ------------------------------------------------------------
+        // 3. DOM-элементы
+        const videoContainer = document.getElementById('video-container');
+        const statusDiv = document.getElementById('scan-status');
+
+        const startBtn = document.getElementById('startBtn');
+        const stopBtn = document.getElementById('stopBtn');
+
+        // ------------------------------------------------------------
+        // 4. Instascan: создаём сканер и выбираем камеру
+        let scanner = null;          // экземпляр сканера
+        let cameraActive = false;    // флаг, чтобы не дублировать запуск
+
+        // Функция остановки сканера и освобождения камеры
+        function stopScanner() {
+            if (scanner) {
+                try {
+                    scanner.stop();   // останавливает видеопоток
+                } catch (e) {
+                    // если сканер уже остановлен — игнорируем
+                }
+                cameraActive = false;
+                statusDiv.textContent = '⏸ Сканер остановлен';
+            }
+        }
+
+        // Функция запуска сканера с указанной камерой
+        function startScanner(cameraId) {
+            // если уже активен — сначала остановим
+            if (cameraActive) {
+                stopScanner();
+            }
+
+            if (!scanner) {
+                // создаём сканер, если ещё не создан
+                scanner = new Instascan.Scanner({
+                    video: document.createElement('video'),
+                    mirror: true,        // зеркалирование для удобства
+                    backgroundScan: false,
+                    continuous: true,    // непрерывное сканирование
+                    refractoryPeriod: 2000, // пауза между срабатываниями (мс)
+                });
+            }
+
+            // Добавляем обработчик "scan" — вызывается при каждом распознанном QR-коде
+            scanner.addListener('scan', function(content) {
+                // content — это строка, которую вернул QR-код (обычно текст)
+                const scannedText = content.trim();
+
+                // Проверяем, совпадает ли текст с одним из трёх заданных слов (регистр не важен)
+                const matchedWord = TARGET_WORDS.find(
+                    word => word.toLowerCase() === scannedText.toLowerCase()
+                );
+
+                if (matchedWord) {
+                    // Если совпало — показываем alert с кастомным сообщением
+                    const message = getAlertMessage(matchedWord);
+                    alert(message);
+                    // Дополнительно выводим в статус
+                    statusDiv.textContent = `✅ Распознано: "${matchedWord}"`;
+                } else {
+                    // Если текст не совпадает с тремя словами — можно показать другой alert
+                    // (по желанию, можно закомментировать, чтобы не отвлекало)
+                    alert(`📄 Распознан QR-код, но текст "${scannedText}" не входит в список слов.`);
+                    statusDiv.textContent = `⚠️ "${scannedText}" — не из списка`;
+                }
+            });
+
+            // Запускаем сканер с выбранной камерой
+            scanner.start(cameraId)
+                .then(() => {
+                    cameraActive = true;
+                    statusDiv.textContent = '📸 Сканирование... Наведите на QR-код';
+                    // Вставляем видео в контейнер (если ещё не вставлено)
+                    if (scanner && scanner.video && !videoContainer.contains(scanner.video)) {
+                        // Очищаем контейнер и добавляем видео
+                        videoContainer.innerHTML = '';
+                        videoContainer.appendChild(scanner.video);
+                    }
+                })
+                .catch((err) => {
+                    console.error('Ошибка запуска камеры:', err);
+                    statusDiv.textContent = '❌ Не удалось получить доступ к камере';
+                    alert('Ошибка доступа к камере. Проверьте разрешения и наличие веб-камеры.');
+                    cameraActive = false;
+                });
+        }
+
+        // ------------------------------------------------------------
+        // 5. Получение списка камер и запуск первой доступной
+        function initScannerWithFirstCamera() {
+            // Проверяем поддержку getUserMedia
+            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                alert('Ваш браузер не поддерживает доступ к камере.');
+                return;
+            }
+
+            Instascan.Camera.getCameras()
+                .then(function(cameras) {
+                    if (cameras.length === 0) {
+                        alert('Камера не найдена. Подключите веб-камеру.');
+                        return;
+                    }
+                    // Выбираем заднюю камеру (если есть), иначе первую
+                    let selectedCamera = cameras[0];
+                    // Если есть задняя камера (обычно с индексом 1 или по label)
+                    const backCamera = cameras.find(cam => cam.name && cam.name.toLowerCase().includes('back'));
+                    if (backCamera) {
+                        selectedCamera = backCamera;
+                    } else {
+                        // иначе используем первую
+                        selectedCamera = cameras[0];
+                    }
+                    startScanner(selectedCamera.id);
+                })
+                .catch(function(err) {
+                    console.error('Ошибка получения списка камер:', err);
+                    alert('Не удалось получить список камер.');
+                });
+        }
+
+        // ------------------------------------------------------------
+        // 6. Обработчики кнопок
+        startBtn.addEventListener('click', function() {
+            // Если сканер уже активен — перезапускаем
+            if (cameraActive) {
+                // Останавливаем и запускаем заново (перезагрузка)
+                stopScanner();
+                // Небольшая задержка, чтобы дать время остановиться
+                setTimeout(() => {
+                    initScannerWithFirstCamera();
+                }, 300);
+            } else {
+                initScannerWithFirstCamera();
+            }
+        });
+
+        stopBtn.addEventListener('click', function() {
+            stopScanner();
+            // Очищаем видео из контейнера (чтобы не висела чёрная картинка)
+            if (scanner && scanner.video && videoContainer.contains(scanner.video)) {
+                videoContainer.innerHTML = '';
+                // Можно показать заглушку
+                const placeholder = document.createElement('div');
+                placeholder.style.cssText = `
+                    display: flex; align-items: center; justify-content: center;
+                    height: 100%; color: #4a556b; font-size: 1.2rem;
+                    background: #0f131c;
+                `;
+                placeholder.textContent = '📷 Камера отключена';
+                videoContainer.appendChild(placeholder);
+            }
+            statusDiv.textContent = '⏹ Сканер остановлен';
+        });
+
+        // ------------------------------------------------------------
+        // 7. При загрузке страницы — показываем заглушку и ждём действий
+        window.addEventListener('load', function() {
+            // Показываем заглушку в контейнере
+            const placeholder = document.createElement('div');
+            placeholder.style.cssText = `
+                display: flex; align-items: center; justify-content: center;
+                height: 100%; color: #4a556b; font-size: 1.2rem;
+                background: #0f131c;
+                flex-direction: column;
+                gap: 6px;
+            `;
+            placeholder.innerHTML = `
+                <span style="font-size: 2.8rem;">📲</span>
+                <span>Нажмите «Запустить камеру»</span>
+            `;
+            videoContainer.appendChild(placeholder);
+            statusDiv.textContent = '⏳ Ожидание запуска';
+        });
+
+        // ------------------------------------------------------------
+        // 8. (Доп) Очистка при выгрузке страницы — останавливаем сканер
+        window.addEventListener('beforeunload', function() {
+            if (scanner) {
+                try { scanner.stop(); } catch (e) {}
+            }
+        });
+
+    })();
+</script>
+{% endblock %}

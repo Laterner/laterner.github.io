@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>fstbot.ru Mini App</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            margin: 0;
+            /* Для Telegram Mini App */
+            background: var(--tg-theme-bg-color, linear-gradient(135deg, #667eea 0%, #764ba2 100%));
+            color: var(--tg-theme-text-color, #ffffff);
+        }
+        
+        .container {
+            background: var(--tg-theme-secondary-bg-color, rgba(255, 255, 255, 0.95));
+            border-radius: 24px;
+            padding: 40px 30px;
+            text-align: center;
+            max-width: 400px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            animation: fadeIn 0.6s ease-out;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px) scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+        
+        .logo {
+            font-size: 80px;
+            margin-bottom: 15px;
+            display: block;
+            animation: float 3s ease-in-out infinite;
+        }
+        
+        h1 {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--tg-theme-text-color, #1a1a2e);
+            margin-bottom: 8px;
+            letter-spacing: -0.5px;
+        }
+        
+        h1 span {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .subtitle {
+            font-size: 16px;
+            color: var(--tg-theme-hint-color, #666);
+            margin-bottom: 25px;
+            line-height: 1.5;
+        }
+        
+        .status-card {
+            background: var(--tg-theme-bg-color, #f8f9fa);
+            border-radius: 16px;
+            padding: 20px;
+            margin: 20px 0;
+            border: 1px solid var(--tg-theme-section-separator-color, rgba(0,0,0,0.05));
+        }
+        
+        .status-icon {
+            font-size: 32px;
+            margin-bottom: 10px;
+        }
+        
+        .status-text {
+            font-size: 15px;
+            color: var(--tg-theme-text-color, #333);
+            font-weight: 500;
+        }
+        
+        .status-subtext {
+            font-size: 13px;
+            color: var(--tg-theme-hint-color, #888);
+            margin-top: 5px;
+        }
+        
+        .loader {
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            border: 4px solid var(--tg-theme-section-separator-color, #f3f3f3);
+            border-top: 4px solid #764ba2;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 15px 0 5px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .features {
+            display: flex;
+            justify-content: space-around;
+            margin: 25px 0 20px;
+            gap: 10px;
+        }
+        
+        .feature-item {
+            flex: 1;
+            padding: 12px 8px;
+            background: var(--tg-theme-bg-color, #f8f9fa);
+            border-radius: 12px;
+            border: 1px solid var(--tg-theme-section-separator-color, rgba(0,0,0,0.05));
+        }
+        
+        .feature-item .icon {
+            font-size: 24px;
+            display: block;
+            margin-bottom: 5px;
+        }
+        
+        .feature-item .label {
+            font-size: 12px;
+            color: var(--tg-theme-hint-color, #888);
+            font-weight: 500;
+        }
+        
+        .button {
+            display: inline-block;
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 14px;
+            font-size: 17px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 10px;
+            text-decoration: none;
+            box-shadow: 0 4px 15px rgba(118, 75, 162, 0.3);
+        }
+        
+        .button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 25px rgba(118, 75, 162, 0.4);
+        }
+        
+        .button:active {
+            transform: translateY(0px);
+        }
+        
+        .footer {
+            margin-top: 20px;
+            color: var(--tg-theme-hint-color, #999);
+            font-size: 12px;
+            border-top: 1px solid var(--tg-theme-section-separator-color, rgba(0,0,0,0.05));
+            padding-top: 20px;
+        }
+        
+        .footer a {
+            color: #764ba2;
+            text-decoration: none;
+            font-weight: 500;
+        }
+        
+        .footer a:hover {
+            text-decoration: underline;
+        }
+        
+        /* Telegram Mini App темы */
+        @media (prefers-color-scheme: dark) {
+            .container {
+                background: var(--tg-theme-secondary-bg-color, rgba(30, 30, 46, 0.95));
+            }
+            
+            .status-card {
+                background: var(--tg-theme-bg-color, rgba(255,255,255,0.05));
+            }
+            
+            .feature-item {
+                background: var(--tg-theme-bg-color, rgba(255,255,255,0.05));
+            }
+            
+            .subtitle {
+                color: var(--tg-theme-hint-color, #aaa);
+            }
+            
+            .status-text {
+                color: var(--tg-theme-text-color, #eee);
+            }
+        }
+        
+        /* Адаптация под мобильные */
+        @media (max-width: 480px) {
+            .container {
+                padding: 30px 20px;
+            }
+            
+            .logo {
+                font-size: 60px;
+            }
+            
+            h1 {
+                font-size: 24px;
+            }
+            
+            .features {
+                flex-direction: column;
+                gap: 8px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container" id="app">
+        <span class="logo">🚀</span>
+        <h1>Добро пожаловать в <span>fstbot.ru</span></h1>
+        <p class="subtitle">Mini App в разработке</p>
+        
+        <div class="loader"></div>
+        
+        <div class="status-card">
+            <div class="status-icon">⚡</div>
+            <div class="status-text">Скоро здесь появится что-то интересное!</div>
+            <div class="status-subtext">Мы работаем над этим прямо сейчас</div>
+        </div>
+        
+        <div class="features">
+            <div class="feature-item">
+                <span class="icon">📱</span>
+                <span class="label">Мобильный</span>
+            </div>
+            <div class="feature-item">
+                <span class="icon">⚡</span>
+                <span class="label">Быстрый</span>
+            </div>
+            <div class="feature-item">
+                <span class="icon">🔒</span>
+                <span class="label">Безопасный</span>
+            </div>
+        </div>
+        
+        <button class="button" onclick="closeApp()">
+            ✕ Закрыть Mini App
+        </button>
+        
+        <div class="footer">
+            &copy; 2026 <a href="https://fstbot.ru" target="_blank">fstbot.ru</a>
+            <br>
+            <span style="font-size: 11px; color: var(--tg-theme-hint-color, #bbb);">
+                Версия 1.0.0
+            </span>
+        </div>
+    </div>
+
+    <script>
+        // Инициализация Telegram WebApp
+        let tg = window.Telegram?.WebApp;
+        
+        if (tg) {
+            // Расширяем Mini App на весь экран
+            tg.expand();
+            
+            // Устанавливаем цвет фона
+            tg.setBackgroundColor('#f8f9fa');
+            
+            // Устанавливаем цвет заголовка
+            tg.setHeaderColor('#667eea');
+            
+            // Показываем кнопку "Назад" если нужно
+            tg.BackButton.show();
+            tg.BackButton.onClick(() => {
+                tg.close();
+            });
+            
+            console.log('Telegram Mini App инициализирован');
+            console.log('Пользователь:', tg.initDataUnsafe?.user);
+        }
+        
+        // Функция закрытия Mini App
+        function closeApp() {
+            if (tg) {
+                tg.close();
+            } else {
+                // Если не в Telegram, показываем сообщение
+                alert('Это приложение работает только в Telegram');
+            }
+        }
+        
+        // Отправка данных в Telegram (если нужно)
+        function sendData() {
+            if (tg) {
+                tg.sendData(JSON.stringify({
+                    action: 'init',
+                    timestamp: Date.now()
+                }));
+            }
+        }
+        
+        // Автоматическая отправка данных при загрузке
+        document.addEventListener('DOMContentLoaded', () => {
+            sendData();
+            
+            // Анимация появления
+            const container = document.querySelector('.container');
+            container.style.animation = 'fadeIn 0.6s ease-out';
+        });
+        
+        // Обработка ошибок
+        window.addEventListener('error', (e) => {
+            console.error('Ошибка в Mini App:', e);
+            if (tg) {
+                tg.sendData(JSON.stringify({
+                    error: e.message,
+                    timestamp: Date.now()
+                }));
+            }
+        });
+    </script>
+</body>
+</html>
