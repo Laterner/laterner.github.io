@@ -202,7 +202,6 @@ async def profile_command(message: types.Message):
         f"🏆 Побед: {user['wins']}\n"
         f"💔 Поражений: {user['losses']}\n"
         f"🎯 Игр сыграно: {user['games_played']}\n"
-        f"📅 Зарегистрирован: {user['registered_date'][:16]}\n"
         f"🆔 Telegram ID: <code>{user_id}</code>\n\n"
         f"📜 <b>Последние действия:</b>\n{history_text}",
         parse_mode="HTML",
