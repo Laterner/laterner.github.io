@@ -1,24 +1,44 @@
-<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<!DOCTYPE html>
+<html lang="ru">
 
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <title>Document</title>
+</head>
+<body>
+    <div id="conteiner"></div>
+    <div id="logger"></div>
+</body>
 <script>
-const tg = window.Telegram.WebApp;
-tg.expand();
+    const tg = window.Telegram.WebApp;
+    tg.expand();
 
-fetch("/tg_auth", {
-    method: "POST",
-    headers: {
-        "Content-Type": "application/json"
-    },
-    body: JSON.stringify({
-        initData: tg.initData
+    fetch("/tg_auth", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            initData: tg.initData
+        })
     })
-})
-.then(res => res.json())
-.then(data => {
-    document.body.innerHTML = `
-        <h2>Пользователь</h2>
-        <p>ID: ${data.id}</p>
-        <p>Username: ${data.username}</p>
-    `;
-});
+    .then(res => res.json())
+    .then(data => {
+        document.getElementById("conteiner").innerHTML = `
+            <h2>Пользователь</h2>
+            <p>ID: ${data.id}</p>
+            <p>Username: ${data.username}</p>
+        `;
+        // log_all(data.text)
+    });
+
+    function log_all(text) {
+        let logger = document.getElementById("logger")
+        logger.innerHTML += `<p>${text}</p>`
+    }
+    log_all("Начало логгирования");
 </script>
+
+</html>

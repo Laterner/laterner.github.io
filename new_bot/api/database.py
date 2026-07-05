@@ -16,7 +16,7 @@ class Database:
     def __init__(self, config: Dict[str, str] = None):
         self.config = config or DB_CONFIG
         self.pool: Optional[Pool] = None
-        print("DB_CONFIG ::::::::::::>", DB_CONFIG)
+        # print("DB_CONFIG ::::::::::::>", DB_CONFIG)
 
     async def init_pool(self):
         """Инициализация пула соединений"""
