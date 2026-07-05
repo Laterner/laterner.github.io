@@ -20,22 +20,22 @@ services:
     networks:
       - app_network
 
-  # pgadmin:
-  #   image: dpage/pgadmin4:latest
-  #   container_name: pgadmin
-  #   restart: unless-stopped
-  #   environment:
-  #     PGADMIN_DEFAULT_EMAIL: admin@admin.com
-  #     PGADMIN_DEFAULT_PASSWORD: admin123
-  #   ports:
-  #     - "5050:80"
-  #   volumes:
-  #     - pgadmin_data:/var/lib/pgadmin
-  #   depends_on:
-  #     postgres:
-  #       condition: service_healthy
-  #   networks:
-  #     - app_network
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: pgadmin
+    restart: unless-stopped
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@admin.com
+      PGADMIN_DEFAULT_PASSWORD: admin123
+    ports:
+      - "5050:80"
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - app_network
 
   fastapi:
     build: ./api
@@ -71,42 +71,42 @@ services:
       postgres:
         condition: service_healthy
 
-  # nginx:
-  #   image: nginx:alpine
-  #   container_name: nginx
-  #   restart: always
-  #   ports:
-  #     - "80:80"
-  #     - "443:443"
-  #   volumes:
-  #     - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
-  #     - ./static:/usr/share/nginx/html/static:ro
-  #     - ./media:/usr/share/nginx/html/media:ro
-  #     # *** ИСПРАВЛЕНО: монтируем сертификаты в стандартную папку Let's Encrypt ***
-  #     - ./certs:/etc/nginx/certs/fstbot.ru:ro
-  #     - ./logs/nginx:/var/log/nginx
-  #   depends_on:
-  #     - fastapi
-  #   networks:
-  #     - app_network
+  nginx:
+    image: nginx:alpine
+    container_name: nginx
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./static:/usr/share/nginx/html/static:ro
+      - ./media:/usr/share/nginx/html/media:ro
+      # *** ИСПРАВЛЕНО: монтируем сертификаты в стандартную папку Let's Encrypt ***
+      - ./certs:/etc/nginx/certs/fstbot.ru:ro
+      - ./logs/nginx:/var/log/nginx
+    depends_on:
+      - fastapi
+    networks:
+      - app_network
 
-  # # Сервис для первоначального получения и автоматического обновления сертификатов
-  # certbot:
-  #   image: certbot/certbot
-  #   container_name: certbot
-  #   volumes:
-  #     - ./certs:/etc/letsencrypt
-  #     - ./static:/var/www/certbot   # для проверки через веб-сервер
-  #   # Вместо бесконечного цикла оставляем команду для разового получения
-  #   # (запустите вручную или измените на цикл, если нужно)
-  #   entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew --webroot -w /var/www/certbot --quiet; sleep 12h & wait $${!}; done;'"
-  #   networks:
-  #     - app_network
-  #   depends_on:
-  #     - nginx
-  #   # Не запускаем автоматически, лучше выполнить вручную первый раз
-  #   profiles:
-  #     - certbot   # запускать только с --profile certbot, если нужен авторежим
+  # Сервис для первоначального получения и автоматического обновления сертификатов
+  certbot:
+    image: certbot/certbot
+    container_name: certbot
+    volumes:
+      - ./certs:/etc/letsencrypt
+      - ./static:/var/www/certbot   # для проверки через веб-сервер
+    # Вместо бесконечного цикла оставляем команду для разового получения
+    # (запустите вручную или измените на цикл, если нужно)
+    entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew --webroot -w /var/www/certbot --quiet; sleep 12h & wait $${!}; done;'"
+    networks:
+      - app_network
+    depends_on:
+      - nginx
+    # Не запускаем автоматически, лучше выполнить вручную первый раз
+    profiles:
+      - certbot   # запускать только с --profile certbot, если нужен авторежим
 
 networks:
   app_network:
