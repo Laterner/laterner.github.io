@@ -23,3 +23,5 @@ fastapi[all]
 passlib
 python-jose
 asyncpg
+sqlalchemy
+alembic

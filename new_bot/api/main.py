@@ -49,8 +49,15 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 TEMPLATES_DIR = os.path.join(BASE_DIR, "templates")
 STATIC_DIR = os.path.join(BASE_DIR, "static")
 
+eprint("STATIC_DIR", STATIC_DIR)
+
 quizes = [
     {'question':'Нажмите 3', 'answers':["Вариант 1", "Вариант 2", "Вариант 3", "Вариант 4", "Вариант 5"], 'ans': 2},
+    {'question':'Нажмите 1', 'answers':["Вариант 1", "Вариант 2", "Вариант 3", "Вариант 4", "Вариант 5"], 'ans': 0},
+    {'question':'Нажмите 1', 'answers':["Вариант 1", "Вариант 2", "Вариант 3", "Вариант 4", "Вариант 5"], 'ans': 0},
+    {'question':'Нажмите 1', 'answers':["Вариант 1", "Вариант 2", "Вариант 3", "Вариант 4", "Вариант 5"], 'ans': 0},
+    {'question':'Нажмите 1', 'answers':["Вариант 1", "Вариант 2", "Вариант 3", "Вариант 4", "Вариант 5"], 'ans': 0},
+    {'question':'Нажмите 1', 'answers':["Вариант 1", "Вариант 2", "Вариант 3", "Вариант 4", "Вариант 5"], 'ans': 0},
     {'question':'Нажмите 1', 'answers':["Вариант 1", "Вариант 2", "Вариант 3", "Вариант 4", "Вариант 5"], 'ans': 0},
     {'question':'Нажмите 5', 'answers':["Вариант 1", "Вариант 2", "Вариант 3", "Вариант 4", "Вариант 5"], 'ans': 4}
 ]
@@ -114,7 +121,7 @@ def tg_auth(payload: InitData, request: Request):
 @app.get("/qr", response_class=HTMLResponse)
 def qr_page(request: Request):
     return templates.TemplateResponse(
-        request=request, name="quize_select.html", context={"title": "QR"}
+        request=request, name="quize_select.html", context={"title": "QR", 'quizes':quizes}
     )
 
 @app.get("/quize", response_class=HTMLResponse)
@@ -152,7 +159,8 @@ async def admin_addscore(request: Request):
     return templates.TemplateResponse(
         request=request, name="admin_add_points.html", context={"title": "Добавление очков"}
     )
-    
+  
+# api urls  
 @app.post("/api/add_score")
 async def add_score(
     player_id: str = Form(...),
