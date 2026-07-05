@@ -50,22 +50,58 @@ if not MINI_APP_URL:
 
 # Команды
 TEAMS = {
-    "red": {
-        "name": "Красные",
-        "emoji": "🔴",
-        "description": "Токари",
+    "1": {
+        "name": "Выгода",
+        "emoji": "👤",
+        "description": "",
         "color": "#FF4444"
     },
-    "blue": {
-        "name": "Синие",
-        "emoji": "🔵",
-        "description": "Слесари",
+    "2": {
+        "name": "Реклама",
+        "emoji": "👤",
+        "description": "",
         "color": "#4444FF"
     },
-    "green": {
-        "name": "Зеленые",
-        "emoji": "🟢",
-        "description": "Менеджеры",
+    "3": {
+        "name": "Город",
+        "emoji": "👤",
+        "description": "",
+        "color": "#44FF44"
+    },
+    "4": {
+        "name": "Покупки",
+        "emoji": "👤",
+        "description": "",
+        "color": "#44FF44"
+    },
+    "5": {
+        "name": "Путешествия",
+        "emoji": "👤",
+        "description": "",
+        "color": "#44FF44"
+    },
+    "6": {
+        "name": "Т-Авто",
+        "emoji": "👤",
+        "description": "",
+        "color": "#44FF44"
+    },
+    "7": {
+        "name": "Общие платформы",
+        "emoji": "👤",
+        "description": "",
+        "color": "#44FF44"
+    },
+    "8": {
+        "name": "Команда аналитики, роста и монетизации",
+        "emoji": "👤",
+        "description": "",
+        "color": "#44FF44"
+    },
+    "9": {
+        "name": "HR",
+        "emoji": "👤",
+        "description": "",
         "color": "#44FF44"
     }
 }
@@ -102,26 +138,16 @@ def get_main_keyboard():
 
 def get_team_keyboard():
     """Клавиатура выбора команды"""
-    keyboard = InlineKeyboardMarkup(inline_keyboard=[
-        [
+    buttons = []
+    for key, team in TEAMS.items():
+        buttons.append(
             InlineKeyboardButton(
-                text=f"{TEAMS['red']['emoji']} {TEAMS['red']['name']}",
-                callback_data="team_red"
+                text=f"{key}",
+                callback_data=f"team_{key}"
             )
-        ],
-        [
-            InlineKeyboardButton(
-                text=f"{TEAMS['blue']['emoji']} {TEAMS['blue']['name']}",
-                callback_data="team_blue"
-            )
-        ],
-        [
-            InlineKeyboardButton(
-                text=f"{TEAMS['green']['emoji']} {TEAMS['green']['name']}",
-                callback_data="team_green"
-            )
-        ]
-    ])
+        )
+        
+    keyboard = InlineKeyboardMarkup(inline_keyboard=[buttons])
     return keyboard
 
 # Обработчики команд
@@ -200,13 +226,12 @@ async def team_command(message: types.Message):
         await message.answer("❌ Сначала зарегистрируйся: /start")
         return
     
+    for key, team in TEAMS.items():
+        _teams += f"{key}: {team['name']}\n"
+        
     await message.answer(
         "⚔️ <b>Выбери свою команду:</b>\n\n"
-        f"{TEAMS['red']['emoji']} {TEAMS['red']['name']} - {TEAMS['red']['description']}\n"
-        f"{TEAMS['blue']['emoji']} {TEAMS['blue']['name']} - {TEAMS['blue']['description']}\n"
-        f"{TEAMS['green']['emoji']} {TEAMS['green']['name']} - {TEAMS['green']['description']}\n\n"
-        "Текущая команда: " + 
-        f"{TEAMS[user['team']]['emoji']} {TEAMS[user['team']]['name']}\n\n"
+        f"{_teams}\n\n"
         "Нажми на кнопку, чтобы выбрать:",
         parse_mode="HTML",
         reply_markup=get_team_keyboard()
@@ -295,11 +320,7 @@ async def help_command(message: types.Message):
         "• Выбор команды из трех фракций\n"
         "• Открытие Mini App\n"
         "• Просмотр профиля и статистики\n"
-        "• Топ игроков\n\n"
-        "🏆 <b>Команды:</b>\n"
-        f"{TEAMS['red']['emoji']} {TEAMS['red']['name']} - {TEAMS['red']['description']}\n"
-        f"{TEAMS['blue']['emoji']} {TEAMS['blue']['name']} - {TEAMS['blue']['description']}\n"
-        f"{TEAMS['green']['emoji']} {TEAMS['green']['name']} - {TEAMS['green']['description']}",
+        "• Топ игроков\n\n",
         parse_mode="HTML"
     )
 
@@ -324,13 +345,14 @@ async def process_name(message: types.Message, state: FSMContext):
     await state.update_data(name=message.text.strip())
     await state.set_state(RegistrationStates.waiting_for_team)
     
+    _teams = ""
+    for key, team in TEAMS.items():
+        _teams += f"{key}: {team['name']}\n"
+    
     await message.answer(
         f"👋 Отлично, <b>{message.text.strip()}</b>!\n\n"
         "Теперь выбери свою команду:\n\n"
-        f"{TEAMS['red']['emoji']} {TEAMS['red']['name']} - {TEAMS['red']['description']}\n"
-        f"{TEAMS['blue']['emoji']} {TEAMS['blue']['name']} - {TEAMS['blue']['description']}\n"
-        f"{TEAMS['green']['emoji']} {TEAMS['green']['name']} - {TEAMS['green']['description']}\n\n"
-        "Нажми на кнопку ниже:",
+        f"{_teams}",
         parse_mode="HTML",
         reply_markup=get_team_keyboard()
     )

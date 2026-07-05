@@ -83,10 +83,10 @@
     }
 
     .menu {
-        width: 100%;
+        width: 100vw;
         display: table;
         margin-top: 30px;
-        position: absolute;
+        position: fixed;
         bottom: 0;
         left:0;
     }
@@ -147,15 +147,13 @@
     <div id="logger"></div>
 </body>
 
-<footer>
-    <div class="menu">
-        <ul>
-            <li><a href="/miniapp_home">Главная</a></li>
-            <li><a href="/map">Карта</a></li>
-            <li><a href="/qr">QR</a></li>
-            <li><a href="/faq">FAQ</a></li>
-        </ul>
-    </div>
-</footer>
+<div class="menu">
+    <ul>
+        <li><a href="/miniapp_home">Главная</a></li>
+        <li><a href="/map">Карта</a></li>
+        <li><a href="/qr">QR</a></li>
+        <li><a href="/faq">FAQ</a></li>
+    </ul>
+</div>
 
 </html>

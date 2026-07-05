@@ -49,6 +49,11 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 TEMPLATES_DIR = os.path.join(BASE_DIR, "templates")
 STATIC_DIR = os.path.join(BASE_DIR, "static")
 
+quizes = [
+    {'question':'Нажмите 3', 'answers':["Вариант 1", "Вариант 2", "Вариант 3", "Вариант 4", "Вариант 5"], 'ans': 2},
+    {'question':'Нажмите 1', 'answers':["Вариант 1", "Вариант 2", "Вариант 3", "Вариант 4", "Вариант 5"], 'ans': 0},
+    {'question':'Нажмите 5', 'answers':["Вариант 1", "Вариант 2", "Вариант 3", "Вариант 4", "Вариант 5"], 'ans': 4}
+]
 
 # Создаем папку templates если её нет
 os.makedirs(TEMPLATES_DIR, exist_ok=True)
@@ -72,8 +77,8 @@ async def miniapp(request: Request):
     # user_data = Cookie()
     user = await db.get_user_by_player_id("SUHNG")
     
-    # eprint("user_data", user_data)
-    
+    user['photo_url'] = "https://t.me/i/userpic/320/QmCSKEv2Z0aQZyzIgX28SzVLKh0pH-Ovw3otL4VxczQ.svg"
+    eprint(user['photo_url'])
     return templates.TemplateResponse(
         request=request, name="index.html", context={"title": "Home", 'user':user}
     )
@@ -83,8 +88,8 @@ async def miniapp_home(request: Request):
     # user_data = Cookie()
     user = await db.get_user_by_player_id("SUHNG")
     
-    # eprint("user_data", user_data)
-    
+    user['photo_url'] = "https://t.me/i/userpic/320/QmCSKEv2Z0aQZyzIgX28SzVLKh0pH-Ovw3otL4VxczQ.svg"
+    eprint(user['photo_url'])
     return templates.TemplateResponse(
         request=request, name="index.html", context={"title": "Home", 'user':user, 'user_data': 'user_data'}
     )
@@ -109,18 +114,24 @@ def tg_auth(payload: InitData, request: Request):
 @app.get("/qr", response_class=HTMLResponse)
 def qr_page(request: Request):
     return templates.TemplateResponse(
-        request=request, name="qr.html", context={"title": "QR"}
+        request=request, name="quize_select.html", context={"title": "QR"}
     )
 
 @app.get("/quize", response_class=HTMLResponse)
-def quize_page(request: Request):
+async def quize_page(request: Request, quize_id: int = 0):
+    user = await db.get_user_by_player_id("SUHNG")
+    _quize = quizes[quize_id]
+    
     return templates.TemplateResponse(
-        request=request, name="quize.html", context={"title": "Quize"}
+        request=request, name="quize.html", context={"title": "Quize", 'player_id':user['player_id'], 'quize':_quize, 'quize_id':quize_id}
     )
 
 @app.post("/answer")
-def answer(ans: int ):
-    return {'ans':ans}
+def answer(request: Request, ans: int = 0, quize_id: int = 0, player_id: str = ""):
+    if ans == quizes[quize_id]['ans']:
+        return {'ans':1, 'player_id':player_id}
+    else:
+        return {'ans':0, 'player_id':player_id}
 
 @app.get("/faq", response_class=HTMLResponse)
 def faq_page(request: Request):
