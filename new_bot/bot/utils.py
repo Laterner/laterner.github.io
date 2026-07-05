@@ -6,7 +6,6 @@ from typing import Optional
 
 async def generate_player_id(db) -> str:
     """Генерация уникального player_id из 5 символов"""
-    return "SUHNG"
     chars = string.ascii_uppercase + string.digits
     while True:
         player_id = ''.join(random.choices(chars, k=5))
