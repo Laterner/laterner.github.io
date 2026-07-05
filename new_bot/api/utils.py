@@ -4,13 +4,16 @@ import hashlib
 import time
 import os
 from urllib.parse import parse_qsl
-
+import json
 
 BOT_TOKEN = os.getenv("BOT_TOKEN")
 
 class InitData(BaseModel):
     initData: str
 
+def eprint(text):
+    print(f"\033[31m{text}\033[0m")
+    
 def validate_init_data(init_data: str):
     data = dict(parse_qsl(init_data))
 
@@ -39,12 +42,15 @@ def validate_init_data(init_data: str):
         hashlib.sha256
     ).hexdigest()
 
-    # if computed_hash != received_hash:
-    #     return None
+    if computed_hash != received_hash:
+        eprint("if computed_hash != received_hash")
+        # return None
 
     # 4. проверка времени (24h)
-    # auth_date = int(data.get("auth_date", 0))
-    # if time.time() - auth_date > 86400:
+    auth_date = int(data.get("auth_date", 0))
+    if time.time() - auth_date > 86400:
+        eprint("if time.time() - auth_date > 86400")
     #     return None
-
+    
+    data['user'] =  json.loads(data['user'])
     return data
