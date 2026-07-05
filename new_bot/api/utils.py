@@ -5,19 +5,20 @@ import time
 import os
 from urllib.parse import parse_qsl
 import json
+from database import db
 
 BOT_TOKEN = os.getenv("BOT_TOKEN")
 
 class InitData(BaseModel):
     initData: str
 
-def eprint(text):
-    print(f"\033[31m{text}\033[0m")
+def eprint(text, *args):
+    print(f"\033[31m{text}\033[0m", " ".join(args))
     
 def validate_init_data(init_data: str):
     data = dict(parse_qsl(init_data))
 
-    print("TG DATA GET :::::::::::>>", data)
+    # print("TG DATA GET :::::::::::>>", data)
     if "hash" not in data:
         return None
 
@@ -43,7 +44,7 @@ def validate_init_data(init_data: str):
     ).hexdigest()
 
     if computed_hash != received_hash:
-        eprint("if computed_hash != received_hash")
+        eprint("if computed_hash != received_hash", computed_hash, received_hash)
         # return None
 
     # 4. проверка времени (24h)
@@ -54,3 +55,7 @@ def validate_init_data(init_data: str):
     
     data['user'] =  json.loads(data['user'])
     return data
+
+if __name__ == "__main__":
+    eprint("asdsad")
+    eprint("asdsad", "asd", "asdfdgf")

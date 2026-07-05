@@ -5,6 +5,7 @@ from fastapi.responses import HTMLResponse, RedirectResponse, JSONResponse
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+
 from contextlib import asynccontextmanager
 from typing import Optional
 import logging
@@ -71,7 +72,7 @@ async def miniapp(request: Request):
     user = await db.get_user_by_player_id("SUHNG")
     
     return templates.TemplateResponse(
-        request=request, name="miniapp_test.html", context={"title": "Home", 'user':user}
+        request=request, name="miniapp_auth.html", context={"title": "Home", 'user':user}
     )
 
 @app.post("/tg_auth")
@@ -82,7 +83,7 @@ def tg_auth(payload: InitData):
         return {"error": "invalid initData"}
 
     user = data.get("user")
-
+    
     return {
         "id": user.get("id"),
         "username": user.get("username"),
