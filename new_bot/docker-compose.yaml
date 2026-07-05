@@ -32,7 +32,8 @@ services:
     volumes:
       - pgadmin_data:/var/lib/pgadmin
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
     networks:
       - app_network
 
@@ -51,7 +52,8 @@ services:
     networks:
       - app_network
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
   
   bot:
     build: ./bot
@@ -66,7 +68,8 @@ services:
     networks:
       - app_network
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
 
   nginx:
     image: nginx:alpine
