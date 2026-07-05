@@ -70,7 +70,7 @@ async def home(request: Request):
     user = await db.get_user_by_player_id("SUHNG")
     
     return templates.TemplateResponse(
-        request=request, name="index.html", context={"title": "Home", 'user':user}
+        request=request, name="miniapp_test.html", context={"title": "Home", 'user':user}
     )
 
 @app.get("/qr", response_class=HTMLResponse)
