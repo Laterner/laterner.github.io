@@ -68,23 +68,25 @@ async def home(request: Request):
     )
 
 @app.get("/miniapp", response_class=HTMLResponse)
-async def miniapp(request: Request, user_data = Cookie()):
+async def miniapp(request: Request):
+    # user_data = Cookie()
     user = await db.get_user_by_player_id("SUHNG")
     
-    eprint("user_data", user_data)
+    # eprint("user_data", user_data)
     
     return templates.TemplateResponse(
-        request=request, name="miniapp_auth.html", context={"title": "Home", 'user':user}
+        request=request, name="index.html", context={"title": "Home", 'user':user}
     )
 
 @app.get("/miniapp_home", response_class=HTMLResponse)
-async def miniapp_home(request: Request, user_data = Cookie()):
+async def miniapp_home(request: Request):
+    # user_data = Cookie()
     user = await db.get_user_by_player_id("SUHNG")
     
-    eprint("user_data", user_data)
+    # eprint("user_data", user_data)
     
     return templates.TemplateResponse(
-        request=request, name="index.html", context={"title": "Home", 'user':user, 'user_data': user_data}
+        request=request, name="index.html", context={"title": "Home", 'user':user, 'user_data': 'user_data'}
     )
     
 @app.post("/tg_auth")

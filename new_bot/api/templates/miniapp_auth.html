@@ -31,9 +31,11 @@
             <p>ID: ${data.id}</p>
             <p>Username: ${data.username}</p>
         `;
-        window.location.replace("https://fstbot.ru/miniapp_home");
+        document.cookie = `user_data=${data}`;
     });
 
+    window.location.replace("http://192.168.0.151:8000/miniapp_home");
+    
     function log_all(text) {
         let logger = document.getElementById("logger")
         logger.innerHTML += `<p>${text}</p>`
