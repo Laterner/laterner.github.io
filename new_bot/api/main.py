@@ -18,6 +18,8 @@ from auth import (
     get_current_user,
     require_admin
 )
+from utils import InitData, validate_init_data 
+
 
 # Настройка логирования
 logging.basicConfig(level=logging.INFO)
@@ -46,19 +48,18 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 TEMPLATES_DIR = os.path.join(BASE_DIR, "templates")
 STATIC_DIR = os.path.join(BASE_DIR, "static")
 
+
 # Создаем папку templates если её нет
 os.makedirs(TEMPLATES_DIR, exist_ok=True)
 
 # Шаблоны
 templates = Jinja2Templates(directory=TEMPLATES_DIR)
-# print(STATIC_DIR)
 app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 
 # Security
 security = HTTPBearer()
 
 # Маршруты
-
 @app.get("/", response_class=HTMLResponse)
 async def home(request: Request):
     return templates.TemplateResponse(
@@ -66,12 +67,27 @@ async def home(request: Request):
     )
 
 @app.get("/miniapp", response_class=HTMLResponse)
-async def home(request: Request):
+async def miniapp(request: Request):
     user = await db.get_user_by_player_id("SUHNG")
     
     return templates.TemplateResponse(
         request=request, name="miniapp_test.html", context={"title": "Home", 'user':user}
     )
+
+@app.post("/tg_auth")
+def tg_auth(payload: InitData):
+    data = validate_init_data(payload.initData)
+
+    if not data:
+        return {"error": "invalid initData"}
+
+    user = data.get("user")
+
+    return {
+        "id": user.get("id"),
+        "username": user.get("username"),
+        "first_name": user.get("first_name")
+    }
 
 @app.get("/qr", response_class=HTMLResponse)
 def qr_page(request: Request):
