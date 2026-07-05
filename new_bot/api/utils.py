@@ -5,7 +5,7 @@ import time
 import os
 from urllib.parse import parse_qsl
 import json
-from database import db
+
 
 BOT_TOKEN = os.getenv("BOT_TOKEN")
 

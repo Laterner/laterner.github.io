@@ -1,6 +1,6 @@
 # api/main.py
 import os
-from fastapi import FastAPI, Request, Form, HTTPException, Depends
+from fastapi import FastAPI, Request, Form, HTTPException, Depends, Cookie
 from fastapi.responses import HTMLResponse, RedirectResponse, JSONResponse
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
@@ -19,7 +19,7 @@ from auth import (
     get_current_user,
     require_admin
 )
-from utils import InitData, validate_init_data 
+from utils import InitData, validate_init_data, eprint
 
 
 # Настройка логирования
@@ -68,25 +68,35 @@ async def home(request: Request):
     )
 
 @app.get("/miniapp", response_class=HTMLResponse)
-async def miniapp(request: Request):
+async def miniapp(request: Request, user_data = Cookie()):
     user = await db.get_user_by_player_id("SUHNG")
     
+    eprint("user_data", user_data)
+    
     return templates.TemplateResponse(
-        request=request, name="index.html", context={"title": "Home", 'user':user}
+        request=request, name="miniapp_auth.html", context={"title": "Home", 'user':user}
+    )
+
+@app.get("/miniapp_home", response_class=HTMLResponse)
+async def miniapp_home(request: Request, user_data = Cookie()):
+    user = await db.get_user_by_player_id("SUHNG")
+    
+    eprint("user_data", user_data)
+    
+    return templates.TemplateResponse(
+        request=request, name="index.html", context={"title": "Home", 'user':user, 'user_data': user_data}
     )
     
-    # return templates.TemplateResponse(
-    #     request=request, name="miniapp_auth.html", context={"title": "Home", 'user':user}
-    # )
-
 @app.post("/tg_auth")
-def tg_auth(payload: InitData):
+def tg_auth(payload: InitData, request: Request):
     data = validate_init_data(payload.initData)
 
     if not data:
         return {"error": "invalid initData"}
 
     user = data.get("user")
+    
+    request.set_cookie(key="user_data", value=user)
     
     return {
         "id": user.get("id"),
