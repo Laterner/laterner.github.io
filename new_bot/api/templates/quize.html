@@ -1,27 +1,29 @@
 {% extends "base.html" %}
-{% block content %}
+{% block style %} 
 <style>
-    body {
-        justify-content: baseline;
-        text-align: left;
-    }
-
-    .user {
-        color: white;
-    }
-
-    .container {
-        text-align: left;
+    .btn {
+        width: 100%;
+        margin-bottom: 20px;
     }
 </style>
-<div class="container">
-    <h1>
-        {{quize.question}}
-    </h1>
-    {% for item in quize.answers %}
-            <button class="btn" onclick="answer({{ loop.index0 }})">{{ item }}</button>
-    {% endfor %}
-</div>
+{% endblock %}
+
+{% block content %}
+    <div class="wrap">
+        <div class="container" id="container">
+        <h1>
+            {{quize.question}}
+        </h1>
+        {% for item in quize.answers %}
+                <button class="btn" onclick="answer({{ loop.index0 }})">{{ item }}</button>
+        {% endfor %}
+
+        <h3 id="server-answer"></h3>
+    </div>
+    </div>
+{% endblock %}
+
+{% block scripts %}
 <script>
     async function answer(ans) {
         let response = await fetch(`/api/answer?ans=${ans}` + "&player_id={{player_id}}&quize_id={{quize_id}}", {
@@ -33,6 +35,17 @@
 
         let result = await response.json();
         console.log(result);
+
+        if(result.ans == 1){
+            document.getElementById("container").innerHTML = `
+            <h1 id="server-answer">Ответ верный!</h1>
+            <a href="/miniapp"><button class="btn">Вернуться</button></a>
+            `
+
+        }
+        else{
+            document.getElementById("server-answer").innerHTML = "Ответ неверный!"
+        }
     }
 </script>
 {% endblock %}

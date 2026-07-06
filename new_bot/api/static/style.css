@@ -6,7 +6,18 @@
 body {
     font-family: system-ui, -apple-system, sans-serif;
     background: #f5f7fa;
-    min-height: 100vh;
+    width: 100vw;
+    height: 100vh;
+}
+
+.wrap {
+    height: calc(100vh - 50px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    padding: 0px;
+    overflow-y: scroll;
 }
 
 .container {
@@ -15,7 +26,6 @@ body {
     padding: 30px;
     max-width: 640px;
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
-    text-align: center;
     border: 1px solid rgba(0, 0, 0, 0.04);
 }
 
@@ -28,13 +38,13 @@ h1 {
 }
 
 .btn {
-    background: #f1f4f9;
+    background: #07575b;
     border: none;
     border-radius: 60px;
     padding: 14px 32px;
     font-size: 1rem;
     font-weight: 500;
-    color: #1e293b;
+    color: #f1f4f9;
     cursor: pointer;
     transition: all 0.2s ease;
     display: inline-flex;
