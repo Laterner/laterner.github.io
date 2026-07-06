@@ -80,14 +80,14 @@ async def home():
 
 @app.route("/miniapp")
 async def miniapp():
-    user = await db.get_user_by_player_id("SUHNG")
+    user = await db.get_user_by_player_id("W8R0B")
     # user['photo_url'] = "https://t.me/i/userpic/320/QmCSKEv2Z0aQZyzIgX28SzVLKh0pH-Ovw3otL4VxczQ.svg"
     # eprint(user['photo_url'])
     return await render_template("index.html", title="Home", user=user)
 
 @app.route("/miniapp_home")
 async def miniapp_home():
-    user = await db.get_user_by_player_id("SUHNG")
+    user = await db.get_user_by_player_id("W8R0B")
     # user['photo_url'] = "https://t.me/i/userpic/320/QmCSKEv2Z0aQZyzIgX28SzVLKh0pH-Ovw3otL4VxczQ.svg"
     # eprint(user['photo_url'])
     return await render_template("index.html", title="Home", user=user, user_data='user_data')
@@ -119,7 +119,7 @@ async def qr_page():
 @app.route("/quize")
 async def quize_page():
     quize_id = request.args.get('quize_id', '0')
-    user = await db.get_user_by_player_id("SUHNG")
+    user = await db.get_user_by_player_id("W8R0B")
     
     try:
         quize_id = int(quize_id)
