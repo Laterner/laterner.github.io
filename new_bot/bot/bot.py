@@ -274,8 +274,6 @@ async def stats_command(message: types.Message):
             f"👥 Игроков: {team_stats['total_players']}\n"
             f"🎯 Игр сыграно: {team_stats['total_games']}\n"
             f"🏆 Побед: {team_stats['total_wins']}\n"
-            f"📈 Процент побед: "
-            f"{round(team_stats['total_wins'] / team_stats['total_games'] * 100, 1) if team_stats['total_games'] > 0 else 0}%"
         )
     else:
         text = f"📊 Статистика команды {TEAMS[user['team']]['name']} пока пуста"
