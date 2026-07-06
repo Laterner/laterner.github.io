@@ -1,16 +1,10 @@
 # api/main.py
-import os
-from fastapi import FastAPI, Request, Form, HTTPException, Depends, Cookie
-from fastapi.responses import HTMLResponse, RedirectResponse, JSONResponse
-from fastapi.templating import Jinja2Templates
-from fastapi.staticfiles import StaticFiles
-from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 
-from contextlib import asynccontextmanager
+import os
+from flask import Flask, render_template, request, redirect, url_for, make_response, jsonify, session
+from functools import wraps
 from typing import Optional
 import logging
-import uvicorn
-
 from database import db
 from auth import (
     check_admin_password, 
@@ -20,36 +14,27 @@ from auth import (
     require_admin
 )
 from utils import InitData, validate_init_data, eprint
-
+import asyncio
 
 # Настройка логирования
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
-
-# Инициализация FastAPI
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    # Запуск
-    logger.info("🚀 Запуск FastAPI приложения...")
-    await db.init_db()
-    logger.info("✅ База данных инициализирована")
-    yield
-    # Остановка
-    logger.info("👋 Остановка FastAPI приложения...")
-
-app = FastAPI(
-    title="fstbot.ru Admin API",
-    description="API для управления игроками",
-    version="1.0.0",
-    lifespan=lifespan
-)
 
 # Пути
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 TEMPLATES_DIR = os.path.join(BASE_DIR, "templates")
 STATIC_DIR = os.path.join(BASE_DIR, "static")
 
+# Инициализация Flask
+app = Flask(__name__, static_folder=STATIC_DIR)
+app.secret_key = os.environ.get('SECRET_KEY', 'dev-secret-key-change-in-production')
+
 eprint("STATIC_DIR", STATIC_DIR)
+
+# Создаем папки если их нет
+os.makedirs(TEMPLATES_DIR, exist_ok=True)
+os.makedirs(STATIC_DIR, exist_ok=True)
+
 
 quizes = [
     {'question':'Нажмите 3', 'answers':["Вариант 1", "Вариант 2", "Вариант 3", "Вариант 4", "Вариант 5"], 'ans': 2},
@@ -62,367 +47,342 @@ quizes = [
     {'question':'Нажмите 5', 'answers':["Вариант 1", "Вариант 2", "Вариант 3", "Вариант 4", "Вариант 5"], 'ans': 4}
 ]
 
-# Создаем папку templates если её нет
-os.makedirs(TEMPLATES_DIR, exist_ok=True)
+# Декоратор для проверки авторизации
+def login_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        token = request.cookies.get("access_token")
+        if not token or not verify_token(token):
+            return redirect(url_for('admin_login_page'))
+        return f(*args, **kwargs)
+    return decorated_function
 
-# Шаблоны
-templates = Jinja2Templates(directory=TEMPLATES_DIR)
-app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
-
-# Security
-security = HTTPBearer()
+# Инициализация базы данных при запуске
+# @app.before_first_request
+# def init_db():
+#     logger.info("🚀 Запуск Flask приложения...")
+#     db.init_db()
+#     logger.info("✅ База данных инициализирована")
 
 # Маршруты
-@app.get("/", response_class=HTMLResponse)
-async def home(request: Request):
-    return templates.TemplateResponse(
-        request=request, name="stub.html", context={"title": "Добавление очков"}
-    )
+@app.route("/")
+def home():
+    return render_template("stub.html", title="Добавление очков")
 
-@app.get("/miniapp", response_class=HTMLResponse)
-async def miniapp(request: Request):
-    # user_data = Cookie()
-    user = await db.get_user_by_player_id("SUHNG")
-    
-    user['photo_url'] = "https://t.me/i/userpic/320/QmCSKEv2Z0aQZyzIgX28SzVLKh0pH-Ovw3otL4VxczQ.svg"
-    eprint(user['photo_url'])
-    return templates.TemplateResponse(
-        request=request, name="index.html", context={"title": "Home", 'user':user}
-    )
+@app.route("/miniapp")
+async def miniapp():
+    user = db.get_user_by_player_id("SUHNG")
+    # user['photo_url'] = "https://t.me/i/userpic/320/QmCSKEv2Z0aQZyzIgX28SzVLKh0pH-Ovw3otL4VxczQ.svg"
+    # eprint(user['photo_url'])
+    return render_template("index.html", title="Home", user=user)
 
-@app.get("/miniapp_home", response_class=HTMLResponse)
-async def miniapp_home(request: Request):
-    # user_data = Cookie()
-    user = await db.get_user_by_player_id("SUHNG")
-    
-    user['photo_url'] = "https://t.me/i/userpic/320/QmCSKEv2Z0aQZyzIgX28SzVLKh0pH-Ovw3otL4VxczQ.svg"
-    eprint(user['photo_url'])
-    return templates.TemplateResponse(
-        request=request, name="index.html", context={"title": "Home", 'user':user, 'user_data': 'user_data'}
-    )
-    
-@app.post("/tg_auth")
-def tg_auth(payload: InitData, request: Request):
-    data = validate_init_data(payload.initData)
+@app.route("/miniapp_home")
+def miniapp_home():
+    user = db.get_user_by_player_id("SUHNG")
+    # user['photo_url'] = "https://t.me/i/userpic/320/QmCSKEv2Z0aQZyzIgX28SzVLKh0pH-Ovw3otL4VxczQ.svg"
+    # eprint(user['photo_url'])
+    return render_template("index.html", title="Home", user=user, user_data='user_data')
 
+@app.route("/tg_auth", methods=['POST'])
+def tg_auth():
+    payload = request.get_json()
+    data = validate_init_data(payload.get('initData'))
+    
     if not data:
-        return {"error": "invalid initData"}
-
+        return jsonify({"error": "invalid initData"}), 400
+    
     user = data.get("user")
     
-    request.set_cookie(key="user_data", value=user)
-    
-    return {
+    # Устанавливаем cookie
+    resp = make_response(jsonify({
         "id": user.get("id"),
         "username": user.get("username"),
         "first_name": user.get("first_name")
-    }
-
-@app.get("/qr", response_class=HTMLResponse)
-def qr_page(request: Request):
-    return templates.TemplateResponse(
-        request=request, name="qr_test.html", context={"title": "QR", 'quizes':quizes}
-    )
-
-@app.get("/quize", response_class=HTMLResponse)
-async def quize_page(request: Request, quize_id: int = 0):
-    user = await db.get_user_by_player_id("SUHNG")
-    _quize = quizes[quize_id]
+    }))
+    resp.set_cookie("user_data", value=str(user))
     
-    return templates.TemplateResponse(
-        request=request, name="quize.html", context={"title": "Quize", 'player_id':user['player_id'], 'quize':_quize, 'quize_id':quize_id}
-    )
+    return resp
 
-@app.post("/answer")
-def answer(request: Request, ans: int = 0, quize_id: int = 0, player_id: str = ""):
+@app.route("/qr")
+def qr_page():
+    return render_template("qr.html", title="QR", quizes=quizes)
+
+@app.route("/quize")
+def quize_page():
+    quize_id = request.args.get('quize_id', '0')
+    user = db.get_user_by_player_id("SUHNG")
+    
+    try:
+        quize_id = int(quize_id)
+        _quize = quizes[quize_id]
+    except (ValueError, IndexError):
+        _quize = quizes[0]
+        quize_id = 0
+    
+    return render_template("quize.html", 
+                         title="Quize", 
+                         player_id=user['player_id'], 
+                         quize=_quize, 
+                         quize_id=quize_id)
+
+@app.route("/answer", methods=['POST'])
+def answer():
+    ans = request.form.get('ans', 0, type=int)
+    quize_id = request.form.get('quize_id', 0, type=int)
+    player_id = request.form.get('player_id', '')
+    
     if ans == quizes[quize_id]['ans']:
-        return {'ans':1, 'player_id':player_id}
+        return jsonify({'ans': 1, 'player_id': player_id})
     else:
-        return {'ans':0, 'player_id':player_id}
+        return jsonify({'ans': 0, 'player_id': player_id})
 
-@app.get("/faq", response_class=HTMLResponse)
-def faq_page(request: Request):
-    return templates.TemplateResponse(
-        request=request, name="faq.html", context={"title": "faq"}
-    )
+@app.route("/faq")
+def faq_page():
+    return render_template("faq.html", title="faq")
 
-@app.get("/map", response_class=HTMLResponse)
-def map_page(request: Request):
-    return templates.TemplateResponse(
-        request=request, name="map.html", context={"title": "map"}
-    )
+@app.route("/map")
+async def map_page():
+    return render_template("map.html", title="map")
 
 """ Админка роуты """
-@app.get("/admin/addscore", response_class=HTMLResponse)
-async def admin_addscore(request: Request):
+@app.route("/admin/addscore")
+@login_required
+def admin_addscore():
     """Главная страница с формой добавления очков"""
-    return templates.TemplateResponse(
-        request=request, name="admin_add_points.html", context={"title": "Добавление очков"}
-    )
-  
+    return render_template("admin_add_points.html", title="Добавление очков")
+
 # api urls  
-@app.post("/api/add_score")
-async def add_score(
-    player_id: str = Form(...),
-    amount: int = Form(...)
-):
+@app.route("/api/add_score", methods=['POST'])
+def add_score():
     """API для добавления очков"""
     try:
+        player_id = request.form.get('player_id')
+        amount = request.form.get('amount', type=int)
+        
+        if not player_id or amount is None:
+            return jsonify({
+                "success": False, 
+                "message": "Не указан player_id или amount"
+            }), 400
+        
         # Проверяем игрока
-        user = await db.get_user_by_player_id(player_id)
+        user = db.get_user_by_player_id(player_id)
         if not user:
-            return JSONResponse(
-                status_code=404,
-                content={"success": False, "message": f"Игрок с ID {player_id} не найден"}
-            )
+            return jsonify({
+                "success": False, 
+                "message": f"Игрок с ID {player_id} не найден"
+            }), 404
         
         # Добавляем очки
-        success = await db.add_score(player_id, amount)
+        success = db.add_score(player_id, amount)
         
         if success:
-            return JSONResponse(
-                content={
-                    "success": True,
-                    "message": f"Добавлено {amount} очков игроку {user['name']} (ID: {player_id})",
-                    "player": {
-                        "name": user['name'],
-                        "player_id": player_id,
-                        "new_score": user['score'] + amount
-                    }
+            return jsonify({
+                "success": True,
+                "message": f"Добавлено {amount} очков игроку {user['name']} (ID: {player_id})",
+                "player": {
+                    "name": user['name'],
+                    "player_id": player_id,
+                    "new_score": user['score'] + amount
                 }
-            )
+            })
         else:
-            return JSONResponse(
-                status_code=500,
-                content={"success": False, "message": "Ошибка при добавлении очков"}
-            )
+            return jsonify({
+                "success": False, 
+                "message": "Ошибка при добавлении очков"
+            }), 500
+            
     except Exception as e:
         logger.error(f"Error adding score: {e}")
-        return JSONResponse(
-            status_code=500,
-            content={"success": False, "message": str(e)}
-        )
+        return jsonify({
+            "success": False, 
+            "message": str(e)
+        }), 500
 
-@app.get("/api/check_player/{player_id}")
-async def check_player(player_id: str):
+@app.route("/api/check_player/<player_id>")
+def check_player(player_id):
     """Проверка существования игрока"""
-    user = await db.get_user_by_player_id(player_id)
+    user = db.get_user_by_player_id(player_id)
     if user:
-        return JSONResponse(
-            content={
-                "exists": True,
-                "name": user['name'],
-                "score": user['score'],
-                "team": user['team']
-            }
-        )
+        return jsonify({
+            "exists": True,
+            "name": user['name'],
+            "score": user['score'],
+            "team": user['team']
+        })
     else:
-        return JSONResponse(
-            content={"exists": False}
-        )
+        return jsonify({"exists": False})
 
-@app.get("/admin", response_class=HTMLResponse)
-async def admin_login_page(request: Request):
+@app.route("/admin", methods=['GET'])
+def admin_login_page():
     """Страница входа в админку"""
     # Проверяем, есть ли уже токен
     token = request.cookies.get("access_token")
     if token and verify_token(token):
         # Если токен валидный, перенаправляем в админку
-        return RedirectResponse(url="/admin/dashboard")
+        return redirect(url_for('admin_dashboard'))
     
-    return templates.TemplateResponse(
-        request=request,
-        name="admin_login.html",
-        context={"title": "Вход в админку", "error": None}
-    )
+    return render_template("admin_login.html", title="Вход в админку", error=None)
 
-@app.post("/admin/login")
-async def admin_login(
-    request: Request,
-    password: str = Form(...)
-):
+@app.route("/admin/login", methods=['POST'])
+def admin_login():
     """Вход в админку"""
+    password = request.form.get('password')
+    
     if check_admin_password(password):
         # Создаем токен
         token = create_access_token({"sub": "admin"})
         
         # Устанавливаем cookie
-        response = RedirectResponse(url="/admin/dashboard", status_code=302)
-        response.set_cookie(
+        resp = make_response(redirect(url_for('admin_dashboard')))
+        resp.set_cookie(
             key="access_token",
             value=token,
             httponly=True,
             max_age=60*60*24*7,  # 7 дней
-            samesite="lax"
+            samesite="Lax"
         )
-        return response
+        return resp
     else:
-        return templates.TemplateResponse(
-            request=request,
-            name="admin_login.html",
-            context={
-                "request": request, 
-                "title": "Вход в админку", 
-                "error": "❌ Неверный пароль!"
-            },
-            status_code=401
-        )
+        return render_template(
+            "admin_login.html",
+            title="Вход в админку",
+            error="❌ Неверный пароль!"
+        ), 401
 
-@app.get("/admin/dashboard", response_class=HTMLResponse)
-async def admin_dashboard(request: Request):
+@app.route("/admin/dashboard")
+@login_required
+def admin_dashboard():
     """Панель управления админа"""
-    # Проверяем авторизацию
-    token = request.cookies.get("access_token")
-    if not token or not verify_token(token):
-        return RedirectResponse(url="/admin", status_code=302)
-    
     # Получаем всех пользователей
-    users = await db.get_all_users()
+    users = db.get_all_users()
     
-    return templates.TemplateResponse(
-        request=request,
-        name="admin.html",
-        context={
-            "title": "Админ панель",
-            "users": users,
-            "message": None
-        }
+    return render_template(
+        "admin.html",
+        title="Админ панель",
+        users=users,
+        message=None
     )
 
-@app.post("/admin/api/update_name")
-async def admin_update_name(
-    request: Request,
-    player_id: str = Form(...),
-    new_name: str = Form(...)
-):
+@app.route("/admin/api/update_name", methods=['POST'])
+@login_required
+def admin_update_name():
     """Обновление имени игрока"""
-    # Проверяем авторизацию
-    token = request.cookies.get("access_token")
-    if not token or not verify_token(token):
-        return JSONResponse(
-            status_code=401,
-            content={"success": False, "message": "Не авторизован"}
-        )
-    
     try:
-        user = await db.get_user_by_player_id(player_id)
-        if not user:
-            return JSONResponse(
-                status_code=404,
-                content={"success": False, "message": f"Игрок {player_id} не найден"}
-            )
+        player_id = request.form.get('player_id')
+        new_name = request.form.get('new_name')
         
-        success = await db.update_user_name(player_id, new_name)
+        if not player_id or not new_name:
+            return jsonify({
+                "success": False, 
+                "message": "Не указаны player_id или new_name"
+            }), 400
+        
+        user = db.get_user_by_player_id(player_id)
+        if not user:
+            return jsonify({
+                "success": False, 
+                "message": f"Игрок {player_id} не найден"
+            }), 404
+        
+        success = db.update_user_name(player_id, new_name)
         
         if success:
-            return JSONResponse(
-                content={
-                    "success": True,
-                    "message": f"Имя обновлено: {user['name']} -> {new_name}"
-                }
-            )
+            return jsonify({
+                "success": True,
+                "message": f"Имя обновлено: {user['name']} -> {new_name}"
+            })
         else:
-            return JSONResponse(
-                status_code=500,
-                content={"success": False, "message": "Ошибка при обновлении имени"}
-            )
+            return jsonify({
+                "success": False, 
+                "message": "Ошибка при обновлении имени"
+            }), 500
+            
     except Exception as e:
         logger.error(f"Error updating name: {e}")
-        return JSONResponse(
-            status_code=500,
-            content={"success": False, "message": str(e)}
-        )
+        return jsonify({
+            "success": False, 
+            "message": str(e)
+        }), 500
 
-@app.post("/admin/api/update_score")
-async def admin_update_score(
-    request: Request,
-    player_id: str = Form(...),
-    new_score: int = Form(...)
-):
+@app.route("/admin/api/update_score", methods=['POST'])
+@login_required
+def admin_update_score():
     """Обновление очков игрока"""
-    # Проверяем авторизацию
-    token = request.cookies.get("access_token")
-    if not token or not verify_token(token):
-        return JSONResponse(
-            status_code=401,
-            content={"success": False, "message": "Не авторизован"}
-        )
-    
     try:
+        player_id = request.form.get('player_id')
+        new_score = request.form.get('new_score', type=int)
+        
+        if not player_id or new_score is None:
+            return jsonify({
+                "success": False, 
+                "message": "Не указаны player_id или new_score"
+            }), 400
+        
         if new_score < 0:
-            return JSONResponse(
-                status_code=400,
-                content={"success": False, "message": "Очки не могут быть отрицательными"}
-            )
+            return jsonify({
+                "success": False, 
+                "message": "Очки не могут быть отрицательными"
+            }), 400
         
-        user = await db.get_user_by_player_id(player_id)
+        user = db.get_user_by_player_id(player_id)
         if not user:
-            return JSONResponse(
-                status_code=404,
-                content={"success": False, "message": f"Игрок {player_id} не найден"}
-            )
+            return jsonify({
+                "success": False, 
+                "message": f"Игрок {player_id} не найден"
+            }), 404
         
-        success = await db.update_user_score(player_id, new_score)
+        success = db.update_user_score(player_id, new_score)
         
         if success:
-            return JSONResponse(
-                content={
-                    "success": True,
-                    "message": f"Очки обновлены: {user['score']} -> {new_score} для игрока {user['name']}"
-                }
-            )
+            return jsonify({
+                "success": True,
+                "message": f"Очки обновлены: {user['score']} -> {new_score} для игрока {user['name']}"
+            })
         else:
-            return JSONResponse(
-                status_code=500,
-                content={"success": False, "message": "Ошибка при обновлении очков"}
-            )
+            return jsonify({
+                "success": False, 
+                "message": "Ошибка при обновлении очков"
+            }), 500
+            
     except Exception as e:
         logger.error(f"Error updating score: {e}")
-        return JSONResponse(
-            status_code=500,
-            content={"success": False, "message": str(e)}
-        )
+        return jsonify({
+            "success": False, 
+            "message": str(e)
+        }), 500
 
-@app.get("/admin/api/search")
-async def admin_search_users(
-    request: Request,
-    query: str = ""
-):
+@app.route("/admin/api/search")
+@login_required
+def admin_search_users():
     """Поиск игроков"""
-    token = request.cookies.get("access_token")
-    if not token or not verify_token(token):
-        return JSONResponse(
-            status_code=401,
-            content={"success": False, "message": "Не авторизован"}
-        )
+    query = request.args.get('query', '')
     
     if not query or len(query) < 2:
-        users = await db.get_all_users()
+        users = db.get_all_users()
     else:
-        users = await db.search_users(query)
+        users = db.search_users(query)
     
-    return JSONResponse(
-        content={"success": True, "users": users}
-    )
+    return jsonify({"success": True, "users": users})
 
-@app.get("/admin/logout")
-async def admin_logout():
+@app.route("/admin/logout")
+def admin_logout():
     """Выход из админки"""
-    response = RedirectResponse(url="/admin", status_code=302)
-    response.delete_cookie("access_token")
-    return response
+    resp = make_response(redirect(url_for('admin_login_page')))
+    resp.delete_cookie("access_token")
+    return resp
 
 # Middleware для логирования
-# @app.middleware("http")
-# async def log_requests(request: Request, call_next):
-#     logger.info(f"{request.method} {request.url.path}")
-#     response = None # await call_next(request)
-#     return response
+@app.before_request
+def log_request():
+    logger.info(f"{request.method} {request.path}")
 
 if __name__ == "__main__":
-    uvicorn.run(
-        "main:app",
+    logger.info("🚀 Запуск Flask приложения...")
+    db.init_db()
+    logger.info("✅ База данных инициализирована")
+    app.run(
         host="0.0.0.0",
         port=8000,
-        reload=True
+        debug=True
     )
