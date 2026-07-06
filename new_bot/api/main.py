@@ -296,7 +296,7 @@ async def admin_login_page():
     token = request.cookies.get("access_token")
     if token and verify_token(token):
         # Если токен валидный, перенаправляем в админку
-        return redirect(url_for('add_score'))
+        return redirect(url_for('admin_addscore'))
     
     return await render_template("admin_login.html", title="Вход в админку", error=None)
 
