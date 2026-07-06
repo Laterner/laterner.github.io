@@ -129,8 +129,8 @@ def get_main_keyboard():
             [KeyboardButton(text="👤 Мой профиль")],
             [KeyboardButton(text="📊 Статистика")],
             [KeyboardButton(text="🏆 Топ игроков")],
-            [button_miniapp],
-            [KeyboardButton(text="🔄 Сменить команду")]
+            [button_miniapp]
+            # [KeyboardButton(text="🔄 Сменить команду")]
         ],
         resize_keyboard=True
     )
@@ -310,7 +310,7 @@ async def help_command(message: types.Message):
         "📌 <b>Доступные команды:</b>\n"
         "/start - Начать / Зарегистрироваться\n"
         "/profile - Показать профиль\n"
-        "/team - Сменить команду\n"
+        # "/team - Сменить команду\n"
         "/top - Топ игроков\n"
         "/stats - Статистика команды\n"
         "/history - История действий\n"
@@ -369,9 +369,9 @@ async def stats_button(message: types.Message):
 async def top_button(message: types.Message):
     await top_command(message)
 
-@dp.message(F.text == "🔄 Сменить команду")
-async def change_team_button(message: types.Message):
-    await team_command(message)
+# @dp.message(F.text == "🔄 Сменить команду")
+# async def change_team_button(message: types.Message):
+#     await team_command(message)
 
 # @dp.message(F.text == "🚀 Открыть MiniApps")
 # async def open_miniapp_button(message: types.Message):

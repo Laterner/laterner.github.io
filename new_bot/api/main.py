@@ -81,15 +81,15 @@ async def home():
 @app.route("/miniapp")
 async def miniapp():
     user = await db.get_user_by_player_id("SUHNG")
-    user['photo_url'] = "https://t.me/i/userpic/320/QmCSKEv2Z0aQZyzIgX28SzVLKh0pH-Ovw3otL4VxczQ.svg"
-    eprint(user['photo_url'])
+    # user['photo_url'] = "https://t.me/i/userpic/320/QmCSKEv2Z0aQZyzIgX28SzVLKh0pH-Ovw3otL4VxczQ.svg"
+    # eprint(user['photo_url'])
     return await render_template("index.html", title="Home", user=user)
 
 @app.route("/miniapp_home")
 async def miniapp_home():
     user = await db.get_user_by_player_id("SUHNG")
-    user['photo_url'] = "https://t.me/i/userpic/320/QmCSKEv2Z0aQZyzIgX28SzVLKh0pH-Ovw3otL4VxczQ.svg"
-    eprint(user['photo_url'])
+    # user['photo_url'] = "https://t.me/i/userpic/320/QmCSKEv2Z0aQZyzIgX28SzVLKh0pH-Ovw3otL4VxczQ.svg"
+    # eprint(user['photo_url'])
     return await render_template("index.html", title="Home", user=user, user_data='user_data')
 
 @app.route("/tg_auth", methods=['POST'])
