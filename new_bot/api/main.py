@@ -121,7 +121,7 @@ def tg_auth(payload: InitData, request: Request):
 @app.get("/qr", response_class=HTMLResponse)
 def qr_page(request: Request):
     return templates.TemplateResponse(
-        request=request, name="quize_select.html", context={"title": "QR", 'quizes':quizes}
+        request=request, name="qr_test.html", context={"title": "QR", 'quizes':quizes}
     )
 
 @app.get("/quize", response_class=HTMLResponse)
@@ -231,8 +231,9 @@ async def admin_login_page(request: Request):
         return RedirectResponse(url="/admin/dashboard")
     
     return templates.TemplateResponse(
-        "admin_login.html",
-        {"request": request, "title": "Вход в админку", "error": None}
+        request=request,
+        name="admin_login.html",
+        context={"title": "Вход в админку", "error": None}
     )
 
 @app.post("/admin/login")
@@ -257,8 +258,9 @@ async def admin_login(
         return response
     else:
         return templates.TemplateResponse(
-            "admin_login.html",
-            {
+            request=request,
+            name="admin_login.html",
+            context={
                 "request": request, 
                 "title": "Вход в админку", 
                 "error": "❌ Неверный пароль!"
@@ -277,10 +279,9 @@ async def admin_dashboard(request: Request):
     # Получаем всех пользователей
     users = await db.get_all_users()
     
-    
     return templates.TemplateResponse(
-        request=request, 
-        name="admin.html", 
+        request=request,
+        name="admin.html",
         context={
             "title": "Админ панель",
             "users": users,
