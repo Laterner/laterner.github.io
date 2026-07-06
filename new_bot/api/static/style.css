@@ -56,7 +56,7 @@ h1 {
 }
 
 .btn:hover {
-    background: #e8ecf3;
+    background: #002e36;
     transform: translateY(-2px);
     box-shadow: 0 8px 16px rgba(0, 0, 0, 0.08);
 }

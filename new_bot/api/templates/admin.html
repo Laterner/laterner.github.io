@@ -150,10 +150,6 @@
             font-size: 14px;
         }
         
-        tr:hover {
-            background: #f8f9fa;
-        }
-        
         .team-badge {
             display: inline-block;
             padding: 4px 12px;
@@ -328,7 +324,7 @@
                     {% endfor %}
                     {{ total_wins.value }}
                 </div>
-                <div class="label">🏆 Всего побед</div>
+                <div class="label">🏆 Всего игр</div>
             </div>
         </div>
         
@@ -359,7 +355,6 @@
                         <th>Player ID</th>
                         <th>Команда</th>
                         <th>Очки</th>
-                        <th>Победы</th>
                         <th>Игр</th>
                         <th>Действия</th>
                     </tr>
@@ -388,7 +383,6 @@
                                     <button type="submit" class="btn btn-primary btn-sm">💾</button>
                                 </form>
                             </td>
-                            <td>{{ user.wins }}</td>
                             <td>{{ user.games_played }}</td>
                             <td>
                                 <span style="color: #999; font-size: 12px;">
