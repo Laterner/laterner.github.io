@@ -193,7 +193,30 @@ async def answer():
     
     print("/api/answer :::>", ans, quize_id, player_id)
 
+    
     if ans == quizes[quize_id]['ans']:
+        try:
+            amount = 5
+            
+            if not player_id or amount is None:
+                f"Не указан player_id или amount"
+            
+            # Проверяем игрока
+            user = await db.get_user_by_player_id(player_id)
+            if not user:
+                logger.error(f"Игрок с ID {player_id} не найден")
+            
+            # Добавляем очки
+            success = await db.add_score(player_id, amount)
+            
+            if success:
+                logger.error(f"Успешно добавлены очки")
+            else:
+                logger.error(f"Произошла ошибка при добавлении")
+                
+        except Exception as e:
+            logger.error(f"Error adding score: {e}")
+        
         return jsonify({'ans': 1, 'player_id': player_id})
     else:
         return jsonify({'ans': 0, 'player_id': player_id})
