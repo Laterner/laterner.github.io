@@ -166,6 +166,8 @@ class Database:
                 
                 # Обновляем очки
                 user.score += amount
+                user.games_played += 1
+                user.wins += 1
                 user.last_active = datetime.utcnow()
                 
                 # Добавляем запись в историю

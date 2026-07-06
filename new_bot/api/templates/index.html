@@ -81,6 +81,12 @@
     </div>
 
     Ваше место в рейтинге:
-
 </div>
+<div class="container">
+    <h1> Топ игроков </h1>
+    {% for top in top_players %}
+            <p>{{ top.name }}</p>
+    {% endfor %}
+</div>
+
 {% endblock %}

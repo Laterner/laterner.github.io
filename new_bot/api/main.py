@@ -81,16 +81,14 @@ async def home():
 @app.route("/miniapp")
 async def miniapp():
     user = await db.get_user_by_player_id("W8R0B")
-    # user['photo_url'] = "https://t.me/i/userpic/320/QmCSKEv2Z0aQZyzIgX28SzVLKh0pH-Ovw3otL4VxczQ.svg"
-    # eprint(user['photo_url'])
-    return await render_template("index.html", title="Home", user=user)
+    top_players = await db.get_top_players(10)
+    return await render_template("index.html", title="Home", user=user, top_players=top_players)
 
 @app.route("/miniapp_home")
 async def miniapp_home():
     user = await db.get_user_by_player_id("W8R0B")
-    # user['photo_url'] = "https://t.me/i/userpic/320/QmCSKEv2Z0aQZyzIgX28SzVLKh0pH-Ovw3otL4VxczQ.svg"
-    # eprint(user['photo_url'])
-    return await render_template("index.html", title="Home", user=user, user_data='user_data')
+    top_players = await db.get_top_players(10)
+    return await render_template("index.html", title="Home", user=user, user_data='user_data', top_players=top_players)
 
 @app.route("/tg_auth", methods=['POST'])
 async def tg_auth():
@@ -298,7 +296,7 @@ async def admin_login_page():
     token = request.cookies.get("access_token")
     if token and verify_token(token):
         # Если токен валидный, перенаправляем в админку
-        return redirect(url_for('admin_dashboard'))
+        return redirect(url_for('add_score'))
     
     return await render_template("admin_login.html", title="Вход в админку", error=None)
 

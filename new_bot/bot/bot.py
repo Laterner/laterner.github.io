@@ -252,7 +252,7 @@ async def top_command(message: types.Message):
             f"{medal} <b>{player['name']}</b>\n"
             f"   🎮 {format_player_id(player['player_id'])}\n"
             f"   ⚔️ {TEAMS[player['team']]['emoji']} {TEAMS[player['team']]['name']}\n"
-            f"   ⭐ {player['score']} очков | 🏆 {player['wins']} побед\n\n"
+            f"   ⭐ {player['score']} очков | 🏆 {player['wins']} игр\n\n"
         )
     
     await message.answer(text, parse_mode="HTML")
