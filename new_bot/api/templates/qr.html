@@ -95,7 +95,7 @@
         
     </div>
 
-    <div class="footer">После сканирования появится alert с соответствующим сообщением</div>
+    <div class="footer">Отсканируйте код и откройте квиз</div>
 </div>
 
 <script>
@@ -103,13 +103,10 @@ const scanner = new Html5Qrcode("video-container");
 let started = false;
 
 document.getElementById("scanBtn").onclick = async () => {
-
     if (started) return;
-
     started = true;
     
     try {
-
         await scanner.start(
             {
                 facingMode: "environment"
@@ -122,42 +119,74 @@ document.getElementById("scanBtn").onclick = async () => {
                 }
             },
             async (text) => {
-
                 if (!/^[A-Za-z]{5}$/.test(text)) {
-                    document.getElementById("status").textContent =
+                    document.getElementById("status").textContent = 
                         "QR должен содержать 5 букв";
+                    started = false;
                     return;
                 }
 
                 await scanner.stop();
+                document.getElementById("status").textContent = "Отправка...";
 
-                document.getElementById("status").textContent =
-                    "Отправка...";
-
-                const r = await fetch("/api/secretcode", {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json"
-                    },
-                    body: JSON.stringify({
-                        code: text.toUpperCase()
-                    })
-                });
-                // document.getElementById("controls").innerHTML = `<a href="/quize?quize_id=0"><button class="btn btn-primary" id="scanBtn">Открыть квиз</button></a>`
-                document.getElementById("status").textContent =
-                    r.ok ? "Успешно!" : "Ошибка отправки";
-
+                try {
+                    const response = await fetch("/api/secretcode", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json"
+                        },
+                        body: JSON.stringify({
+                            secret_code: text.toUpperCase()
+                        })
+                    });
+                    
+                    const result = await response.json();
+                    console.log('Result:', result);
+                    
+                    if (result.quize_id !== undefined) {
+                        if (result.quize_id >= 0) {
+                            document.getElementById("controls").innerHTML = 
+                                `<br><br><a href="/quize?quize_id=${result.quize_id}">
+                                    <button class="btn btn-primary">Открыть квиз #${result.quize_id + 1}</button>
+                                </a>`;
+                            document.getElementById("status").textContent = 
+                                `✅ Код найден! Переходите к квизу`;
+                        } else {
+                            document.getElementById("status").textContent = 
+                                "❌ Неверный код! Попробуйте снова";
+                            resetScanner();
+                        }
+                    } else {
+                        document.getElementById("status").textContent = 
+                            "❌ Ошибка: " + (result.error || "Неизвестная ошибка");
+                        resetScanner();
+                    }
+                    
+                } catch (error) {
+                    console.error('Fetch error:', error);
+                    document.getElementById("status").textContent = 
+                        "❌ Ошибка соединения";
+                    resetScanner();
+                }
+                
                 started = false;
             }
         );
 
     } catch (e) {
         started = false;
-        document.getElementById("status").textContent =
-            "Не удалось открыть камеру\n\n"  + `${e}`;
+        document.getElementById("status").textContent = 
+            "Не удалось открыть камеру: " + e;
         console.error(e);
     }
 };
+
+function resetScanner() {
+    document.getElementById("controls").innerHTML = 
+        `<button class="btn btn-primary" id="scanBtn">📷 Сканировать QR</button>`;
+    // Перезагружаем страницу или перепривязываем обработчик
+    location.reload(); // Простой способ, но можно и перепривязать
+}
 </script>
 
 {% endblock %}

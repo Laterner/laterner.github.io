@@ -1,6 +1,7 @@
 # api/main.py
 
 import os
+import json
 import asyncio
 from functools import wraps
 from typing import Optional
@@ -39,14 +40,14 @@ os.makedirs(TEMPLATES_DIR, exist_ok=True)
 os.makedirs(STATIC_DIR, exist_ok=True)
 
 quizes = [
-    {'question':'Нажмите 3', 'answers':["Вариант 1", "Вариант 2", "Вариант 3", "Вариант 4", "Вариант 5"], 'ans': 2},
-    {'question':'Нажмите 1', 'answers':["Вариант 1", "Вариант 2", "Вариант 3", "Вариант 4", "Вариант 5"], 'ans': 0},
-    {'question':'Нажмите 1', 'answers':["Вариант 1", "Вариант 2", "Вариант 3", "Вариант 4", "Вариант 5"], 'ans': 0},
-    {'question':'Нажмите 1', 'answers':["Вариант 1", "Вариант 2", "Вариант 3", "Вариант 4", "Вариант 5"], 'ans': 0},
-    {'question':'Нажмите 1', 'answers':["Вариант 1", "Вариант 2", "Вариант 3", "Вариант 4", "Вариант 5"], 'ans': 0},
-    {'question':'Нажмите 1', 'answers':["Вариант 1", "Вариант 2", "Вариант 3", "Вариант 4", "Вариант 5"], 'ans': 0},
-    {'question':'Нажмите 1', 'answers':["Вариант 1", "Вариант 2", "Вариант 3", "Вариант 4", "Вариант 5"], 'ans': 0},
-    {'question':'Нажмите 5', 'answers':["Вариант 1", "Вариант 2", "Вариант 3", "Вариант 4", "Вариант 5"], 'ans': 4}
+    {'question':'Нажмите 3', 'secret_code':'DSFGS', 'answers':["Вариант 1", "Вариант 2", "Вариант 3", "Вариант 4", "Вариант 5"], 'ans': 2},
+    {'question':'Нажмите 1', 'secret_code':'CACTD', 'answers':["Вариант 1", "Вариант 2", "Вариант 3", "Вариант 4", "Вариант 5"], 'ans': 0},
+    {'question':'Нажмите 1', 'secret_code':'FXZJN', 'answers':["Вариант 1", "Вариант 2", "Вариант 3", "Вариант 4", "Вариант 5"], 'ans': 0},
+    {'question':'Нажмите 1', 'secret_code':'VGNMD', 'answers':["Вариант 1", "Вариант 2", "Вариант 3", "Вариант 4", "Вариант 5"], 'ans': 0},
+    {'question':'Нажмите 1', 'secret_code':'UZQYX', 'answers':["Вариант 1", "Вариант 2", "Вариант 3", "Вариант 4", "Вариант 5"], 'ans': 0},
+    {'question':'Нажмите 1', 'secret_code':'KBCFL', 'answers':["Вариант 1", "Вариант 2", "Вариант 3", "Вариант 4", "Вариант 5"], 'ans': 0},
+    {'question':'Нажмите 1', 'secret_code':'XTHFL', 'answers':["Вариант 1", "Вариант 2", "Вариант 3", "Вариант 4", "Вариант 5"], 'ans': 0},
+    {'question':'Нажмите 5', 'secret_code':'EGLPZ', 'answers':["Вариант 1", "Вариант 2", "Вариант 3", "Вариант 4", "Вариант 5"], 'ans': 4}
 ]
 
 # Декоратор для проверки авторизации (асинхронный)
@@ -135,18 +136,6 @@ async def quize_page():
         quize_id=quize_id
     )
 
-@app.route("/answer", methods=['POST'])
-async def answer():
-    form = await request.form
-    ans = form.get('ans', 0, type=int)
-    quize_id = form.get('quize_id', 0, type=int)
-    player_id = form.get('player_id', '')
-    
-    if ans == quizes[quize_id]['ans']:
-        return jsonify({'ans': 1, 'player_id': player_id})
-    else:
-        return jsonify({'ans': 0, 'player_id': player_id})
-
 @app.route("/faq")
 async def faq_page():
     return await render_template("faq.html", title="faq")
@@ -154,6 +143,60 @@ async def faq_page():
 @app.route("/map")
 async def map_page():
     return await render_template("map.html", title="map")
+
+
+
+def find_quiz_index(secret_code):
+    for i, quiz in enumerate(quizes):
+        if quiz['secret_code'] == secret_code:
+            return i
+    return -1
+
+""" API """
+@app.route("/api/secretcode", methods=['POST'])
+async def secretcode():
+    try:
+        # Получаем сырые данные
+        raw_data = await request.data
+        print(f"Raw data: {raw_data}")
+        
+        if not raw_data:
+            return jsonify({'error': 'No data received'}), 400
+        
+        # Декодируем и парсим JSON вручную
+        try:
+            data = json.loads(raw_data.decode('utf-8'))
+            print(f"Parsed data: {data}")
+        except json.JSONDecodeError as e:
+            print(f"JSON decode error: {e}")
+            return jsonify({'error': 'Invalid JSON'}), 400
+        
+        secret_code = data.get('secret_code', '00000')
+        print(f"Secret code: {secret_code}")
+        
+        quize_id = find_quiz_index(secret_code)
+        print(f"Quiz ID: {quize_id}")
+        
+        return jsonify({'quize_id': quize_id})
+        
+    except Exception as e:
+        print(f"Error: {e}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({'error': str(e)}), 500
+    
+@app.route("/api/answer", methods=['POST'])
+async def answer():
+    ans = request.args.get('ans', 0, type=int)
+    quize_id = request.args.get('quize_id', 0, type=int)
+    player_id = request.args.get('player_id', '')
+    
+    print("/api/answer :::>", ans, quize_id, player_id)
+
+    if ans == quizes[quize_id]['ans']:
+        return jsonify({'ans': 1, 'player_id': player_id})
+    else:
+        return jsonify({'ans': 0, 'player_id': player_id})
 
 """ Админка роуты """
 @app.route("/admin/addscore")
