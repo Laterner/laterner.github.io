@@ -5,71 +5,80 @@
 
 body {
     font-family: system-ui, -apple-system, sans-serif;
-    background: #0b0e14;
+    background: #f5f7fa;
     min-height: 100vh;
 }
 
 .container {
-    background: #1a1f2b;
+    background: #ffffff;
     border-radius: 28px;
     padding: 30px;
     max-width: 640px;
-    /* width: 100%; */
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
     text-align: center;
+    border: 1px solid rgba(0, 0, 0, 0.04);
 }
 
 h1 {
-    color: #f0f3fa;
-    font-weight: 500;
+    color: #1e293b;
+    font-weight: 700;
     font-size: 1.8rem;
-    letter-spacing: 0.5px;
+    letter-spacing: -0.5px;
     margin-bottom: 8px;
 }
 
 .btn {
-    background: #2f3748;
+    background: #f1f4f9;
     border: none;
     border-radius: 60px;
     padding: 14px 32px;
     font-size: 1rem;
     font-weight: 500;
-    color: #e8ecf5;
+    color: #1e293b;
     cursor: pointer;
-    transition: 0.2s ease;
+    transition: all 0.2s ease;
     display: inline-flex;
     align-items: center;
     gap: 8px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
     flex: 1 1 auto;
     justify-content: center;
 }
 
 .btn:hover {
-    background: #3d465b;
-    transform: scale(1.02);
+    background: #e8ecf3;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.08);
 }
 
 .btn-primary {
-    background: #4a6cf7;
+    background: #6366f1;
     color: white;
+    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
 }
 
 .btn-primary:hover {
-    background: #5f7df9;
+    background: #818cf8;
+    box-shadow: 0 6px 20px rgba(99, 102, 241, 0.4);
+    transform: translateY(-2px);
 }
 
 .btn-danger {
-    background: #c73b4b;
+    background: #ef4444;
+    color: white;
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
 }
 
 .btn-danger:hover {
-    background: #d94b5c;
+    background: #f87171;
+    box-shadow: 0 6px 20px rgba(239, 68, 68, 0.4);
+    transform: translateY(-2px);
 }
 
 @media (max-width: 480px) {
     .container {
         padding: 18px;
+        border-radius: 20px;
     }
 
     .btn {
@@ -91,6 +100,8 @@ footer {
     position: fixed;
     bottom: 0;
     left: 0;
+    background: #ffffff;
+    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.04);
 }
 
 .menu ul {
@@ -99,29 +110,44 @@ footer {
 
 .menu li {
     display: table-cell;
-    background: #2767A0;
+    background: #ffffff;
+    transition: all 0.2s ease;
 }
 
-/* .menu li:first-child {
-        border-top-left-radius: 80px 80px;
-        border-bottom-left-radius: 80px 80px;
-    }
-
-    .menu li:last-child {
-        border-top-right-radius: 80px 80px;
-        border-bottom-right-radius: 80px 80px;
-    } */
-
-.menu ul li:hover,
-.menu a:hover {
-    background: #666;
+.menu li:hover {
+    background: #f8fafc;
 }
 
 .menu li a {
     display: block;
-    padding: 8px 15px;
-    color: #fff;
+    padding: 14px 15px;
+    color: #64748b;
     text-align: center;
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 0.9rem;
+    transition: all 0.2s ease;
+}
+
+.menu li a:hover {
+    color: #6366f1;
+    background: #f1f4f9;
+}
+
+.menu li a i {
+    display: block;
+    font-size: 1.2rem;
+    margin-bottom: 4px;
+}
+
+.menu li.active a {
+    color: #6366f1;
+    font-weight: 600;
+}
+
+.menu li.active {
+    background: #f1f4ff;
+    border-bottom: 3px solid #6366f1;
 }
 
 @media (max-width: 550px) {

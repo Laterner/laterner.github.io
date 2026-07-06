@@ -26,8 +26,6 @@ services:
       - .env
     volumes:
       - ./api:/app
-      - ./static:/app/static
-      - ./media:/app/media
     ports:
       - "8000:8000"
     networks:
@@ -44,8 +42,6 @@ services:
       - .env
     volumes:
       - ./bot:/bot
-      - ./static:/app/static
-      - ./media:/app/media
     networks:
       - app_network
     depends_on:
