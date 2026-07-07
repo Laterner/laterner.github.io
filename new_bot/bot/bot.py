@@ -179,7 +179,7 @@ async def start_command(message: types.Message, state: FSMContext):
             f"🎮 Player ID: {format_player_id(user['player_id'])}\n"
             f"⚔️ Команда: {TEAMS[user['team']]['emoji']} {TEAMS[user['team']]['name']}\n"
             f"⭐ Очки: {user['score']}\n"
-            f"🏆 Побед: {user['wins']} | Поражений: {user['losses']}\n\n"
+            f"🏆 Игр сыграно: {user['wins']}"
             "Используй кнопки ниже:",
             reply_markup=get_main_keyboard(),
             parse_mode="HTML"
@@ -221,9 +221,7 @@ async def profile_command(message: types.Message):
         f"🎮 Player ID: {format_player_id(user['player_id'])}\n"
         f"⚔️ Команда: {TEAMS[user['team']]['emoji']} {TEAMS[user['team']]['name']}\n"
         f"⭐ Очки: {user['score']}\n"
-        f"🏆 Побед: {user['wins']}\n"
-        f"💔 Поражений: {user['losses']}\n"
-        f"🎯 Игр сыграно: {user['games_played']}\n"
+        f"🏆 Игр сыграно: {user['games_played']}\n"
         f"🆔 Telegram ID: <code>{user_id}</code>\n\n"
         f"📜 <b>Последние действия:</b>\n{history_text}",
         parse_mode="HTML",
@@ -288,7 +286,7 @@ async def stats_command(message: types.Message):
             f"📊 <b>Статистика команды {TEAMS[user['team']]['name']}</b>\n\n"
             f"👥 Игроков: {team_stats['total_players']}\n"
             f"🎯 Игр сыграно: {team_stats['total_games']}\n"
-            f"🏆 Побед: {team_stats['total_wins']}\n"
+            f"🏆 Очки команды: {team_stats['total_wins']}\n"
         )
     else:
         text = f"📊 Статистика команды {TEAMS[user['team']]['name']} пока пуста"

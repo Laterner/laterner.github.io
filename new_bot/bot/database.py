@@ -13,7 +13,7 @@ from sqlalchemy.ext.asyncio import (
 )
 from sqlalchemy.exc import IntegrityError
 
-from models import User, TeamStats, UserHistory, Team, Base
+from models import User, TeamStats, UserHistory, Base
 from utils import TEAMS
 
 

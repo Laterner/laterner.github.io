@@ -56,6 +56,59 @@ def validate_init_data(init_data: str):
     data['user'] =  json.loads(data['user'])
     return data
 
-if __name__ == "__main__":
-    eprint("asdsad")
-    eprint("asdsad", "asd", "asdfdgf")
+TEAMS = {
+    "1": {
+        "name": "Выгода",
+        "emoji": "👤",
+        "description": "",
+        "color": "#FF4444"
+    },
+    "2": {
+        "name": "Реклама",
+        "emoji": "👤",
+        "description": "",
+        "color": "#4444FF"
+    },
+    "3": {
+        "name": "Город",
+        "emoji": "👤",
+        "description": "",
+        "color": "#44FF44"
+    },
+    "4": {
+        "name": "Покупки",
+        "emoji": "👤",
+        "description": "",
+        "color": "#44FF44"
+    },
+    "5": {
+        "name": "Путешествия",
+        "emoji": "👤",
+        "description": "",
+        "color": "#44FF44"
+    },
+    "6": {
+        "name": "Т-Авто",
+        "emoji": "👤",
+        "description": "",
+        "color": "#44FF44"
+    },
+    "7": {
+        "name": "Общие платформы",
+        "emoji": "👤",
+        "description": "",
+        "color": "#44FF44"
+    },
+    "8": {
+        "name": "Команда аналитики, роста и монетизации",
+        "emoji": "👤",
+        "description": "",
+        "color": "#44FF44"
+    },
+    "9": {
+        "name": "HR",
+        "emoji": "👤",
+        "description": "",
+        "color": "#44FF44"
+    }
+}

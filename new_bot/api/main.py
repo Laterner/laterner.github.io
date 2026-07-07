@@ -18,7 +18,7 @@ from auth import (
     get_current_user,
     require_admin
 )
-from utils import InitData, validate_init_data, eprint
+from utils import InitData, validate_init_data, eprint, TEAMS
 
 # Настройка логирования
 logging.basicConfig(level=logging.INFO)
@@ -82,12 +82,18 @@ async def home():
 async def miniapp():
     user = await db.get_user_by_player_id("W8R0B")
     top_players = await db.get_top_players(10)
+    
+    user['team'] = TEAMS[user['team']]['name']
+    
     return await render_template("index.html", title="Home", user=user, top_players=top_players)
 
 @app.route("/miniapp_home")
 async def miniapp_home():
     user = await db.get_user_by_player_id("W8R0B")
     top_players = await db.get_top_players(10)
+    
+    user['team'] = TEAMS[user['team']]['name']
+    
     return await render_template("index.html", title="Home", user=user, user_data='user_data', top_players=top_players)
 
 @app.route("/tg_auth", methods=['POST'])
