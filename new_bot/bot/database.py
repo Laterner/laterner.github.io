@@ -13,7 +13,9 @@ from sqlalchemy.ext.asyncio import (
 )
 from sqlalchemy.exc import IntegrityError
 
-from models import User, TeamStats, UserHistory, Base
+from models import User, TeamStats, UserHistory, Team, Base
+from utils import TEAMS
+
 
 # Загрузка переменных окружения
 DB_CONFIG = {
@@ -62,19 +64,36 @@ class Database:
             # Инициализируем статистику команд
             await self._init_team_stats()
 
+    # async def _init_teams(self):
+    #     """Инициализация записей статистики для всех команд"""
+    #     async with SessionLocal() as session:
+    #         for _key, _team in TEAMS.items():
+    #             # Проверяем, существует ли запись для команды
+    #             result = await session.execute(
+    #                 select(Team).where(Team.name == _team['name'])
+    #             )
+    #             stats = result.scalar_one_or_none()
+                
+    #             if stats is None:
+    #                 # Создаем запись для команды
+    #                 new_team = Team(name=_team['name'])
+    #                 session.add(new_team)
+            
+    #         await session.commit()
+            
     async def _init_team_stats(self):
         """Инициализация записей статистики для всех команд"""
         async with SessionLocal() as session:
-            for team in ['red', 'blue', 'green']:
+            for _key, _team in TEAMS.items():
                 # Проверяем, существует ли запись для команды
                 result = await session.execute(
-                    select(TeamStats).where(TeamStats.team == team)
+                    select(TeamStats).where(TeamStats.team == _team['name'])
                 )
                 stats = result.scalar_one_or_none()
                 
                 if stats is None:
                     # Создаем запись для команды
-                    new_stats = TeamStats(team=team)
+                    new_stats = TeamStats(team=_team['name'])
                     session.add(new_stats)
             
             await session.commit()

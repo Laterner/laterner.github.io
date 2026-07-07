@@ -10,6 +10,7 @@ from aiogram.filters import Command, StateFilter
 from aiogram.fsm.state import StatesGroup, State
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.storage.memory import MemoryStorage
+from aiogram.utils.keyboard import InlineKeyboardBuilder
 from aiogram.types import (
     KeyboardButton,
     ReplyKeyboardMarkup,
@@ -138,16 +139,30 @@ def get_main_keyboard():
 
 def get_team_keyboard():
     """Клавиатура выбора команды"""
-    buttons = []
+
+    builder = InlineKeyboardBuilder()
+
     for key, team in TEAMS.items():
-        buttons.append(
-            InlineKeyboardButton(
-                text=f"{key}",
-                callback_data=f"team_{key}"
-            )
+        builder.button(
+            text=f"Команда {key}",
+            callback_data=f"team_{key}"
         )
+    # Распределить по строкам, например по 3 кнопки в ряд
+    builder.adjust(3)
+    keyboard = builder.as_markup()
+
+    # buttons = []
+    # for key, team in TEAMS.items():
+    #     print("add button -------->", f"team_{key}")
+    #     buttons.append(
+    #         InlineKeyboardButton(
+    #             text=f"{key}",
+    #             callback_data=f"team_{key}"
+    #         )
+    #     )
+
         
-    keyboard = InlineKeyboardMarkup(inline_keyboard=[buttons])
+    # keyboard = InlineKeyboardMarkup(inline_keyboard=[buttons])
     return keyboard
 
 # Обработчики команд
@@ -574,3 +589,6 @@ async def main():
 
 if __name__ == "__main__":
     asyncio.run(main())
+    # for key, team in TEAMS.items():
+    #     print("add button -------->", f"team_{key}")
+        

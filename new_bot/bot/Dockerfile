@@ -1,11 +1,19 @@
 # 1. Базовый образ
-FROM python:3.11-slim
+FROM python:3.13-slim
 
 # 2. Рабочая директория
 WORKDIR /bot
 
+RUN apt-get update && apt-get install -y \
+    gcc \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
 # 3. Копируем зависимости и ставим их (кэширование слоев!)
 COPY requirements.txt requirements.txt
+
+RUN curl -LsSf https://astral.sh/uv/install.sh | sh
+
 RUN pip install --no-cache-dir -r requirements.txt
 
 # 4. Копируем сам код
