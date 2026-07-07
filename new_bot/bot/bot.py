@@ -128,7 +128,7 @@ def get_main_keyboard():
     keyboard = ReplyKeyboardMarkup(
         keyboard=[
             [KeyboardButton(text="👤 Мой профиль")],
-            [KeyboardButton(text="📊 Статистика")],
+            [KeyboardButton(text="📊 Статистика команды")],
             [KeyboardButton(text="🏆 Топ игроков")],
             [button_miniapp]
             # [KeyboardButton(text="🔄 Сменить команду")]
@@ -372,7 +372,7 @@ async def process_name(message: types.Message, state: FSMContext):
 async def profile_button(message: types.Message):
     await profile_command(message)
 
-@dp.message(F.text == "📊 Статистика")
+@dp.message(F.text == "📊 Статистика команды")
 async def stats_button(message: types.Message):
     await stats_command(message)
 
