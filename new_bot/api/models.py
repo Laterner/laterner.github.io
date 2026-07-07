@@ -44,7 +44,7 @@ class User(Base):
     )
 
     team: Mapped[str] = mapped_column(
-        String(20),
+        String(100),
         nullable=False,
         index=True
     )
@@ -111,7 +111,7 @@ class TeamStats(Base):
     __tablename__ = "team_stats"
 
     team: Mapped[str] = mapped_column(
-        String(20),
+        String(100),
         primary_key=True
     )
 
