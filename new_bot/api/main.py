@@ -184,7 +184,7 @@ async def home():
 
 @app.route("/miniapp")
 async def miniapp():
-    user = await db.get_user_by_player_id("W8R0B")
+    user = await db.get_user_by_player_id("FF6BA")
     top_players = await db.get_top_players(10)
     
     user['team'] = TEAMS[str(user['team'])]['name']
@@ -193,7 +193,7 @@ async def miniapp():
 
 @app.route("/miniapp_home")
 async def miniapp_home():
-    user = await db.get_user_by_player_id("W8R0B")
+    user = await db.get_user_by_player_id("FF6BA")
     top_players = await db.get_top_players(10)
     
     user['team'] = TEAMS[str(user['team'])]['name']
@@ -227,7 +227,7 @@ async def qr_page():
 @app.route("/quize")
 async def quize_page():
     quize_id = request.args.get('quize_id', '0')
-    user = await db.get_user_by_player_id("W8R0B")
+    user = await db.get_user_by_player_id("FF6BA")
     
     try:
         quize_id = int(quize_id)
