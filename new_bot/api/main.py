@@ -3,8 +3,11 @@
 import os
 import json
 import asyncio
+import threading
+from multiprocessing import Process
 from functools import wraps
 from typing import Optional
+from dataclasses import dataclass
 import logging
 from quart import (
     Quart, render_template, request, redirect, 
@@ -19,6 +22,56 @@ from auth import (
     require_admin
 )
 from utils import InitData, validate_init_data, eprint, TEAMS
+
+
+
+
+@dataclass
+class GameState:
+    current_player_id: Optional[str] = None
+    player_scores: dict = None
+    
+    def __post_init__(self):
+        if self.player_scores is None:
+            self.player_scores = {}
+
+# Глобальное состояние игры
+game_state = GameState()
+score_task = None
+score_lock = asyncio.Lock()
+
+async def add_points_periodically():
+    """Фоновая задача для начисления очков каждые 3 секунды"""
+    while True:
+        try:
+            async with score_lock:
+                if game_state.current_player_id:
+                    player_id = game_state.current_player_id
+                    
+                    success = await db.add_score(player_id, 1)
+                    if success:
+                        logger.error(f"Успешно добавлены очки")
+                    else:
+                        logger.error(f"Произошла ошибка при добавлении")
+                        
+                    # Инициализируем счет игрока, если его нет
+                    if player_id not in game_state.player_scores:
+                        game_state.player_scores[player_id] = 0
+                    
+                    # Начисляем очки
+                    game_state.player_scores[player_id] += 1
+                    # logging.info(f"Игроку {player_id} начислено очко. Текущий счет: {game_state.player_scores[player_id]}")
+            
+            await asyncio.sleep(3)  # Ждем 3 секунды
+        except asyncio.CancelledError:
+            logging.info("Задача начисления очков остановлена")
+            break
+        except Exception as e:
+            logging.error(f"Ошибка в задаче начисления очков: {e}")
+            await asyncio.sleep(3)
+
+
+
 
 # Настройка логирования
 logging.basicConfig(level=logging.INFO)
@@ -67,6 +120,57 @@ async def init_db():
     logger.info("🚀 Запуск Quart приложения...")
     await db.init_db()
     logger.info("✅ База данных инициализирована")
+
+@app.before_serving
+async def startup():
+    """Запуск фоновой задачи при старте сервера"""
+    global score_task
+    if score_task is None or score_task.done():
+        score_task = asyncio.create_task(add_points_periodically())
+        logging.info("Задача начисления очков запущена")
+
+@app.after_serving
+async def shutdown():
+    """Остановка фоновой задачи при завершении сервера"""
+    global score_task
+    if score_task and not score_task.done():
+        score_task.cancel()
+        try:
+            await score_task
+        except asyncio.CancelledError:
+            pass
+        logging.info("Задача начисления очков остановлена")
+        
+        
+
+
+
+@app.route('/set_player_king', methods=['POST'])
+async def set_player():
+    """Установка текущего игрока"""
+    data = await request.get_json()
+    if not data or 'player_id' not in data:
+        return jsonify({'error': 'Не указан player_id'}), 400
+    
+    player_id = str(data['player_id'])
+    
+    async with score_lock:
+        game_state.current_player_id = player_id
+        # Инициализируем счет для нового игрока
+        if player_id not in game_state.player_scores:
+            game_state.player_scores[player_id] = 0
+    
+    return jsonify({
+        'message': f'Текущий игрок установлен: {player_id}',
+        'current_player': player_id
+    })
+
+
+
+
+
+
+
 
 # Middleware для логирования
 @app.before_request
@@ -224,6 +328,8 @@ async def answer():
         return jsonify({'ans': 1, 'player_id': player_id})
     else:
         return jsonify({'ans': 0, 'player_id': player_id})
+
+
 
 """ Админка роуты """
 @app.route("/admin/addscore")
@@ -457,9 +563,16 @@ async def admin_logout():
     resp.delete_cookie("access_token")
     return resp
 
+@app.route("/admin/king")
+async def king():
+    """Начисление очков со временем"""
+    
+    return await render_template("king.html", title="Добавление очков")
+
 if __name__ == "__main__":
     app.run(
         host="0.0.0.0",
         port=8000,
         debug=True
     )
+
