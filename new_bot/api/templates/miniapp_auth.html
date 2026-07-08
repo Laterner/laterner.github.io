@@ -16,10 +16,8 @@
     let user_tg_id = ""
     tg.expand();
     
-    log_all(tg.initData.user)
-    
     if (tg.initData)
-        user_tg_id = tg.initData.user.id;
+        user_tg_id = "";
     else 
         user_tg_id = '427310232';
         
@@ -42,6 +40,7 @@
         `;*/
         // document.cookie = `user_tg_id=${data}`;
     });
+    log_all(responce)
     console.log("responce::", responce);
     window.location.replace("/miniapp");
     

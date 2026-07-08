@@ -214,7 +214,7 @@ async def tg_auth():
     payload = await request.get_json()
     print("initData 1:", payload.get('initData'))
     initData = validate_init_data(payload.get('initData'))
-    eprint("initData2:", initData)
+    print("initData2:", initData)
     user_tg_id = payload.get('user_tg_id')
     
     print("auth user_tg_id ----->", user_tg_id)
