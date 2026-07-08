@@ -219,7 +219,7 @@ async def tg_auth():
     print("initData 1:", payload.get('initData'))
     initData = validate_init_data(payload.get('initData'))
     print("initData2:", initData)
-    user_tg_id = payload.get('user_tg_id')
+    user_tg_id = "427310232" # payload.get('user_tg_id')
     if user_tg_id == "":
         user_tg_id = str(initData['user']['id'])
         
@@ -233,6 +233,17 @@ async def tg_auth():
     # Установка куки с параметрами (значение, время жизни, защита)
     response.set_cookie("user_tg_id", user_tg_id, max_age=3600, secure=True, httponly=True)
     
+    
+    return response
+
+@app.route("/tg_auth_delete", methods=['POST'])
+async def tg_auth_delete():
+    
+    # Устанавливаем cookie
+    response = await make_response(jsonify({'data': "fine"}))
+    
+    # Установка куки с параметрами (значение, время жизни, защита)
+    response.set_cookie("user_tg_id", "None", max_age=3600, secure=True, httponly=True)
     
     return response
 
