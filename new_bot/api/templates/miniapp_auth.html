@@ -6,10 +6,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <title> {{ title }}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
-    <div id="conteiner"></div>
-    <div id="logger"></div>
+    <div class="wrap">
+        <div class="conteiner">
+            <button class="btn" onclick="start()">Начать</button>
+            <button class="btn" onclick="delete_coockies()">Удалить куки</button>
+            <div id="conteiner"></div>
+        </div>
+        <div id="logger"></div>
+    </div>
 </body>
 <script>
     const tg = window.Telegram.WebApp;
@@ -33,21 +40,35 @@
     })
     .then(res => res.json())
     .then(data => {
-        /* document.getElementById("conteiner").innerHTML = `
+        document.getElementById("conteiner").innerHTML = `
             <h2>Пользователь</h2>
-            <p>ID: ${data.id}</p>
-            <p>Username: ${data.username}</p>
-        `;*/
+            <p>ID: ${data.user_tg_id}</p>
+        `;
         // document.cookie = `user_tg_id=${data}`;
         log_all(data)
     });
     
     console.log("responce::", responce);
-    window.location.reload();
+   
     
     function log_all(text) {
         let logger = document.getElementById("logger")
         logger.innerHTML += `<p>${text}</p>`
+    }
+    function start(){
+        window.location.reload();
+    }
+    function delete_coockies(){
+        let responce = fetch("/tg_auth_delete", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            }
+        })
+        .then(res => res.json())
+        .then(data => {
+            window.location.reload();
+        });
     }
     log_all("Загружаются данные из Телеграм...");
 </script>

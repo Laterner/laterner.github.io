@@ -219,7 +219,7 @@ async def tg_auth():
     print("initData 1:", payload.get('initData'))
     initData = validate_init_data(payload.get('initData'))
     print("initData2:", initData)
-    user_tg_id = "427310232" # payload.get('user_tg_id')
+    user_tg_id = payload.get('user_tg_id')
     if user_tg_id == "":
         user_tg_id = str(initData['user']['id'])
         
