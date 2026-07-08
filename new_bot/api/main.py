@@ -225,7 +225,7 @@ async def tg_auth():
     response = await make_response("fine")
     
     # Установка куки с параметрами (значение, время жизни, защита)
-    response.set_cookie("user_tg_id", '427310232', max_age=3600, secure=True, httponly=True)
+    response.set_cookie("user_tg_id", user_tg_id, max_age=3600, secure=True, httponly=True)
     
     
     return response
