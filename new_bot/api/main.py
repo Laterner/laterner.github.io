@@ -217,7 +217,7 @@ async def tg_auth():
     print("initData2:", initData)
     user_tg_id = payload.get('user_tg_id')
     if user_tg_id == "":
-        user_tg_id = initData['user']['id']
+        user_tg_id = str(initData['user']['id'])
         
     print("auth user_tg_id ----->", user_tg_id)
     if not user_tg_id:
