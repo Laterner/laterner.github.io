@@ -16,7 +16,7 @@
     let user_tg_id = ""
     tg.expand();
     
-    log_all(tg.initData.user)
+    log_all(tg.initData)
     
     if (tg.initData)
         user_tg_id = tg.initData.user.id;
@@ -29,9 +29,8 @@
             "Content-Type": "application/json"
         },
         body: JSON.stringify({
-            
-            user_tg_id: user_tg_id
-            
+            user_tg_id: user_tg_id,
+            initData: tg.initData
         })
     })
     .then(res => res.json())

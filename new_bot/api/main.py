@@ -192,9 +192,6 @@ async def miniapp():
     except:
         print('An exception occurred')
         return await render_template("miniapp_auth.html", title="TG Auth")
-    # if user_id is None or type(user_id) != str:
-    #     return await render_template("miniapp_auth.html", title="Home222222222")
-    
     
     user = None
 
@@ -206,15 +203,18 @@ async def miniapp():
 
     if user == None:
         return "<title>error</title><h1>error user not found</h1>"
+    
     top_players = await db.get_top_players(10)
-    user['team'] = "" # TEAMS[str(user['team'])]['name']
+    user['team'] = TEAMS[str(user['team'])]['name']
     eprint("user['team']", user['team'])
     return await render_template("index.html", title="Home", user=user, top_players=top_players)
 
 @app.route("/tg_auth", methods=['POST'])
 async def tg_auth():
     payload = await request.get_json()
-    # user_tg_id = validate_init_data(payload.get('user_tg_id'))
+    print("initData 1:", payload.get('initData'))
+    initData = validate_init_data(payload.get('initData'))
+    eprint("initData2:", initData)
     user_tg_id = payload.get('user_tg_id')
     
     print("auth user_tg_id ----->", user_tg_id)
