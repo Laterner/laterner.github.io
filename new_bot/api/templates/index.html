@@ -63,36 +63,26 @@
     </div>
 </div>
 <div class="container">
-    <div class="user">
-        <p> Имя: {{user.name}} </p>
-        <p> ID: {{user.player_id}} </p>
-        <p> Команда: {{user.team}} </p>
-        <p> Счёт: {{user.score}} </p>
-        <p> Игр сыграно: {{user.games_played}} </p>
-    </div>
+    <h1> Личный рейтинг</h1>
+    <p> Имя: {{user.name}} </p>
+    <p> ID: {{user.player_id}} </p>
+    <p> Команда: {{user.team}} </p>
+    <p> Счёт: {{user.score}} </p>
+    <p> Игр сыграно: {{user.games_played}} </p>
+    Ваше место в рейтинге:
+    <p> Команда: {{user.team}} </p>
 </div>
 
 <div class="container">
-    Топ команд
-    <div class="user">
-        <table>
-            {% for team in top_teams %}
+    <h1>Топ команд</h1>
+    <table>
+        {% for team in top_teams %}
             <tr>
                 <td>{{ team.name}}</td>
                 <td class="dts">{{ team.total_games}}</td>
             </tr>
         {% endfor %}
-        </table>
-        
-    </div>
-</div>
-<div class="container">
-    <div class="user">
-        <h1> Личный рейтинг</h1>
-        <p>{{user.name}}: {{user.score}}</p>
-    </div>
-
-    Ваше место в рейтинге:
+    </table>
 </div>
 <div class="container">
     <h1> Топ игроков </h1>
