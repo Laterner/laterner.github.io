@@ -144,7 +144,7 @@ def get_team_keyboard():
 
     for key, team in TEAMS.items():
         builder.button(
-            text=f"Команда {key}",
+            text=team['name'],
             callback_data=f"team_{key}"
         )
     # Распределить по строкам, например по 3 кнопки в ряд
@@ -221,9 +221,9 @@ async def profile_command(message: types.Message):
         f"🎮 Player ID: {format_player_id(user['player_id'])}\n"
         f"⚔️ Команда: {TEAMS[user['team']]['emoji']} {TEAMS[user['team']]['name']}\n"
         f"⭐ Очки: {user['score']}\n"
-        f"🏆 Игр сыграно: {user['games_played']}\n"
-        f"🆔 Telegram ID: <code>{user_id}</code>\n\n"
-        f"📜 <b>Последние действия:</b>\n{history_text}",
+        f"🏆 Игр сыграно: {user['games_played']}\n",
+        # f"🆔 Telegram ID: <code>{user_id}</code>\n\n"
+        # f"📜 <b>Последние действия:</b>\n{history_text}",
         parse_mode="HTML",
         reply_markup=get_main_keyboard()
     )

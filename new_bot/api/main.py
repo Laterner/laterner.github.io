@@ -184,21 +184,17 @@ async def home():
 
 @app.route("/miniapp")
 async def miniapp():
-    user = await db.get_user_by_player_id("FF6BA")
+    user_id = request.cookies.get("user_tg_id", None)
+    
+    if user_id == None:
+        return await render_template("miniapp_auth.html", title="Home")
+    
+    user = await db.get_user_by_player_id()
     top_players = await db.get_top_players(10)
     
     user['team'] = TEAMS[str(user['team'])]['name']
     eprint("user['team']", user['team'])
     return await render_template("index.html", title="Home", user=user, top_players=top_players)
-
-@app.route("/miniapp_home")
-async def miniapp_home():
-    user = await db.get_user_by_player_id("FF6BA")
-    top_players = await db.get_top_players(10)
-    
-    user['team'] = TEAMS[str(user['team'])]['name']
-    
-    return await render_template("index.html", title="Home", user=user, user_data='user_data', top_players=top_players)
 
 @app.route("/tg_auth", methods=['POST'])
 async def tg_auth():
