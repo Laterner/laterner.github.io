@@ -85,7 +85,9 @@ class Database:
         """Инициализация записей статистики для всех команд"""
         async with SessionLocal() as session:
             for _key, _team in TEAMS.items():
+                # print("--------->",_key, _team)
                 # Проверяем, существует ли запись для команды
+                # print("--------------->", _team['name'])
                 result = await session.execute(
                     select(TeamStats).where(TeamStats.team == _team['name'])
                 )

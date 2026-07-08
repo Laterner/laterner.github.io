@@ -184,41 +184,68 @@ async def home():
 
 @app.route("/miniapp")
 async def miniapp():
-    user = await db.get_user_by_player_id("FF6BA")
-    top_players = await db.get_top_players(10)
-    
-    user['team'] = TEAMS[str(user['team'])]['name']
-    eprint("user['team']", user['team'])
-    return await render_template("index.html", title="Home", user=user, top_players=top_players)
+    user_id = request.cookies.get("user_tg_id", None)
+    print("user_id -->", user_id, type(user_id))
 
-@app.route("/miniapp_home")
-async def miniapp_home():
-    user = await db.get_user_by_player_id("FF6BA")
+    try:
+        int(user_id)
+    except:
+        print('An exception occurred')
+        return await render_template("miniapp_auth.html", title="TG Auth")
+    
+    user = None
+
+    try:
+        user = await db.get_user(int(user_id))
+    except Exception as e:
+        print('Ошибка получения get_user():', e)
+    
+
+    if user == None:
+        return "<title>error</title><h1>error user not found</h1>"
+    
     top_players = await db.get_top_players(10)
+    # user['team'] = TEAMS[str(user['team'])]['name']
     
-    user['team'] = TEAMS[str(user['team'])]['name']
+    top_teams = await db.get_all_teams_stats()
+    print("top_teams", top_teams)
+    print("top_players", top_players)
     
-    return await render_template("index.html", title="Home", user=user, user_data='user_data', top_players=top_players)
+    return await render_template("index.html", title="Home", user=user, top_players=top_players, top_teams=top_teams)
 
 @app.route("/tg_auth", methods=['POST'])
 async def tg_auth():
     payload = await request.get_json()
-    data = validate_init_data(payload.get('initData'))
-    
-    if not data:
+    print("initData 1:", payload.get('initData'))
+    initData = validate_init_data(payload.get('initData'))
+    print("initData2:", initData)
+    user_tg_id = "427310232" # payload.get('user_tg_id')
+    if user_tg_id == "":
+        user_tg_id = str(initData['user']['id'])
+        
+    print("auth user_tg_id ----->", user_tg_id)
+    if not user_tg_id:
         return jsonify({"error": "invalid initData"}), 400
     
-    user = data.get("user")
+    # Устанавливаем cookie
+    response = await make_response(jsonify({'data': "fine: " + str(user_tg_id), 'user_tg_id':user_tg_id}))
+    
+    # Установка куки с параметрами (значение, время жизни, защита)
+    response.set_cookie("user_tg_id", user_tg_id, max_age=3600, secure=True, httponly=True)
+    
+    
+    return response
+
+@app.route("/tg_auth_delete", methods=['POST'])
+async def tg_auth_delete():
     
     # Устанавливаем cookie
-    resp = await make_response(jsonify({
-        "id": user.get("id"),
-        "username": user.get("username"),
-        "first_name": user.get("first_name")
-    }))
-    resp.set_cookie("user_data", value=str(user))
+    response = await make_response(jsonify({'data': "fine"}))
     
-    return resp
+    # Установка куки с параметрами (значение, время жизни, защита)
+    response.set_cookie("user_tg_id", "None", max_age=3600, secure=True, httponly=True)
+    
+    return response
 
 @app.route("/qr")
 async def qr_page():

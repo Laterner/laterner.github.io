@@ -144,7 +144,7 @@ def get_team_keyboard():
 
     for key, team in TEAMS.items():
         builder.button(
-            text=f"Команда {key}",
+            text=team['name'],
             callback_data=f"team_{key}"
         )
     # Распределить по строкам, например по 3 кнопки в ряд
@@ -221,9 +221,9 @@ async def profile_command(message: types.Message):
         f"🎮 Player ID: {format_player_id(user['player_id'])}\n"
         f"⚔️ Команда: {TEAMS[user['team']]['emoji']} {TEAMS[user['team']]['name']}\n"
         f"⭐ Очки: {user['score']}\n"
-        f"🏆 Игр сыграно: {user['games_played']}\n"
-        f"🆔 Telegram ID: <code>{user_id}</code>\n\n"
-        f"📜 <b>Последние действия:</b>\n{history_text}",
+        f"🏆 Игр сыграно: {user['games_played']}\n",
+        # f"🆔 Telegram ID: <code>{user_id}</code>\n\n"
+        # f"📜 <b>Последние действия:</b>\n{history_text}",
         parse_mode="HTML",
         reply_markup=get_main_keyboard()
     )
@@ -263,8 +263,7 @@ async def top_command(message: types.Message):
         medal = "🥇" if i == 1 else "🥈" if i == 2 else "🥉" if i == 3 else f"{i}."
         text += (
             f"{medal} <b>{player['name']}</b>\n"
-            f"   🎮 {format_player_id(player['player_id'])}\n"
-            f"   ⚔️ {TEAMS[player['team']]['emoji']} {TEAMS[player['team']]['name']}\n"
+            f"   {TEAMS[player['team']]['emoji']} {TEAMS[player['team']]['name']}\n"
             f"   ⭐ {player['score']} очков | 🏆 {player['wins']} игр\n\n"
         )
     

@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <title>Document</title>
+    <title> {{ title }}</title>
 </head>
 <body>
     <div id="conteiner"></div>
@@ -13,34 +13,43 @@
 </body>
 <script>
     const tg = window.Telegram.WebApp;
+    let user_tg_id = ""
     tg.expand();
-
-    fetch("/tg_auth", {
+    
+    // if (tg.initData)
+    //     user_tg_id = "";
+    // else 
+    //     user_tg_id = '427310232';
+        
+    let responce = fetch("/tg_auth", {
         method: "POST",
         headers: {
             "Content-Type": "application/json"
         },
         body: JSON.stringify({
+            user_tg_id: user_tg_id,
             initData: tg.initData
         })
     })
     .then(res => res.json())
     .then(data => {
-        document.getElementById("conteiner").innerHTML = `
+        /* document.getElementById("conteiner").innerHTML = `
             <h2>Пользователь</h2>
             <p>ID: ${data.id}</p>
             <p>Username: ${data.username}</p>
-        `;
-        document.cookie = `user_data=${data}`;
+        `;*/
+        // document.cookie = `user_tg_id=${data}`;
+        log_all(data)
     });
-
-    window.location.replace("http://192.168.0.151:8000/miniapp_home");
+    
+    console.log("responce::", responce);
+    window.location.reload();
     
     function log_all(text) {
         let logger = document.getElementById("logger")
         logger.innerHTML += `<p>${text}</p>`
     }
-    log_all("Начало логгирования");
+    log_all("Загружаются данные из Телеграм...");
 </script>
 
 </html>
