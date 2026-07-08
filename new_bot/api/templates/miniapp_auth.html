@@ -16,7 +16,7 @@
     let user_tg_id = ""
     tg.expand();
     
-    log_all(tg.initData)
+    // log_all(tg.initData)
     
     if (tg.initData)
         user_tg_id = tg.initData.user.id;
@@ -44,7 +44,7 @@
         // document.cookie = `user_tg_id=${data}`;
     });
     console.log("responce::", responce);
-    //window.location.replace("http://192.168.0.151:8000/miniapp");
+    window.location.replace("/miniapp");
     
     function log_all(text) {
         let logger = document.getElementById("logger")
