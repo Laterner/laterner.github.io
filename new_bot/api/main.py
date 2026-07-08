@@ -185,36 +185,44 @@ async def home():
 @app.route("/miniapp")
 async def miniapp():
     user_id = request.cookies.get("user_tg_id", None)
+    print("user_id -->", user_id, type(user_id))
+    if user_id is None or type(user_id) != str:
+        return await render_template("miniapp_auth.html", title="Home222222222")
     
-    if user_id == None:
-        return await render_template("miniapp_auth.html", title="Home")
     
-    user = await db.get_user_by_player_id()
+    user = None
+
+    try:
+        user = await db.get_user(int(user_id))
+    except Exception as e:
+        print('Ошибка получения get_user():', e)
+    
+
+    if user == None:
+        return "<title>error</title><h1>error user not found</h1>"
     top_players = await db.get_top_players(10)
-    
-    user['team'] = TEAMS[str(user['team'])]['name']
+    user['team'] = "" # TEAMS[str(user['team'])]['name']
     eprint("user['team']", user['team'])
     return await render_template("index.html", title="Home", user=user, top_players=top_players)
 
 @app.route("/tg_auth", methods=['POST'])
 async def tg_auth():
     payload = await request.get_json()
-    data = validate_init_data(payload.get('initData'))
+    # user_tg_id = validate_init_data(payload.get('user_tg_id'))
+    user_tg_id = payload.get('user_tg_id')
     
-    if not data:
+    print("auth user_tg_id ----->", user_tg_id)
+    if not user_tg_id:
         return jsonify({"error": "invalid initData"}), 400
     
-    user = data.get("user")
-    
     # Устанавливаем cookie
-    resp = await make_response(jsonify({
-        "id": user.get("id"),
-        "username": user.get("username"),
-        "first_name": user.get("first_name")
-    }))
-    resp.set_cookie("user_data", value=str(user))
+    response = await make_response("fine")
     
-    return resp
+    # Установка куки с параметрами (значение, время жизни, защита)
+    response.set_cookie("user_tg_id", '427310232', max_age=3600, secure=True, httponly=True)
+    
+    
+    return response
 
 @app.route("/qr")
 async def qr_page():

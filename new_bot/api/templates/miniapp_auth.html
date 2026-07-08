@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <title>Document</title>
+    <title> {{ title }}</title>
 </head>
 <body>
     <div id="conteiner"></div>
@@ -13,28 +13,38 @@
 </body>
 <script>
     const tg = window.Telegram.WebApp;
+    let user_tg_id = ""
     tg.expand();
-
-    fetch("/tg_auth", {
+    
+    log_all(tg.initData)
+    
+    if (tg.initData)
+        user_tg_id = tg.initData.user.id;
+    else 
+        user_tg_id = '427310232';
+        
+    let responce = fetch("/tg_auth", {
         method: "POST",
         headers: {
             "Content-Type": "application/json"
         },
         body: JSON.stringify({
-            initData: tg.initData
+            
+            user_tg_id: user_tg_id
+            
         })
     })
     .then(res => res.json())
     .then(data => {
-        document.getElementById("conteiner").innerHTML = `
+        /* document.getElementById("conteiner").innerHTML = `
             <h2>Пользователь</h2>
             <p>ID: ${data.id}</p>
             <p>Username: ${data.username}</p>
-        `;
-        document.cookie = `user_tg_id=${data}`;
+        `;*/
+        // document.cookie = `user_tg_id=${data}`;
     });
-
-    window.location.replace("http://192.168.0.151:8000/miniapp");
+    console.log("responce::", responce);
+    //window.location.replace("http://192.168.0.151:8000/miniapp");
     
     function log_all(text) {
         let logger = document.getElementById("logger")
