@@ -42,6 +42,15 @@
         left: 174px;
         font-size: 62px;
     }
+    table {
+        width: 100%;
+    }
+    .dts {
+        text-align: right;
+    }
+    .wrap {
+        padding-bottom: 80px;
+    }
 </style>
 {% endblock style %}
 {% block content %}
@@ -52,8 +61,6 @@
         <!-- <p class="score">{{user.score}}</p> количество баллов -->
         <!-- <p class="rating">#{{user.score}}</p> рейтинг -->
     </div>
-    <p> Имя: {{user.name}} </p>
-    <p> Команда: {{user.team}} </p>
 </div>
 <div class="container">
     <div class="user">
@@ -66,12 +73,17 @@
 </div>
 
 <div class="container">
+    Топ команд
     <div class="user">
-        <h1> Комамндный рейтинг</h1>
-        <p> Комамнда red: {{user.score}}</p>
-        <p>{{user.name}}: {{user.score}}</p>
-        <p> Комамнда blue: 0</p>
-        <p> Комамнда green: 0</p>
+        <table>
+            {% for team in top_teams %}
+            <tr>
+                <td>{{ team.name}}</td>
+                <td class="dts">{{ team.total_games}}</td>
+            </tr>
+        {% endfor %}
+        </table>
+        
     </div>
 </div>
 <div class="container">
@@ -85,7 +97,7 @@
 <div class="container">
     <h1> Топ игроков </h1>
     {% for top in top_players %}
-            <p>{{ top.name }}</p>
+        <p>{{ top.name }}</p>
     {% endfor %}
 </div>
 

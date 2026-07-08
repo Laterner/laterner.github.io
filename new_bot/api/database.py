@@ -11,7 +11,7 @@ from sqlalchemy.ext.asyncio import (
 )
 from sqlalchemy.exc import IntegrityError
 
-from models import User, UserHistory, Base
+from models import User, UserHistory, Base, TeamStats
 
 # Конфигурация из переменных окружения
 DB_CONFIG = {
@@ -315,7 +315,26 @@ class Database:
                 }
                 for u in users
             ]
-
+    
+    async def get_all_teams_stats(self) -> List[Dict[str, Any]]:
+        """Получение статистики всех команд"""
+        async with SessionLocal() as session:
+            result = await session.execute(
+                select(TeamStats).order_by(TeamStats.team)
+            )
+            stats = result.scalars().all()
+            
+            return [
+                {
+                    'name': s.team,
+                    'total_players': s.total_players,
+                    'total_wins': s.total_wins,
+                    'total_games': s.total_games,
+                }
+                for s in stats
+            ]
+    
+        
     async def close(self):
         """Закрытие соединений с базой данных"""
         await engine.dispose()

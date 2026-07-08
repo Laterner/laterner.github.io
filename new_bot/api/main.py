@@ -205,9 +205,13 @@ async def miniapp():
         return "<title>error</title><h1>error user not found</h1>"
     
     top_players = await db.get_top_players(10)
-    user['team'] = TEAMS[str(user['team'])]['name']
-    eprint("user['team']", user['team'])
-    return await render_template("index.html", title="Home", user=user, top_players=top_players)
+    # user['team'] = TEAMS[str(user['team'])]['name']
+    
+    top_teams = await db.get_all_teams_stats()
+    print("top_teams", top_teams)
+    print("top_players", top_players)
+    
+    return await render_template("index.html", title="Home", user=user, top_players=top_players, top_teams=top_teams)
 
 @app.route("/tg_auth", methods=['POST'])
 async def tg_auth():
