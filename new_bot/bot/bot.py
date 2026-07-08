@@ -263,8 +263,7 @@ async def top_command(message: types.Message):
         medal = "🥇" if i == 1 else "🥈" if i == 2 else "🥉" if i == 3 else f"{i}."
         text += (
             f"{medal} <b>{player['name']}</b>\n"
-            f"   🎮 {format_player_id(player['player_id'])}\n"
-            f"   ⚔️ {TEAMS[player['team']]['emoji']} {TEAMS[player['team']]['name']}\n"
+            f"   {TEAMS[player['team']]['emoji']} {TEAMS[player['team']]['name']}\n"
             f"   ⭐ {player['score']} очков | 🏆 {player['wins']} игр\n\n"
         )
     

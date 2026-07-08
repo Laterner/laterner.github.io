@@ -224,7 +224,7 @@ async def tg_auth():
         return jsonify({"error": "invalid initData"}), 400
     
     # Устанавливаем cookie
-    response = await make_response("fine: " + str(user_tg_id))
+    response = await make_response(jsonify({'data': "fine: " + str(user_tg_id), 'user_tg_id':user_tg_id}))
     
     # Установка куки с параметрами (значение, время жизни, защита)
     response.set_cookie("user_tg_id", user_tg_id, max_age=3600, secure=True, httponly=True)
