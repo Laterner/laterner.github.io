@@ -216,7 +216,9 @@ async def tg_auth():
     initData = validate_init_data(payload.get('initData'))
     print("initData2:", initData)
     user_tg_id = payload.get('user_tg_id')
-    
+    if user_tg_id == "":
+        user_tg_id = initData['user']['id']
+        
     print("auth user_tg_id ----->", user_tg_id)
     if not user_tg_id:
         return jsonify({"error": "invalid initData"}), 400
