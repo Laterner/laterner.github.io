@@ -186,8 +186,14 @@ async def home():
 async def miniapp():
     user_id = request.cookies.get("user_tg_id", None)
     print("user_id -->", user_id, type(user_id))
-    if user_id is None or type(user_id) != str:
-        return await render_template("miniapp_auth.html", title="Home222222222")
+
+    try:
+        int(user_id)
+    except:
+        print('An exception occurred')
+        return await render_template("miniapp_auth.html", title="TG Auth")
+    # if user_id is None or type(user_id) != str:
+    #     return await render_template("miniapp_auth.html", title="Home222222222")
     
     
     user = None
