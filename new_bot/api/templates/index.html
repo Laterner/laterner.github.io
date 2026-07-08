@@ -95,7 +95,27 @@
     {% endfor %}
     </table>
 </div>
+<div class="container">
+    <button class="btn" onclick="test()">Удалить куки</button>
+</div>
 
+<script>
+    function test(){
+        let responce = fetch("/tg_auth_delete", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                user_tg_id: user_tg_id,
+                initData: tg.initData
+            })
+        })
+        .then(res => res.json())
+        .then(data => {
 
+        });
+    }
+</script>
 
 {% endblock %}
