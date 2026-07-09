@@ -225,17 +225,10 @@ async def reg_tg_id():
         user_tg_id = str(initData['user']['id'])
         
     print("auth user_tg_id ----->", user_tg_id)
-    if not user_tg_id:
-        return jsonify({"error": "invalid initData"}), 400
+    # if not user_tg_id:
+    #     return jsonify({"error": "invalid initData"}), 400
     
-    # Устанавливаем cookie
-    response = await make_response(jsonify({'data': "fine: " + str(user_tg_id), 'user_tg_id':user_tg_id}))
-    
-    # Установка куки с параметрами (значение, время жизни, защита)
-    response.set_cookie("user_tg_id", user_tg_id, max_age=3600, secure=True, httponly=True)
-    
-    
-    return response
+    return jsonify({"data": "fin"}), 200
 
 
 @app.route("/tg_auth", methods=['POST'])
