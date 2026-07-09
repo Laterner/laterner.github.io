@@ -27,3 +27,4 @@ sqlalchemy
 alembic
 flask[async]
 quart
+qrcode

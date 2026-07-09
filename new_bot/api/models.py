@@ -182,3 +182,75 @@ class UserHistory(Base):
             f"user_id={self.user_id}, "
             f"action='{self.action}')>"
         )
+
+class Quize(Base):
+    __tablename__ = "quizes"
+    
+    id: Mapped[int] = mapped_column(
+        BigInteger,
+        primary_key=True
+    )
+    
+    secret_code: Mapped[str] = mapped_column(
+        String(15),
+        nullable=False
+    )
+    
+    question: Mapped[str] = mapped_column(
+        String(255),
+        nullable=False
+    )
+    
+    answer: Mapped[int] = mapped_column(
+        Integer,
+        default=0,
+        nullable=False
+    )
+    
+    # Исправлено: back_populates должен ссылаться на имя атрибута в QuizeAnswer
+    quize_answers: Mapped[list["QuizeAnswer"]] = relationship(
+        back_populates="quize",  # было "QuizeAnswer"
+        cascade="all, delete-orphan",
+        passive_deletes=True,
+    )
+    
+    def __repr__(self):
+        return (
+            f"<Quize("
+            f"id={self.id}, "
+            f"secret_code='{self.secret_code}', "
+            f"question='{self.question}')>"
+        )
+
+
+class QuizeAnswer(Base):
+    __tablename__ = "quize_answers"
+    
+    id: Mapped[int] = mapped_column(
+        BigInteger,
+        primary_key=True
+    )
+    
+    answer: Mapped[str] = mapped_column(
+        String(255),
+        nullable=False
+    )
+    
+    quize_id: Mapped[int] = mapped_column(
+        ForeignKey(
+            "quizes.id",
+            ondelete="CASCADE"
+        ),
+        nullable=False,
+        index=True
+    )
+    
+    # Добавлено: обратная связь для relationship
+    quize: Mapped["Quize"] = relationship(back_populates="quize_answers")
+    
+    def __repr__(self):
+        return (
+            f"<QuizeAnswer("
+            f"id={self.id} )>"
+        )
+    

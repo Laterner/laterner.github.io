@@ -85,12 +85,14 @@ app.secret_key = os.environ.get('SECRET_KEY', 'dev-secret-key-change-in-producti
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 TEMPLATES_DIR = os.path.join(BASE_DIR, "templates")
 STATIC_DIR = os.path.join(BASE_DIR, "static")
+STATIC_DIR_QR = os.path.join(STATIC_DIR, "user_qrs")
 
 # eprint("STATIC_DIR", STATIC_DIR)
 
 # Создаем папки если их нет
 os.makedirs(TEMPLATES_DIR, exist_ok=True)
 os.makedirs(STATIC_DIR, exist_ok=True)
+os.makedirs(STATIC_DIR_QR, exist_ok=True) 
 
 quizes = [
     {'question':'Как называется самая известная смотровая площадка Москвы? Нажмите 1', 'secret_code':'DSFGS', 'answers':["Вариант 1", "Вариант 2", "Вариант 3", "Вариант 4", "Вариант 5"], 'ans': 0},
@@ -167,7 +169,19 @@ async def set_player():
 
 
 
+async def get_user_from_session():
+    user_id = request.cookies.get("tg_user_id", None)
+    user = None
 
+    print("user_id -->", user_id, type(user_id))
+
+    try:
+        user_id = int(user_id)
+        user = await db.get_user(user_id)
+    except Exception as e:
+        print('Ошибка получения get_user():', e)
+        
+    return user
 
 
 
@@ -184,26 +198,10 @@ async def home():
 
 @app.route("/miniapp")
 async def miniapp():
-    user_id = request.cookies.get("tg_user_id", None)
-    print("user_id -->", user_id, type(user_id))
-
-    try:
-        int(user_id)
-    except:
-        print('An exception occurred')
-        return await render_template("test_auth.html", title="Home")
-        # return await render_template("miniapp_auth.html", title="TG Auth")
+    user = await get_user_from_session()
     
-    user = None
-
-    try:
-        user = await db.get_user(int(user_id))
-    except Exception as e:
-        print('Ошибка получения get_user():', e)
-    
-
     if user == None:
-        return "<title>error</title><h1>error user not found</h1>"
+        return await render_template("miniapp_auth.html", title="TG Auth")
     
     top_players = await db.get_top_players(10)
     # user['team'] = TEAMS[str(user['team'])]['name']
@@ -397,7 +395,7 @@ async def answer():
 @login_required
 async def admin_addscore():
     """Главная страница с формой добавления очков"""
-    return await render_template("admin_add_points.html", title="Добавление очков")
+    return await render_template("admin_add_points_test.html", title="Добавление очков")
 
 # api urls  
 @app.route("/api/add_score", methods=['POST'])
@@ -629,6 +627,12 @@ async def king():
     """Начисление очков со временем"""
     
     return await render_template("king.html", title="Добавление очков")
+
+@app.route("/api/create_quize")
+async def create_quize():
+    quize = quizes[0]
+    await db.create_quize(quize['question'], quize["secret_code"], quize["ans"], quize['answers'])
+    return 0
 
 if __name__ == "__main__":
     app.run(

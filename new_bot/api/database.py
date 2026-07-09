@@ -11,7 +11,7 @@ from sqlalchemy.ext.asyncio import (
 )
 from sqlalchemy.exc import IntegrityError
 
-from models import User, UserHistory, Base, TeamStats
+from models import User, UserHistory, Quize, QuizeAnswer, TeamStats, Base
 
 # Конфигурация из переменных окружения
 DB_CONFIG = {
@@ -334,6 +334,31 @@ class Database:
                 for s in stats
             ]
     
+    async def create_quize(self, question: str, secret_code: str, answer: int, answers: list[str]) -> None:
+        """Добавление нового опроса"""
+        async with SessionLocal() as session:
+            try:
+                # Создаем список объектов QuizeAnswer без quize_id
+                # (он проставится автоматически через relationship)
+                quize_answers = [
+                    QuizeAnswer(answer=el) for el in answers
+                ]
+                
+                # Создаем опрос с ответами
+                quize = Quize(
+                    question=question,
+                    answer=answer,
+                    secret_code=secret_code,
+                    quize_answers=quize_answers
+                )
+                
+                session.add(quize)
+                await session.commit()
+                
+            except Exception as e:
+                await session.rollback()
+                print(f"Error creating quiz: {e}")
+                raise  # Рекомендуется пробрасывать исключение дальше
         
     async def close(self):
         """Закрытие соединений с базой данных"""
