@@ -326,7 +326,7 @@ async def secretcode():
         
         quize = await db.get_quize(secret_code)
         
-        is_quiz_completed = db.is_quiz_completed('', quize.id)
+        is_quiz_completed = db.is_quiz_completed('', quize['id'])
         
         if is_quiz_completed:
             return jsonify({'completed': 'completed'}) 
