@@ -27,4 +27,5 @@ sqlalchemy
 alembic
 flask[async]
 quart
+pillow
 qrcode

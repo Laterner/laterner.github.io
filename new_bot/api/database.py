@@ -358,10 +358,11 @@ class Database:
             except Exception as e:
                 await session.rollback()
                 print(f"Error creating quiz: {e}")
-                raise  # Рекомендуется пробрасывать исключение дальше
+                raise 
     
     
     async def get_quize(self, secret_code: int) -> Quize:
+        print("secret_code in get -->", secret_code)
         async with SessionLocal() as session:
             try:
                 quize = await session.execute(
@@ -370,7 +371,10 @@ class Database:
                     )
                 )
                 quize: Quize = quize.scalar_one_or_none()
-
+                print("quiz found -->", quize)
+                if quize == None:
+                    return None
+                
                 answers = await session.execute(
                     select(QuizeAnswer).where(
                         QuizeAnswer.quize_id == quize.id

@@ -1,10 +1,8 @@
-# api/main.py
-
 import os
 import json
 import asyncio
-import threading
-from multiprocessing import Process
+import qrcode
+
 from functools import wraps
 from typing import Optional
 from dataclasses import dataclass
@@ -21,8 +19,7 @@ from auth import (
     get_current_user,
     require_admin
 )
-from utils import InitData, validate_init_data, eprint, TEAMS
-
+from utils import InitData, validate_init_data, eprint, QUIZES
 
 
 
@@ -94,17 +91,6 @@ os.makedirs(TEMPLATES_DIR, exist_ok=True)
 os.makedirs(STATIC_DIR, exist_ok=True)
 os.makedirs(STATIC_DIR_QR, exist_ok=True) 
 
-quizes = [
-    {'question':'Как называется самая известная смотровая площадка Москвы? Нажмите 1', 'secret_code':'DSFGS', 'answers':["Вариант 1", "Вариант 2", "Вариант 3", "Вариант 4", "Вариант 5"], 'ans': 0},
-    {'question':'Как называется самая известная смотровая площадка Москвы? Нажмите 2', 'secret_code':'CACTD', 'answers':["Вариант 1", "Вариант 2", "Вариант 3", "Вариант 4", "Вариант 5"], 'ans': 1},
-    {'question':'Как называется самая известная смотровая площадка Москвы? Нажмите 3', 'secret_code':'FXZJN', 'answers':["Вариант 1", "Вариант 2", "Вариант 3", "Вариант 4", "Вариант 5"], 'ans': 2},
-    {'question':'Как называется самая известная смотровая площадка Москвы? Нажмите 4', 'secret_code':'VGNMD', 'answers':["Вариант 1", "Вариант 2", "Вариант 3", "Вариант 4", "Вариант 5"], 'ans': 3},
-    {'question':'Как называется самая известная смотровая площадка Москвы? Нажмите 5', 'secret_code':'UZQYX', 'answers':["Вариант 1", "Вариант 2", "Вариант 3", "Вариант 4", "Вариант 5"], 'ans': 4},
-    {'question':'Как называется самая известная смотровая площадка Москвы? Нажмите 6', 'secret_code':'KBCFL', 'answers':["Вариант 1", "Вариант 2", "Вариант 3", "Вариант 4", "Вариант 5"], 'ans': 5},
-    {'question':'Как называется самая известная смотровая площадка Москвы? Нажмите 7', 'secret_code':'XTHFL', 'answers':["Вариант 1", "Вариант 2", "Вариант 3", "Вариант 4", "Вариант 5"], 'ans': 6},
-    {'question':'Как называется самая известная смотровая площадка Москвы? Нажмите 8', 'secret_code':'EGLPZ', 'answers':["Вариант 1", "Вариант 2", "Вариант 3", "Вариант 4", "Вариант 5"], 'ans': 7}
-]
-
 # Декоратор для проверки авторизации (асинхронный)
 def login_required(f):
     @wraps(f)
@@ -169,22 +155,11 @@ async def set_player():
 
 
 
-async def get_user_from_session():
+def get_user_from_session() -> tuple[int, str]:
     user_id = request.cookies.get("tg_user_id", None)
-    user = None
+    player_id = request.cookies.get("player_id", None)
 
-    print("user_id -->", user_id, type(user_id))
-
-    try:
-        user_id = int(user_id)
-        user = await db.get_user(user_id)
-    except Exception as e:
-        print('Ошибка получения get_user():', e)
-        
-    return user
-
-
-
+    return user_id, player_id
 
 # Middleware для логирования
 @app.before_request
@@ -198,13 +173,27 @@ async def home():
 
 @app.route("/miniapp")
 async def miniapp():
-    user = await get_user_from_session()
+    user_id, player_id = get_user_from_session()
     
+    user = None
+    
+    print("user_id -->", user_id, type(user_id))
+
+    try:
+        user_id = int(user_id)
+        user = await db.get_user(user_id)
+    except Exception as e:
+        print('Ошибка получения get_user():', e)
+
     if user == None:
         return await render_template("miniapp_auth.html", title="TG Auth")
     
+    if not os.path.exists(f"./static/user_qrs/{player_id}.png"):
+        img = qrcode.make(player_id)
+        type(img)
+        img.save(f"./static/user_qrs/{player_id}.png")
+        
     top_players = await db.get_top_players(10)
-    # user['team'] = TEAMS[str(user['team'])]['name']
     
     top_teams = await db.get_all_teams_stats()
     print("top_teams", top_teams)
@@ -218,6 +207,7 @@ async def reg_tg_id():
     try:
         data = await request.get_json()
         tg_id = data.get('tg_id')
+        player_id = None
         
         if not tg_id:
             return jsonify({
@@ -227,16 +217,26 @@ async def reg_tg_id():
         
         # Ваша логика здесь
         print(f"Получен TG ID: {tg_id}")
+        
+        try:
+            user = await db.get_user(int(tg_id))
+            player_id = user['player_id']
+            
+        except Exception as e:
+            print('PLAYER ID NOT ACCEPT:', e)
+            
         response = await make_response(jsonify(
             {
                 "success": True,
                 "message": "Пользователь успешно авторизован",
-                "tg_id": tg_id
+                "tg_id": tg_id,
+                'player_id': player_id
             }
         ))
     
-        # Установка куки с параметрами (значение, время жизни, защита)
-        response.set_cookie("tg_user_id", str(tg_id), max_age=3600, secure=True, httponly=True)
+        # Установка куки с параметрами (значение, время жизни, защита) player_id
+        response.set_cookie("tg_user_id", str(tg_id), max_age=18000, secure=True, httponly=True)
+        response.set_cookie("player_id", str(tg_id), max_age=18000, secure=True, httponly=True)
         
         
         return response
@@ -281,7 +281,7 @@ async def tg_auth_delete():
 
 @app.route("/qr")
 async def qr_page():
-    return await render_template("qr.html", title="QR", quizes=quizes)
+    return await render_template("qr.html", title="QR", quizes=QUIZES)
 
 @app.route("/faq")
 async def faq_page():
@@ -294,7 +294,7 @@ async def map_page():
 
 
 def find_quiz_index(secret_code):
-    for i, quiz in enumerate(quizes):
+    for i, quiz in enumerate(QUIZES):
         if quiz['secret_code'] == secret_code:
             return i
     return -1
@@ -322,6 +322,7 @@ async def secretcode():
         print(f"Secret code: {secret_code}")
         
         quize = await db.get_quize(secret_code)
+        
         is_quiz_completed = db.is_quiz_completed('', quize.id)
         
         if is_quiz_completed:
@@ -340,27 +341,29 @@ async def secretcode():
 @app.route("/api/answer", methods=['POST'])
 async def answer():
     ans = request.args.get('ans', 0, type=int)
+    secret_code = request.args.get('secret_code', "00000", type=str)
     quize_id = request.args.get('quize_id', 0, type=int)
-    player_id = request.args.get('player_id', '')
-    
-    # await db.update_quize_status()
-
+    user_id, player_id = get_user_from_session()
 
     print("/api/answer :::>", ans, quize_id, player_id)
 
-    
-    if ans == quizes[quize_id]['ans']:
+    if ans == QUIZES[quize_id]['ans']:
         try:
             amount = 5
             
-            if not player_id or amount is None:
-                f"Не указан player_id или amount"
+            if not player_id is None:
+                f"Не указан player_id"
             
             # Проверяем игрока
             user = await db.get_user_by_player_id(player_id)
             if not user:
                 logger.error(f"Игрок с ID {player_id} не найден")
             
+            quize = await db.get_quize(secret_code)
+            is_correct = ans == quize.answer
+            
+            await db.update_quize_status(player_id, quize_id, is_correct, amount)
+    
             # Добавляем очки
             success = await db.add_score(player_id, amount)
             
@@ -379,7 +382,7 @@ async def answer():
 @app.route("/quize")
 async def quize_page():
     secret_code = request.args.get('secret_code', 0)
-    user = await db.get_user_by_player_id("OU6Z1")
+    user_id, player_id = get_user_from_session()
     
     try:
         quize = await db.get_quize(secret_code)
@@ -392,7 +395,7 @@ async def quize_page():
     return await render_template(
         "quize.html", 
         title="Quize", 
-        player_id="OU6Z1", 
+        player_id=player_id, 
         quize=quize, 
         quize_id=quize['id']
     )
@@ -638,7 +641,7 @@ async def king():
 
 @app.route("/api/create_quize")
 async def create_quize():
-    for q in quizes:
+    for q in QUIZES:
         await db.create_quize(
             q['question'], 
             q["secret_code"], 
