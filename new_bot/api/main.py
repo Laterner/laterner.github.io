@@ -306,6 +306,7 @@ def find_quiz_index(secret_code):
 @app.route("/api/secretcode", methods=['POST'])
 async def secretcode():
     try:
+        user_id, player_id = get_user_from_session()
         raw_data = await request.data
         print(f"Raw data: {raw_data}")
         
@@ -326,7 +327,7 @@ async def secretcode():
         
         quize = await db.get_quize(secret_code)
         
-        is_quiz_completed = db.is_quiz_completed('', quize['id'])
+        is_quiz_completed = db.is_quiz_completed(player_id, quize['id'])
         
         if is_quiz_completed:
             return jsonify({'completed': 'completed'}) 
