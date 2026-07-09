@@ -331,7 +331,7 @@ async def secretcode():
         if is_quiz_completed:
             return jsonify({'completed': 'completed'}) 
         
-        print(f"Quiz ID: {quize['id']} {quize.secret_code}")
+        print(f"Quiz ID: {quize['id']} {quize['secret_code']}")
         
         return jsonify({'quize_id': quize['id'], 'secret_code': secret_code})
         
