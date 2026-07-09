@@ -365,12 +365,13 @@ class Database:
         print("secret_code in get -->", secret_code)
         async with SessionLocal() as session:
             try:
-                quize = await session.execute(
+                result = await session.execute(
                     select(Quize).where(
                         Quize.secret_code == secret_code
                     )
                 )
-                quize: Quize = quize.scalar_one_or_none()
+                quize = result.scalar_one_or_none()
+                
                 print("quiz found -->", quize)
                 if quize == None:
                     return None
