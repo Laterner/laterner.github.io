@@ -221,7 +221,7 @@ async def client_logs():
 @app.route("/reg_tg_id", methods=['POST'])
 async def reg_tg_id():
     try:
-        data = request.get_json()
+        data = await request.get_json()
         tg_id = data.get('tg_id')
         
         if not tg_id:
