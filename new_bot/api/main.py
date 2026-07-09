@@ -184,15 +184,15 @@ async def home():
 
 @app.route("/miniapp")
 async def miniapp():
-    return await render_template("test_auth.html", title="Home")
-    user_id = request.cookies.get("user_tg_id", None)
+    user_id = request.cookies.get("tg_user_id", None)
     print("user_id -->", user_id, type(user_id))
 
     try:
         int(user_id)
     except:
         print('An exception occurred')
-        return await render_template("miniapp_auth.html", title="TG Auth")
+        return await render_template("test_auth.html", title="Home")
+        # return await render_template("miniapp_auth.html", title="TG Auth")
     
     user = None
 
@@ -220,22 +220,42 @@ async def client_logs():
 
 @app.route("/reg_tg_id", methods=['POST'])
 async def reg_tg_id():
-    payload = await request.get_json()
-    
-    print("payload ---------->", payload)
-    
-    print("initData 1:", payload.get('initData'))
-    initData = validate_init_data(payload.get('initData'))
-    print("initData2:", initData)
-    user_tg_id = payload.get('user_tg_id')
-    if user_tg_id == "":
-        user_tg_id = str(initData['user']['id'])
+    try:
+        data = request.get_json()
+        tg_id = data.get('tg_id')
         
-    print("auth user_tg_id ----->", user_tg_id)
-    # if not user_tg_id:
-    #     return jsonify({"error": "invalid initData"}), 400
+        if not tg_id:
+            return jsonify({
+                "success": False,
+                "message": "tg_id обязателен"
+            }), 400
+        
+        # Ваша логика здесь
+        print(f"Получен TG ID: {tg_id}")
+        response = await make_response(jsonify(
+            {
+                "success": True,
+                "message": "Пользователь успешно авторизован",
+                "tg_id": tg_id
+            }
+        ))
     
-    return jsonify({"data": "fin"}), 200
+        # Установка куки с параметрами (значение, время жизни, защита)
+        response.set_cookie("tg_user_id", tg_id, max_age=3600, secure=True, httponly=True)
+        
+        
+        return response
+        return jsonify({
+            "success": True,
+            "message": "Пользователь успешно авторизован",
+            "tg_id": tg_id
+        }), 200
+        
+    except Exception as e:
+        return jsonify({
+            "success": False,
+            "message": str(e)
+        }), 500
 
 
 @app.route("/tg_auth", methods=['POST'])
@@ -244,19 +264,19 @@ async def tg_auth():
     print("initData 1:", payload.get('initData'))
     initData = validate_init_data(payload.get('initData'))
     print("initData2:", initData)
-    user_tg_id = payload.get('user_tg_id')
-    if user_tg_id == "":
-        user_tg_id = str(initData['user']['id'])
+    tg_user_id = payload.get('tg_user_id')
+    if tg_user_id == "":
+        tg_user_id = str(initData['user']['id'])
         
-    print("auth user_tg_id ----->", user_tg_id)
-    if not user_tg_id:
+    print("auth tg_user_id ----->", tg_user_id)
+    if not tg_user_id:
         return jsonify({"error": "invalid initData"}), 400
     
     # Устанавливаем cookie
-    response = await make_response(jsonify({'data': "fine: " + str(user_tg_id), 'user_tg_id':user_tg_id}))
+    response = await make_response(jsonify({'data': "fine: " + str(tg_user_id), 'tg_user_id':tg_user_id}))
     
     # Установка куки с параметрами (значение, время жизни, защита)
-    response.set_cookie("user_tg_id", user_tg_id, max_age=3600, secure=True, httponly=True)
+    response.set_cookie("tg_user_id", tg_user_id, max_age=3600, secure=True, httponly=True)
     
     
     return response
@@ -268,7 +288,7 @@ async def tg_auth_delete():
     response = await make_response(jsonify({'data': "fine"}))
     
     # Установка куки с параметрами (значение, время жизни, защита)
-    response.set_cookie("user_tg_id", "None", max_age=3600, secure=True, httponly=True)
+    response.set_cookie("tg_user_id", "None", max_age=3600, secure=True, httponly=True)
     
     return response
 

@@ -184,6 +184,8 @@
         <div id="status" class="status"></div>
         <div id="loader" class="loader"></div>
 
+        <button class="btn" onclick="delete_coockies()">Удалить куки</button>
+        
         <!-- Отладка -->
         <div id="debugInfo" class="debug-info">
             <strong>Отладочная информация:</strong>
@@ -244,7 +246,7 @@
                     document.getElementById('status').className = 'status success';
                     
                     // Автоматически авторизуемся
-                    setTimeout(() => authorize(), 500);
+                    // setTimeout(() => authorize(), 500);
                 } else {
                     debugLog('Данные пользователя отсутствуют в initDataUnsafe');
                     document.getElementById('status').textContent = '⚠️ Данные пользователя не найдены';
@@ -328,12 +330,16 @@
                     statusEl.className = 'status success';
                     btn.textContent = '✅ Вы вошли';
                     
-                    // Закрываем WebApp через 2 секунды
-                    if (isTelegramWebApp && webapp) {
-                        setTimeout(() => {
-                            webapp.close();
-                        }, 2000);
-                    }
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 3000);
+
+                    // // Закрываем WebApp через 2 секунды
+                    // if (isTelegramWebApp && webapp) {
+                    //     setTimeout(() => {
+                    //         webapp.close();
+                    //     }, 2000);
+                    // }
                 } else {
                     statusEl.textContent = `❌ Ошибка: ${data.message || 'Неизвестная ошибка'}`;
                     statusEl.className = 'status error';
@@ -366,6 +372,18 @@
                 initTelegramApp();
             }
         });
+        function delete_coockies(){
+            let responce = fetch("/tg_auth_delete", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                }
+            })
+            .then(res => res.json())
+            .then(data => {
+                window.location.reload();
+        });
+    }
     </script>
 </body>
 </html>
