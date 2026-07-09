@@ -231,8 +231,8 @@
                 webapp.expand();
                 
                 // Получаем данные пользователя
-                if (webapp.initDataUnsafe && webapp.initDataUnsafe.user) {
-                    tgUser = webapp.initDataUnsafe.user;
+                if (webapp.initData && webapp.initData.user) {
+                    tgUser = webapp.initData.user;
                     tgId = tgUser.id;
                     
                     debugLog('Данные пользователя получены', tgUser);
@@ -257,7 +257,7 @@
                     // Автоматически авторизуемся
                     // setTimeout(() => authorize(), 500);
                 } else {
-                    debugLog('Данные пользователя отсутствуют в initDataUnsafe');
+                    debugLog('Данные пользователя отсутствуют в initData');
                     document.getElementById('status').textContent = '⚠️ Данные пользователя не найдены';
                     document.getElementById('status').className = 'status error';
                     document.getElementById('authBtn').disabled = true;

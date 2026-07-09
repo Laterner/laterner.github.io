@@ -189,10 +189,13 @@ async def miniapp():
         return await render_template("miniapp_auth.html", title="TG Auth")
     
     if not os.path.exists(f"./static/user_qrs/{player_id}.png"):
-        img = qrcode.make(player_id)
-        type(img)
-        img.save(f"./static/user_qrs/{player_id}.png")
-        
+        try:
+            img = qrcode.make(player_id)
+            type(img)
+            img.save(f"./static/user_qrs/{player_id}.png")
+        except Exception as e:
+            print(e)
+            
     top_players = await db.get_top_players(10)
     
     top_teams = await db.get_all_teams_stats()

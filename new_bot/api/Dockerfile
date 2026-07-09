@@ -11,8 +11,10 @@ RUN apt-get update && apt-get install -y \
 # Копирование файлов зависимостей
 COPY requirements.txt .
 
+RUN curl -LsSf https://astral.sh/uv/install.sh | sh
+
 # Установка Python зависимостей
-RUN pip install --no-cache-dir -r requirements.txt
+RUN uv pip install --no-cache-dir -r requirements.txt
 
 # Копирование кода приложения
 COPY . .

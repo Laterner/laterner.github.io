@@ -14,7 +14,7 @@ COPY requirements.txt requirements.txt
 
 RUN curl -LsSf https://astral.sh/uv/install.sh | sh
 
-RUN pip install --no-cache-dir -r requirements.txt
+RUN uv pip install --no-cache-dir -r requirements.txt
 
 # 4. Копируем сам код
 COPY . .
