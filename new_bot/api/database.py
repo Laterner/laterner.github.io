@@ -11,7 +11,7 @@ from sqlalchemy.ext.asyncio import (
 )
 from sqlalchemy.exc import IntegrityError
 
-from models import User, UserHistory, Quize, QuizeAnswer, TeamStats, Base
+from models import User, UserHistory, Quize, QuizeAnswer, TeamStats, UserQuizProgress, Base
 
 # Конфигурация из переменных окружения
 DB_CONFIG = {
@@ -334,7 +334,7 @@ class Database:
                 for s in stats
             ]
     
-    async def create_quize(self, question: str, secret_code: str, answer: int, answers: list[str]) -> None:
+    async def create_quize(self, question: str, secret_code: str, answer: int, answers: list[str]) -> Quize:
         """Добавление нового опроса"""
         async with SessionLocal() as session:
             try:
@@ -354,12 +354,99 @@ class Database:
                 
                 session.add(quize)
                 await session.commit()
-                
+                return Quize
             except Exception as e:
                 await session.rollback()
                 print(f"Error creating quiz: {e}")
                 raise  # Рекомендуется пробрасывать исключение дальше
-        
+    
+    
+    async def get_quize(self, secret_code: int) -> Quize:
+        async with SessionLocal() as session:
+            try:
+                quize = await session.execute(
+                    select(Quize).where(
+                        Quize.secret_code == secret_code
+                    )
+                )
+                quize: Quize = quize.scalar_one_or_none()
+
+                answers = await session.execute(
+                    select(QuizeAnswer).where(
+                        QuizeAnswer.quize_id == quize.id
+                    )
+                )
+                
+                answers = answers.scalars().all()
+                answers = [el.answer for el in answers]
+
+                result = {
+                    'id': quize.id,
+                    'question': quize.question,
+                    'secret_code': quize.secret_code,
+                    'answers': answers
+                }
+                return result
+            except Exception as e:
+                print('error in database:', e)
+    
+    async def is_quiz_completed(self, player_id: int, quize_id: int) -> bool:
+        """Проверка, прошел ли игрок конкретный квиз"""
+        async with SessionLocal() as session:
+            try:
+                result = await session.execute(
+                    select(UserQuizProgress).where(
+                        UserQuizProgress.player_id == player_id,
+                        UserQuizProgress.quize_id == quize_id,
+                        UserQuizProgress.completed == True
+                    )
+                )
+                progress = result.scalar_one_or_none()
+                return progress is not None
+                
+            except Exception as e:
+                print(f"Error checking quiz completion: {e}")
+                return False
+            
+    async def update_quize_status(self, player_id: str, quize_id: int, is_correct: bool, amount: int):
+        async with SessionLocal() as session:
+            try:
+                # Ищем или создаем запись прогресса
+                progress = await session.execute(
+                    select(UserQuizProgress).where(
+                        UserQuizProgress.player_id == player_id,
+                        UserQuizProgress.quize_id == quize_id
+                    )
+                )
+                progress = progress.scalar_one_or_none()
+                
+                if not progress:
+                    progress = UserQuizProgress(
+                        player_id=player_id,
+                        quize_id=quize_id
+                    )
+                    session.add(progress)
+                
+                # Обновляем статистику
+                progress.attempts += 1
+                
+                if not is_correct:
+                    progress.wrong_answers += 1
+                else:
+                    progress.completed = True
+                    # Обновляем общую статистику пользователя
+                    user = await session.get(User, player_id)
+                    if user:
+                        user.games_played += 1
+                        user.score += amount
+                
+                await session.commit()
+                
+            except Exception as e:
+                await session.rollback()
+                print(f"Error recording quiz attempt: {e}")
+                raise
+
     async def close(self):
         """Закрытие соединений с базой данных"""
         await engine.dispose()

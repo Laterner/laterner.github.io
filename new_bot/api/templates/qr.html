@@ -158,7 +158,12 @@
                                     "❌ Неверный код! Попробуйте снова";
                                 resetScanner();
                             }
-                        } else {
+                        }
+                        else if (result.complited !== undefined) {
+                            document.getElementById("status").textContent = 
+                                "❌ Ошибка: Вы уже проходили этот квиз!";
+                        }
+                        else {
                             document.getElementById("status").textContent = 
                                 "❌ Ошибка: " + (result.error || "Неизвестная ошибка");
                             resetScanner();

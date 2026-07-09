@@ -283,26 +283,6 @@ async def tg_auth_delete():
 async def qr_page():
     return await render_template("qr.html", title="QR", quizes=quizes)
 
-@app.route("/quize")
-async def quize_page():
-    quize_id = request.args.get('quize_id', '0')
-    user = await db.get_user_by_player_id("FF6BA")
-    
-    try:
-        quize_id = int(quize_id)
-        _quize = quizes[quize_id]
-    except (ValueError, IndexError):
-        _quize = quizes[0]
-        quize_id = 0
-    
-    return await render_template(
-        "quize.html", 
-        title="Quize", 
-        player_id=user['player_id'], 
-        quize=_quize, 
-        quize_id=quize_id
-    )
-
 @app.route("/faq")
 async def faq_page():
     return await render_template("faq.html", title="faq")
@@ -323,7 +303,6 @@ def find_quiz_index(secret_code):
 @app.route("/api/secretcode", methods=['POST'])
 async def secretcode():
     try:
-        # Получаем сырые данные
         raw_data = await request.data
         print(f"Raw data: {raw_data}")
         
@@ -334,6 +313,7 @@ async def secretcode():
         try:
             data = json.loads(raw_data.decode('utf-8'))
             print(f"Parsed data: {data}")
+            
         except json.JSONDecodeError as e:
             print(f"JSON decode error: {e}")
             return jsonify({'error': 'Invalid JSON'}), 400
@@ -341,10 +321,15 @@ async def secretcode():
         secret_code = data.get('secret_code', '00000')
         print(f"Secret code: {secret_code}")
         
-        quize_id = find_quiz_index(secret_code)
-        print(f"Quiz ID: {quize_id}")
+        quize = await db.get_quize(secret_code)
+        is_quiz_completed = db.is_quiz_completed('', quize.id)
         
-        return jsonify({'quize_id': quize_id})
+        if is_quiz_completed:
+            return jsonify({'completed': 'completed'}) 
+        
+        print(f"Quiz ID: {quize.id} {quize.secret_code}")
+        
+        return jsonify({'secret_code': secret_code})
         
     except Exception as e:
         print(f"Error: {e}")
@@ -358,6 +343,9 @@ async def answer():
     quize_id = request.args.get('quize_id', 0, type=int)
     player_id = request.args.get('player_id', '')
     
+    # await db.update_quize_status()
+
+
     print("/api/answer :::>", ans, quize_id, player_id)
 
     
@@ -388,6 +376,26 @@ async def answer():
     else:
         return jsonify({'ans': 0, 'player_id': player_id})
 
+@app.route("/quize")
+async def quize_page():
+    secret_code = request.args.get('secret_code', 0)
+    user = await db.get_user_by_player_id("OU6Z1")
+    
+    try:
+        quize = await db.get_quize(secret_code)
+        print(quize)
+
+    except (ValueError, IndexError):
+        resp = await make_response("Произошла ошибка")
+        return resp
+    
+    return await render_template(
+        "quize.html", 
+        title="Quize", 
+        player_id="OU6Z1", 
+        quize=quize, 
+        quize_id=quize['id']
+    )
 
 
 """ Админка роуты """
@@ -630,9 +638,17 @@ async def king():
 
 @app.route("/api/create_quize")
 async def create_quize():
-    quize = quizes[0]
-    await db.create_quize(quize['question'], quize["secret_code"], quize["ans"], quize['answers'])
-    return 0
+    for q in quizes:
+        await db.create_quize(
+            q['question'], 
+            q["secret_code"], 
+            q["ans"], 
+            q['answers']
+            )
+        print(q)
+    
+    resp = await make_response("Успех")
+    return resp
 
 if __name__ == "__main__":
     app.run(

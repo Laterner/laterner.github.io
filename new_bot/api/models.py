@@ -97,6 +97,12 @@ class User(Base):
         cascade="all, delete-orphan",
         passive_deletes=True,
     )
+    
+    quiz_progress: Mapped[list["UserQuizProgress"]] = relationship(
+        back_populates="user",
+        cascade="all, delete-orphan",
+        passive_deletes=True,
+    )
 
     def __repr__(self):
         return (
@@ -251,6 +257,74 @@ class QuizeAnswer(Base):
     def __repr__(self):
         return (
             f"<QuizeAnswer("
-            f"id={self.id} )>"
+            f"id={self.id},"
+            f"answer='{self.answer}' )>"
         )
     
+
+class UserQuizProgress(Base):
+    __tablename__ = "user_quiz_progress"
+    
+    id: Mapped[int] = mapped_column(
+        BigInteger,
+        primary_key=True
+    )
+    
+    player_id: Mapped[str] = mapped_column(
+        ForeignKey(
+            "users.player_id",
+            ondelete="CASCADE"
+        ),
+        nullable=False,
+        index=True
+    )
+    
+    quize_id: Mapped[int] = mapped_column(
+        ForeignKey(
+            "quizes.id",
+            ondelete="CASCADE"
+        ),
+        nullable=False,
+        index=True
+    )
+    
+    # Количество попыток ответа на этот квест
+    attempts: Mapped[int] = mapped_column(
+        Integer,
+        default=0,
+        nullable=False
+    )
+    
+    # Количество неправильных ответов
+    wrong_answers: Mapped[int] = mapped_column(
+        Integer,
+        default=0,
+        nullable=False
+    )
+    
+    # Пройден ли квест успешно
+    completed: Mapped[bool] = mapped_column(
+        Boolean,
+        default=False,
+        nullable=False
+    )
+    
+    # Дата последней попытки
+    last_attempt: Mapped[datetime] = mapped_column(
+        DateTime,
+        default=datetime.utcnow,
+        onupdate=datetime.utcnow,
+        nullable=False
+    )
+    
+    # Связи
+    user: Mapped["User"] = relationship(back_populates="quiz_progress")
+    quize: Mapped["Quize"] = relationship()
+    
+    def __repr__(self):
+        return (
+            f"<UserQuizProgress("
+            f"user_id={self.user_id}, "
+            f"quize_id={self.quize_id}, "
+            f"completed={self.completed})>"
+        )
