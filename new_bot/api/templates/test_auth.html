@@ -245,7 +245,15 @@
                     document.getElementById('status').textContent = '✅ Данные получены, нажмите кнопку';
                     document.getElementById('status').className = 'status success';
                     
-                    document.getElementById("avatar").innerHTML = `<img src=${tgUser.photo_url} />`
+                    // let avatar = document.getElementById("avatar");
+                    // avatar.innerHTML = ""
+                    // avatar.style.cssText = `
+                    //     background-image: url('${tgUser.photo_url}');
+                    //     background-size: cover; /* Fills the whole block */
+                    //     background-repeat: no-repeat; 
+                    //     background-position: center;
+                    // `;
+                    
                     // Автоматически авторизуемся
                     // setTimeout(() => authorize(), 500);
                 } else {
@@ -268,9 +276,18 @@
                     tgId = parseInt(tgIdParam);
                     debugLog('TG ID из параметров URL', tgId);
                 } else {
-                    tgId = 123456789; // Тестовый ID
+                    tgId = 427310232; // Тестовый ID
                     debugLog('Используем тестовый ID', tgId);
                 }
+
+                // let avatar = document.getElementById("avatar");
+                // avatar.innerHTML = ""
+                // avatar.style.cssText = `
+                //     background-image: url('https://t.me/i/userpic/320/QmCSKEv2Z0aQZyzIgX28SzVLKh0pH-Ovw3otL4VxczQ.svg');
+                //     background-size: cover; /* Fills the whole block */
+                //     background-repeat: no-repeat; 
+                //     background-position: center;
+                // `;
                 
                 document.getElementById('userInfo').style.display = 'block';
                 document.getElementById('tgIdDisplay').textContent = tgId + ' (тестовый)';
