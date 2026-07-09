@@ -283,7 +283,7 @@ async def tg_auth():
 
 @app.route("/tg_auth_delete", methods=['POST'])
 async def tg_auth_delete():
-    response = make_response(jsonify({'message':'Cookie deleted!'}))
+    response = await make_response(jsonify({'message':'Cookie deleted!'}))
     response.delete_cookie('tg_user_id')
     return response
 
