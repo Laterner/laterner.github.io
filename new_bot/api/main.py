@@ -217,6 +217,9 @@ async def miniapp():
 @app.route("/reg_tg_id", methods=['POST'])
 async def reg_tg_id():
     payload = await request.get_json()
+    
+    print("payload ---------->", payload)
+    
     print("initData 1:", payload.get('initData'))
     initData = validate_init_data(payload.get('initData'))
     print("initData2:", initData)
