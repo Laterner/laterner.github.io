@@ -86,7 +86,7 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 TEMPLATES_DIR = os.path.join(BASE_DIR, "templates")
 STATIC_DIR = os.path.join(BASE_DIR, "static")
 
-eprint("STATIC_DIR", STATIC_DIR)
+# eprint("STATIC_DIR", STATIC_DIR)
 
 # Создаем папки если их нет
 os.makedirs(TEMPLATES_DIR, exist_ok=True)
@@ -238,7 +238,7 @@ async def reg_tg_id():
         ))
     
         # Установка куки с параметрами (значение, время жизни, защита)
-        response.set_cookie("tg_user_id", tg_id, max_age=3600, secure=True, httponly=True)
+        response.set_cookie("tg_user_id", str(tg_id), max_age=3600, secure=True, httponly=True)
         
         
         return response
