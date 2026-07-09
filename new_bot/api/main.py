@@ -184,6 +184,7 @@ async def home():
 
 @app.route("/miniapp")
 async def miniapp():
+    return await render_template("test_auth.html", title="Home")
     user_id = request.cookies.get("user_tg_id", None)
     print("user_id -->", user_id, type(user_id))
 
@@ -212,6 +213,30 @@ async def miniapp():
     print("top_players", top_players)
     
     return await render_template("index.html", title="Home", user=user, top_players=top_players, top_teams=top_teams)
+
+@app.route("/reg_tg_id", methods=['POST'])
+async def reg_tg_id():
+    payload = await request.get_json()
+    print("initData 1:", payload.get('initData'))
+    initData = validate_init_data(payload.get('initData'))
+    print("initData2:", initData)
+    user_tg_id = payload.get('user_tg_id')
+    if user_tg_id == "":
+        user_tg_id = str(initData['user']['id'])
+        
+    print("auth user_tg_id ----->", user_tg_id)
+    if not user_tg_id:
+        return jsonify({"error": "invalid initData"}), 400
+    
+    # Устанавливаем cookie
+    response = await make_response(jsonify({'data': "fine: " + str(user_tg_id), 'user_tg_id':user_tg_id}))
+    
+    # Установка куки с параметрами (значение, время жизни, защита)
+    response.set_cookie("user_tg_id", user_tg_id, max_age=3600, secure=True, httponly=True)
+    
+    
+    return response
+
 
 @app.route("/tg_auth", methods=['POST'])
 async def tg_auth():

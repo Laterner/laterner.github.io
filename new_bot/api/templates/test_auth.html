@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Авторизация</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 400px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            text-align: center;
+        }
+        
+        .avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            font-size: 36px;
+            color: white;
+        }
+        
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 24px;
+        }
+        
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+        
+        .user-info {
+            background: #f5f6fa;
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 25px;
+            text-align: left;
+        }
+        
+        .user-info .label {
+            color: #888;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .user-info .value {
+            color: #333;
+            font-size: 16px;
+            font-weight: 500;
+            margin-top: 4px;
+        }
+        
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            width: 100%;
+            margin-top: 10px;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn:active {
+            transform: translateY(0);
+        }
+        
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        
+        .status {
+            margin-top: 15px;
+            font-size: 14px;
+            color: #666;
+            min-height: 24px;
+        }
+        
+        .status.success {
+            color: #27ae60;
+        }
+        
+        .status.error {
+            color: #e74c3c;
+        }
+        
+        .loader {
+            display: none;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .loader.active {
+            display: inline-block;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Иконка пользователя -->
+        <div class="avatar">👤</div>
+        
+        <h1>Добро пожаловать!</h1>
+        <p class="subtitle">Войдите в свой аккаунт</p>
+        
+        <!-- Информация о пользователе -->
+        <div id="userInfo" class="user-info" style="display: none;">
+            <div class="label">Telegram ID</div>
+            <div class="value" id="tgIdDisplay">-</div>
+        </div>
+        
+        <!-- Кнопка авторизации -->
+        <button id="authBtn" class="btn" onclick="authorize()">
+            Войти через Telegram
+        </button>
+        
+        <!-- Статус -->
+        <div id="status" class="status"></div>
+        
+        <!-- Загрузчик -->
+        <div id="loader" class="loader"></div>
+    </div>
+
+    <script>
+        // Получаем данные пользователя из Telegram WebApp
+        let tgUser = null;
+        let tgId = null;
+        
+        // Инициализация при загрузке
+        document.addEventListener('DOMContentLoaded', function() {
+            // Проверяем, запущено ли приложение внутри Telegram
+            if (window.Telegram && window.Telegram.WebApp) {
+                const webapp = window.Telegram.WebApp;
+                
+                // Получаем данные пользователя
+                if (webapp.initDataUnsafe && webapp.initDataUnsafe.user) {
+                    tgUser = webapp.initDataUnsafe.user;
+                    tgId = tgUser.id;
+                    
+                    // Показываем информацию о пользователе
+                    document.getElementById('userInfo').style.display = 'block';
+                    document.getElementById('tgIdDisplay').textContent = tgId;
+                    
+                    // Автоматически запускаем авторизацию
+                    authorize();
+                } else {
+                    // Пользователь не авторизован в Telegram
+                    document.getElementById('status').textContent = '⚠️ Пожалуйста, откройте приложение через Telegram';
+                    document.getElementById('status').className = 'status error';
+                }
+            } else {
+                // Приложение запущено вне Telegram (для тестирования)
+                document.getElementById('status').textContent = 'ℹ️ Режим тестирования. Введите ID вручную';
+                document.getElementById('status').className = 'status';
+                
+                // Для тестирования создаем фейкового пользователя
+                tgId = 123456789; // Тестовый ID
+                document.getElementById('userInfo').style.display = 'block';
+                document.getElementById('tgIdDisplay').textContent = tgId + ' (тестовый)';
+            }
+        });
+
+        // Основная функция авторизации
+        async function authorize() {
+            const btn = document.getElementById('authBtn');
+            const statusEl = document.getElementById('status');
+            const loader = document.getElementById('loader');
+            
+            // Проверяем, есть ли TG ID
+            if (!tgId) {
+                statusEl.textContent = '❌ Ошибка: не удалось получить Telegram ID';
+                statusEl.className = 'status error';
+                return;
+            }
+            
+            // Блокируем кнопку и показываем загрузку
+            btn.disabled = true;
+            btn.textContent = 'Авторизация...';
+            loader.classList.add('active');
+            statusEl.textContent = '⏳ Отправка данных...';
+            statusEl.className = 'status';
+            
+            try {
+                // Отправляем запрос на сервер
+                const response = await fetch('/reg_tg_id', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        tg_id: tgId,
+                        // Дополнительные данные, если нужно
+                        // username: tgUser?.username || '',
+                        // first_name: tgUser?.first_name || '',
+                        // last_name: tgUser?.last_name || ''
+                    })
+                });
+                
+                // Парсим ответ
+                const data = await response.json();
+                
+                if (response.ok) {
+                    // Успешная авторизация
+                    statusEl.textContent = '✅ Авторизация успешна!';
+                    statusEl.className = 'status success';
+                    btn.textContent = '✅ Вы вошли';
+                    
+                    // Можно перенаправить пользователя на главную страницу
+                    // window.location.href = '/dashboard';
+                    
+                    // Или закрыть WebApp
+                    if (window.Telegram && window.Telegram.WebApp) {
+                        window.Telegram.WebApp.close();
+                    }
+                } else {
+                    // Ошибка от сервера
+                    statusEl.textContent = `❌ Ошибка: ${data.message || 'Неизвестная ошибка'}`;
+                    statusEl.className = 'status error';
+                    btn.disabled = false;
+                    btn.textContent = 'Войти через Telegram';
+                }
+            } catch (error) {
+                // Ошибка сети или другая
+                console.error('Ошибка авторизации:', error);
+                statusEl.textContent = '❌ Ошибка соединения с сервером';
+                statusEl.className = 'status error';
+                btn.disabled = false;
+                btn.textContent = 'Войти через Telegram';
+            } finally {
+                loader.classList.remove('active');
+            }
+        }
+    </script>
+</body>
+</html>
