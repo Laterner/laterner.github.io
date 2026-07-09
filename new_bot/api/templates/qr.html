@@ -148,7 +148,7 @@
                         if (result.quize_id !== undefined) {
                             if (result.quize_id >= 0) {
                                 document.getElementById("controls").innerHTML = 
-                                    `<br><br><a href="/quize?quize_id=${result.quize_id}">
+                                    `<br><br><a href="/quize?quize_id=${result.quize_id}&secret_code=${result.secret_code}">
                                         <button class="btn">Открыть квиз #${result.quize_id + 1}</button>
                                     </a>`;
                                 document.getElementById("status").textContent = 
