@@ -214,9 +214,6 @@ async def miniapp():
     
     return await render_template("index.html", title="Home", user=user, top_players=top_players, top_teams=top_teams)
 
-@app.route("/client_logs", methods=['POST'])
-async def client_logs():
-    pass
 
 @app.route("/reg_tg_id", methods=['POST'])
 async def reg_tg_id():
@@ -245,13 +242,10 @@ async def reg_tg_id():
         
         
         return response
-        return jsonify({
-            "success": True,
-            "message": "Пользователь успешно авторизован",
-            "tg_id": tg_id
-        }), 200
+
         
     except Exception as e:
+        print(e)
         return jsonify({
             "success": False,
             "message": str(e)
