@@ -167,7 +167,7 @@
 </head>
 <body>
     <div class="container">
-        <div class="avatar">👤</div>
+        <div class="avatar" id="avatar">👤</div>
         
         <h1>Добро пожаловать!</h1>
         <p class="subtitle">Войдите в свой аккаунт</p>
@@ -245,6 +245,7 @@
                     document.getElementById('status').textContent = '✅ Данные получены, нажмите кнопку';
                     document.getElementById('status').className = 'status success';
                     
+                    document.getElementById("avatar").innerHTML = `<img src=${tgUser.photo_url} />`
                     // Автоматически авторизуемся
                     // setTimeout(() => authorize(), 500);
                 } else {
