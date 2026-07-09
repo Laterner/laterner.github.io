@@ -56,7 +56,7 @@
 {% block content %}
 
 <div class="container">
-    <img src="{{ url_for('static', filename='user_qrs/W8R0B.png') }}">
+    <img src="{{ url_for('static', filename='user_qrs/' + user.player_id|string + '.png') }}">
 </div>
 <div class="container">
     <h1>Мои данные</h1>

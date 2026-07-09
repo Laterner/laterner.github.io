@@ -239,7 +239,7 @@ async def reg_tg_id():
     
         # Установка куки с параметрами (значение, время жизни, защита) player_id
         response.set_cookie("tg_user_id", str(tg_id), max_age=18000, secure=True, httponly=True)
-        response.set_cookie("player_id", str(tg_id), max_age=18000, secure=True, httponly=True)
+        response.set_cookie("player_id", str(player_id), max_age=18000, secure=True, httponly=True)
         
         
         return response
