@@ -10,7 +10,7 @@ from sqlalchemy.ext.asyncio import (
     AsyncSession,
 )
 from sqlalchemy.exc import IntegrityError
-
+from utils import TEAMS
 from models import User, UserHistory, Quize, QuizeAnswer, TeamStats, UserQuizProgress, Base
 
 # Конфигурация из переменных окружения
@@ -62,7 +62,28 @@ class Database:
             
             # Создаем индексы для оптимизации (если их нет)
             # await self._create_indexes()
-
+            return await self._init_team_stats()
+    
+    async def _init_team_stats(self):
+        return None
+        """Инициализация записей статистики для всех команд"""
+        async with SessionLocal() as session:
+            for _team in TEAMS:
+                print("--------->", _team)
+                # Проверяем, существует ли запись для команды
+                result = await session.execute(
+                    select(TeamStats).where(TeamStats.team == _team)
+                )
+                stats = result.scalar_one_or_none()
+                
+                if stats is None:
+                    # Создаем запись для команды
+                    new_stats = TeamStats(team=_team)
+                    session.add(new_stats)
+            
+            await session.commit()
+            
+            
     async def _create_indexes(self):
         """Создание индексов для оптимизации запросов"""
         async with engine.begin() as conn:

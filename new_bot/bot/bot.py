@@ -446,7 +446,7 @@ async def process_team_selection(callback: types.CallbackQuery, state: FSMContex
             "Теперь ты можешь использовать бота.\n"
             "Нажми на кнопку ниже, чтобы открыть Mini App:",
             parse_mode="HTML",
-            reply_markup=get_main_keyboard(message.from_user.id)
+            reply_markup=get_main_keyboard(callback.message.from_user.id)
         )
         
         await db.add_history(user_id, "register", 
@@ -483,7 +483,7 @@ async def process_team_selection(callback: types.CallbackQuery, state: FSMContex
             f"Стало: {TEAMS[team_id]}\n\n"
             "Твой профиль обновлен:",
             parse_mode="HTML",
-            reply_markup=get_main_keyboard(message.from_user.id)
+            reply_markup=get_main_keyboard(callback.message.from_user.id)
         )
         
         await db.add_history(user_id, "change_team", 

@@ -151,16 +151,6 @@ class Database:
         """Добавление нового пользователя"""
         async with SessionLocal() as session:
             try:
-                # Создаем пользователя
-                user = User(
-                    user_id=user_id,
-                    name=name,
-                    player_id=player_id,
-                    team=team_id,
-                    registered=True,
-                )
-                session.add(user)
-                
                 # Обновляем статистику команды
                 result = await session.execute(
                     select(TeamStats).where(TeamStats.id == team_id)
@@ -171,6 +161,18 @@ class Database:
                     team_stats.total_players += 1
                 else:
                     return False
+
+                # Создаем пользователя
+                user = User(
+                    user_id=user_id,
+                    name=name,
+                    player_id=player_id,
+                    team=team_id,
+                    team_name=team_stats.team,
+                    registered=True,
+                )
+                
+                session.add(user)
                 
                 await session.commit()
                 return True

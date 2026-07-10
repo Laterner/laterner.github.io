@@ -19,9 +19,12 @@ from auth import (
     get_current_user,
     require_admin
 )
-from utils import InitData, validate_init_data, eprint, QUIZES, TEAMS
+from utils import InitData, validate_init_data, eprint, QUIZES
 
 
+
+
+TEAMS = []
 
 @dataclass
 class GameState:
@@ -105,8 +108,11 @@ def login_required(f):
 @app.before_serving
 async def init_db():
     """Инициализация базы данных при запуске"""
+    global TEAMS
+    
     logger.info("🚀 Запуск Quart приложения...")
-    await db.init_db()
+    TEAMS = await db.init_db()
+    print('TEAMS:', TEAMS)
     logger.info("✅ База данных инициализирована")
 
 @app.before_serving
@@ -201,7 +207,7 @@ async def miniapp():
         print(f"QR код пользователя [{player_id}] найден")
     
     
-    user['team'] = TEAMS[user['team']]
+    user['team'] = TEAMS[user['team']]['team']
     top_players = await db.get_top_players(10)
     top_teams = await db.get_all_teams_stats()
     player_rank = await db.get_user_rank_by_player_id(player_id)

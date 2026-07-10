@@ -43,10 +43,15 @@ class User(Base):
         index=True
     )
 
-    team: Mapped[str] = mapped_column(
+    team: Mapped[int] = mapped_column(
         Integer,
         nullable=False,
         index=True
+    )
+    
+    team_name: Mapped[str] = mapped_column(
+        String,
+        nullable=False
     )
 
     registered: Mapped[bool] = mapped_column(

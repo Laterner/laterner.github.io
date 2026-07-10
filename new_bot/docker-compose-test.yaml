@@ -33,8 +33,6 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
-      bot:
-        condition: service_healthy
 
   bot:
     build: ./bot
@@ -44,12 +42,6 @@ services:
       - .env
     volumes:
       - ./bot:/bot
-    healthcheck:
-      test: ["CMD", "python", "-c", "import socket; s=socket.socket(); s.connect(('localhost', 7000)); s.close()"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 10s
     networks:
       - app_network
     depends_on:
