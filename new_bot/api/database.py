@@ -393,7 +393,9 @@ class Database:
                     team_scores,
                     TeamStats.id == team_scores.c.team
                 )
-                .order_by(TeamStats.team)
+                .order_by(
+                    func.coalesce(team_scores.c.total_score, 0).desc()  # Сортировка по очкам (по убыванию)
+                )
             )
             
             stats = result.all()
