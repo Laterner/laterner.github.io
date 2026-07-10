@@ -62,7 +62,7 @@ class Database:
             
             # Создаем индексы для оптимизации (если их нет)
             # await self._create_indexes()
-            return await self.get_all_teams_stats()
+        return await self.get_all_teams_stats()
     
     async def _init_team_stats(self):
         return None

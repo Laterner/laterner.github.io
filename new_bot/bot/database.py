@@ -64,7 +64,7 @@ class Database:
             # Инициализируем статистику команд
             await self._init_team_stats()
             
-            return await self.get_all_teams_stats()
+        return await self.get_all_teams_stats()
             
     async def _init_team_stats(self):
         """Инициализация записей статистики для всех команд"""
