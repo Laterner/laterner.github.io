@@ -484,7 +484,7 @@ async def check_player(player_id):
             "exists": True,
             "name": user['name'],
             "score": user['score'],
-            "team": user['team']
+            "team": TEAMS[user['team']]
         })
     else:
         return jsonify({"exists": False})
