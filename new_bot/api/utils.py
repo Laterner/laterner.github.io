@@ -56,54 +56,6 @@ def validate_init_data(init_data: str):
     data['user'] =  json.loads(data['user'])
     return data
 
-TEAMS = {
-    "1": {
-        "name": "Выгода",
-        "emoji": "👤",
-        "description": ""
-    },
-    "2": {
-        "name": "Реклама",
-        "emoji": "👤",
-        "description": ""
-    },
-    "3": {
-        "name": "Город",
-        "emoji": "👤",
-        "description": ""
-    },
-    "4": {
-        "name": "Покупки",
-        "emoji": "👤",
-        "description": ""
-    },
-    "5": {
-        "name": "Путешествия",
-        "emoji": "👤",
-        "description": ""
-    },
-    "6": {
-        "name": "Т-Авто",
-        "emoji": "👤",
-        "description": ""
-    },
-    "7": {
-        "name": "Общие платформы",
-        "emoji": "👤",
-        "description": ""
-    },
-    "8": {
-        "name": "Команда аналитики, роста и монетизации",
-        "emoji": "👤",
-        "description": ""
-    },
-    "9": {
-        "name": "HR",
-        "emoji": "👤",
-        "description": ""
-    }
-}
-
 QUIZES = [
     {'question':'Как называется самая известная смотровая площадка Москвы? Нажмите 1', 'secret_code':'DSFGS', 'answers':["Вариант 1", "Вариант 2", "Вариант 3", "Вариант 4", "Вариант 5"], 'ans': 0},
     {'question':'Как называется самая известная смотровая площадка Москвы? Нажмите 2', 'secret_code':'CACTD', 'answers':["Вариант 1", "Вариант 2", "Вариант 3", "Вариант 4", "Вариант 5"], 'ans': 1},

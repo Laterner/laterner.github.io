@@ -84,18 +84,17 @@ class Database:
     async def _init_team_stats(self):
         """Инициализация записей статистики для всех команд"""
         async with SessionLocal() as session:
-            for _key, _team in TEAMS.items():
-                print("--------->",_key, _team)
+            for _team in TEAMS:
+                print("--------->", _team)
                 # Проверяем, существует ли запись для команды
-                # print("--------------->", _team['name'])
                 result = await session.execute(
-                    select(TeamStats).where(TeamStats.team == _team['name'])
+                    select(TeamStats).where(TeamStats.team == _team)
                 )
                 stats = result.scalar_one_or_none()
                 
                 if stats is None:
                     # Создаем запись для команды
-                    new_stats = TeamStats(team=_team['name'])
+                    new_stats = TeamStats(team=_team)
                     session.add(new_stats)
             
             await session.commit()
@@ -148,7 +147,7 @@ class Database:
                 }
             return None
 
-    async def add_user(self, user_id: int, name: str, player_id: str, team: str) -> bool:
+    async def add_user(self, user_id: int, name: str, player_id: str, team_id: int) -> bool:
         """Добавление нового пользователя"""
         async with SessionLocal() as session:
             try:
@@ -157,22 +156,21 @@ class Database:
                     user_id=user_id,
                     name=name,
                     player_id=player_id,
-                    team=team,
+                    team=team_id,
                     registered=True,
                 )
                 session.add(user)
                 
                 # Обновляем статистику команды
                 result = await session.execute(
-                    select(TeamStats).where(TeamStats.team == team)
+                    select(TeamStats).where(TeamStats.id == team_id)
                 )
                 team_stats = result.scalar_one_or_none()
+                
                 if team_stats:
                     team_stats.total_players += 1
                 else:
-                    # Если записи нет, создаем
-                    team_stats = TeamStats(team=team, total_players=1)
-                    session.add(team_stats)
+                    return False
                 
                 await session.commit()
                 return True
@@ -185,7 +183,7 @@ class Database:
                 print(f"Error adding user: {e}")
                 return False
 
-    async def update_user_team(self, user_id: int, new_team: str) -> bool:
+    async def update_user_team(self, user_id: int, new_team: int) -> bool:
         """Обновление команды пользователя"""
         async with SessionLocal() as session:
             try:
@@ -215,14 +213,13 @@ class Database:
                 
                 # Увеличиваем для новой команды
                 result_new = await session.execute(
-                    select(TeamStats).where(TeamStats.team == new_team)
+                    select(TeamStats).where(TeamStats.id == new_team)
                 )
                 new_stats = result_new.scalar_one_or_none()
                 if new_stats:
                     new_stats.total_players += 1
                 else:
-                    new_stats = TeamStats(team=new_team, total_players=1)
-                    session.add(new_stats)
+                    return False
                 
                 await session.commit()
                 return True
@@ -301,11 +298,11 @@ class Database:
                 await session.rollback()
                 print(f"Error updating team stats: {e}")
 
-    async def get_team_stats(self, team: str) -> Optional[Dict[str, Any]]:
+    async def get_team_stats(self, team_id: int) -> Optional[Dict[str, Any]]:
         """Получение статистики команды"""
         async with SessionLocal() as session:
             result = await session.execute(
-                select(TeamStats).where(TeamStats.team == team)
+                select(TeamStats).where(TeamStats.id == team_id)
             )
             stats = result.scalar_one_or_none()
             

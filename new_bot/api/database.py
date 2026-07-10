@@ -159,7 +159,7 @@ class Database:
                 result = await session.execute(
                     select(User).where(User.player_id == player_id)
                 )
-                user = result.scalar_one_or_none()
+                user: User = result.scalar_one_or_none()
                 
                 if not user:
                     return False
@@ -176,8 +176,17 @@ class Database:
                     action="add_score",
                     details=f"Добавлено {amount} очков (через API)"
                 )
-                session.add(history)
                 
+                result = await session.execute(
+                    select(TeamStats).where(TeamStats.id == user.team)
+                )
+                
+                team: TeamStats = result.scalar_one_or_none()
+                team.total_games += 1
+                team.total_wins += 1
+                
+                session.add(history)
+
                 await session.commit()
                 return True
                 

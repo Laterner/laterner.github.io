@@ -44,7 +44,7 @@ class User(Base):
     )
 
     team: Mapped[str] = mapped_column(
-        String(100),
+        Integer,
         nullable=False,
         index=True
     )
@@ -116,6 +116,12 @@ class User(Base):
 class TeamStats(Base):
     __tablename__ = "team_stats"
 
+    id: Mapped[int] = mapped_column(
+        Integer,
+        primary_key=True,
+        autoincrement=True
+    )
+    
     team: Mapped[str] = mapped_column(
         String(100),
         primary_key=True
@@ -140,7 +146,11 @@ class TeamStats(Base):
     )
 
     def __repr__(self):
-        return f"<TeamStats(team='{self.team}')>"
+        return (
+            f"<UserHistory("
+            f"id={self.id},"
+            f"team='{self.user_id}')>"
+        )
 
 
 class UserHistory(Base):
@@ -185,6 +195,7 @@ class UserHistory(Base):
     def __repr__(self):
         return (
             f"<UserHistory("
+            f"id={self.id},"
             f"user_id={self.user_id}, "
             f"action='{self.action}')>"
         )
@@ -257,8 +268,7 @@ class QuizeAnswer(Base):
     def __repr__(self):
         return (
             f"<QuizeAnswer("
-            f"id={self.id},"
-            f"answer='{self.answer}' )>"
+            f"id={self.id} )>"
         )
     
 

@@ -12,9 +12,9 @@ RUN apt-get update && apt-get install -y \
 # 3. Копируем зависимости и ставим их (кэширование слоев!)
 COPY requirements.txt requirements.txt
 
-RUN curl -LsSf https://astral.sh/uv/install.sh | sh
+RUN pip install uv
 
-RUN uv pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt
 
 # 4. Копируем сам код
 COPY . .

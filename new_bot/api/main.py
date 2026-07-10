@@ -129,8 +129,6 @@ async def shutdown():
             pass
         logging.info("Задача начисления очков остановлена")
         
-        
-
 
 
 @app.route('/set_player_king', methods=['POST'])
@@ -190,15 +188,19 @@ async def miniapp():
     
     if not os.path.exists(f"./static/user_qrs/{player_id}.png"):
         try:
+            os.makedirs("./static/user_qrs", exist_ok=True)
             img = qrcode.make(player_id)
             type(img)
             img.save(f"./static/user_qrs/{player_id}.png")
+            print(f"QR код пользователя [{player_id}] успешно создан")
         except Exception as e:
-            print(e)
-            
+            print("Ошибка создания QR кода пользователя:", e)
+    else:
+        print(f"QR код пользователя [{player_id}] найден")
     top_players = await db.get_top_players(10)
     
     top_teams = await db.get_all_teams_stats()
+    
     print("top_teams", top_teams)
     print("top_players", top_players)
     

@@ -23,11 +23,11 @@ from aiogram.types import (
 from database import db
 from utils import (
     generate_player_id,
-    get_team_emoji,
     get_team_name,
     get_team_description,
     format_player_id,
-    hash_user_id
+    hash_user_id,
+    TEAMS
 )
 
 # Загрузка переменных окружения
@@ -49,63 +49,6 @@ if not BOT_TOKEN:
 if not MINI_APP_URL:
     raise ValueError("MINI_APP_URL не найден в .env файле!")
 
-# Команды
-TEAMS = {
-    "1": {
-        "name": "Выгода",
-        "emoji": "👤",
-        "description": "",
-        "color": "#FF4444"
-    },
-    "2": {
-        "name": "Реклама",
-        "emoji": "👤",
-        "description": "",
-        "color": "#4444FF"
-    },
-    "3": {
-        "name": "Город",
-        "emoji": "👤",
-        "description": "",
-        "color": "#44FF44"
-    },
-    "4": {
-        "name": "Покупки",
-        "emoji": "👤",
-        "description": "",
-        "color": "#44FF44"
-    },
-    "5": {
-        "name": "Путешествия",
-        "emoji": "👤",
-        "description": "",
-        "color": "#44FF44"
-    },
-    "6": {
-        "name": "Т-Авто",
-        "emoji": "👤",
-        "description": "",
-        "color": "#44FF44"
-    },
-    "7": {
-        "name": "Общие платформы",
-        "emoji": "👤",
-        "description": "",
-        "color": "#44FF44"
-    },
-    "8": {
-        "name": "Команда аналитики, роста и монетизации",
-        "emoji": "👤",
-        "description": "",
-        "color": "#44FF44"
-    },
-    "9": {
-        "name": "HR",
-        "emoji": "👤",
-        "description": "",
-        "color": "#44FF44"
-    }
-}
 
 # Инициализация бота
 bot = Bot(token=BOT_TOKEN)
@@ -142,24 +85,14 @@ def get_team_keyboard():
 
     builder = InlineKeyboardBuilder()
 
-    for key, team in TEAMS.items():
+    for key, team in enumerate(TEAMS):
         builder.button(
-            text=team['name'],
+            text=team,
             callback_data=f"team_{key}"
         )
     # Распределить по строкам, например по 3 кнопки в ряд
     builder.adjust(3)
     keyboard = builder.as_markup()
-
-    # buttons = []
-    # for key, team in TEAMS.items():
-    #     print("add button -------->", f"team_{key}")
-    #     buttons.append(
-    #         InlineKeyboardButton(
-    #             text=f"{key}",
-    #             callback_data=f"team_{key}"
-    #         )
-    #     )
 
         
     # keyboard = InlineKeyboardMarkup(inline_keyboard=[buttons])
@@ -177,7 +110,7 @@ async def start_command(message: types.Message, state: FSMContext):
         await message.answer(
             f"👋 С возвращением, {user['name']}!\n\n"
             f"🎮 Player ID: {format_player_id(user['player_id'])}\n"
-            f"⚔️ Команда: {TEAMS[user['team']]['emoji']} {TEAMS[user['team']]['name']}\n"
+            f"⚔️ Команда: {TEAMS[user['team']]}\n"
             f"⭐ Очки: {user['score']}\n"
             f"🏆 Игр сыграно: {user['wins']}"
             "Используй кнопки ниже:",
@@ -219,7 +152,7 @@ async def profile_command(message: types.Message):
         f"👤 <b>Твой профиль</b>\n\n"
         f"📛 Имя: {user['name']}\n"
         f"🎮 Player ID: {format_player_id(user['player_id'])}\n"
-        f"⚔️ Команда: {TEAMS[user['team']]['emoji']} {TEAMS[user['team']]['name']}\n"
+        f"⚔️ Команда: {TEAMS[user['team']]}\n"
         f"⭐ Очки: {user['score']}\n"
         f"🏆 Игр сыграно: {user['games_played']}\n",
         # f"🆔 Telegram ID: <code>{user_id}</code>\n\n"
@@ -239,8 +172,8 @@ async def team_command(message: types.Message):
         await message.answer("❌ Сначала зарегистрируйся: /start")
         return
     
-    for key, team in TEAMS.items():
-        _teams += f"{key}: {team['name']}\n"
+    for team in TEAMS:
+        _teams += f"{team}\n"
         
     await message.answer(
         "⚔️ <b>Выбери свою команду:</b>\n\n"
@@ -263,7 +196,7 @@ async def top_command(message: types.Message):
         medal = "🥇" if i == 1 else "🥈" if i == 2 else "🥉" if i == 3 else f"{i}."
         text += (
             f"{medal} <b>{player['name']}</b>\n"
-            f"   {TEAMS[player['team']]['emoji']} {TEAMS[player['team']]['name']}\n"
+            f"   {TEAMS[player['team']]}\n"
             f"   ⭐ {player['score']} очков | 🏆 {player['wins']} игр\n\n"
         )
     
@@ -282,13 +215,13 @@ async def stats_command(message: types.Message):
     
     if team_stats:
         text = (
-            f"📊 <b>Статистика команды {TEAMS[user['team']]['name']}</b>\n\n"
+            f"📊 <b>Статистика команды {TEAMS[user['team']]}</b>\n\n"
             f"👥 Игроков: {team_stats['total_players']}\n"
             f"🎯 Игр сыграно: {team_stats['total_games']}\n"
             f"🏆 Очки команды: {team_stats['total_wins']}\n"
         )
     else:
-        text = f"📊 Статистика команды {TEAMS[user['team']]['name']} пока пуста"
+        text = f"📊 Статистика команды {TEAMS[user['team']]} пока пуста"
     
     await message.answer(text, parse_mode="HTML")
 
@@ -355,14 +288,10 @@ async def process_name(message: types.Message, state: FSMContext):
     await state.update_data(name=message.text.strip())
     await state.set_state(RegistrationStates.waiting_for_team)
     
-    _teams = ""
-    for key, team in TEAMS.items():
-        _teams += f"{key}: {team['name']}\n"
-    
     await message.answer(
         f"👋 Отлично, <b>{message.text.strip()}</b>!\n\n"
         "Теперь выбери свою команду:\n\n"
-        f"{_teams}",
+        f"{'\n'.join(TEAMS)}",
         parse_mode="HTML",
         reply_markup=get_team_keyboard()
     )
@@ -379,9 +308,6 @@ async def stats_button(message: types.Message):
 async def top_button(message: types.Message):
     await top_command(message)
 
-# @dp.message(F.text == "🔄 Сменить команду")
-# async def change_team_button(message: types.Message):
-#     await team_command(message)
 
 # @dp.message(F.text == "🚀 Открыть MiniApps")
 # async def open_miniapp_button(message: types.Message):
@@ -399,7 +325,7 @@ async def top_button(message: types.Message):
 #         "🚀 <b>Открываю Mini App...</b>\n\n"
 #         f"Игрок: {user['name']}\n"
 #         f"ID: {format_player_id(user['player_id'])}\n"
-#         f"Команда: {TEAMS[user['team']]['emoji']} {TEAMS[user['team']]['name']}",
+#         f"Команда: {TEAMS[user['team']]}",
 #         parse_mode="HTML",
 #         reply_markup=get_main_keyboard()
 #     )
@@ -424,7 +350,7 @@ async def admin_stats(message: types.Message):
         stats = await db.get_team_stats(team)
         if stats:
             text += (
-                f"{TEAMS[team]['emoji']} {TEAMS[team]['name']}:\n"
+                f"{TEAMS[team]}:\n"
                 f"   👥 {stats['total_players']} игроков\n"
                 f"   🎯 {stats['total_games']} игр\n"
                 f"   🏆 {stats['total_wins']} побед\n\n"
@@ -462,7 +388,7 @@ async def admin_teams_stats(message: types.Message):
         team = stat['team']
         if team in TEAMS:
             text += (
-                f"{TEAMS[team]['emoji']} {TEAMS[team]['name']}:\n"
+                f"{TEAMS[team]}:\n"
                 f"   👥 {stat['total_players']} игроков\n"
                 f"   🎯 {stat['total_games']} игр\n"
                 f"   🏆 {stat['total_wins']} побед\n"
@@ -491,9 +417,9 @@ async def handle_other_messages(message: types.Message):
 
 @dp.callback_query(lambda c: c.data.startswith('team_'))
 async def process_team_selection(callback: types.CallbackQuery, state: FSMContext):
-    team_key = callback.data.replace('team_', '')
-    
-    if team_key not in TEAMS:
+    try:
+        team_id = int(callback.data.replace('team_', ''))
+    except:
         await callback.answer("❌ Неверная команда!", show_alert=True)
         return
     
@@ -509,7 +435,7 @@ async def process_team_selection(callback: types.CallbackQuery, state: FSMContex
         player_id = await generate_player_id(db)
         
         # Сохраняем пользователя
-        success = await db.add_user(user_id, name, player_id, team_key)
+        success = await db.add_user(user_id, name, player_id, team_id)
         
         if not success:
             await callback.answer("❌ Ошибка при регистрации!", show_alert=True)
@@ -522,7 +448,7 @@ async def process_team_selection(callback: types.CallbackQuery, state: FSMContex
             f"✅ <b>Регистрация завершена!</b>\n\n"
             f"👋 <b>Добро пожаловать, {name}!</b>\n"
             f"🎮 Player ID: {format_player_id(player_id)}\n"
-            f"⚔️ Команда: {TEAMS[team_key]['emoji']} {TEAMS[team_key]['name']}\n\n"
+            f"⚔️ Команда: {TEAMS[team_id]}\n\n"
             "Теперь ты можешь использовать бота.\n"
             "Нажми на кнопку ниже, чтобы открыть Mini App:",
             parse_mode="HTML",
@@ -530,7 +456,7 @@ async def process_team_selection(callback: types.CallbackQuery, state: FSMContex
         )
         
         await db.add_history(user_id, "register", 
-            f"Регистрация: {name}, команда {TEAMS[team_key]['name']}")
+            f"Регистрация: {name}, команда {TEAMS[team_id]}")
         
         await callback.answer("✅ Регистрация завершена!")
         
@@ -542,15 +468,15 @@ async def process_team_selection(callback: types.CallbackQuery, state: FSMContex
             await callback.answer("❌ Сначала зарегистрируйся!", show_alert=True)
             return
         
-        if user['team'] == team_key:
+        if user['team'] == team_id:
             await callback.answer(
-                f"❌ Ты уже в команде {TEAMS[team_key]['name']}!", 
+                f"❌ Ты уже в команде {TEAMS[team_id]}!", 
                 show_alert=True
             )
             return
         
         # Обновляем команду
-        success = await db.update_user_team(user_id, team_key)
+        success = await db.update_user_team(user_id, team_id)
         
         if not success:
             await callback.answer("❌ Ошибка при смене команды!", show_alert=True)
@@ -559,17 +485,17 @@ async def process_team_selection(callback: types.CallbackQuery, state: FSMContex
         await callback.message.delete()
         await callback.message.answer(
             f"✅ <b>Команда изменена!</b>\n\n"
-            f"Было: {TEAMS[user['team']]['emoji']} {TEAMS[user['team']]['name']}\n"
-            f"Стало: {TEAMS[team_key]['emoji']} {TEAMS[team_key]['name']}\n\n"
+            f"Было: {TEAMS[user['team']]}\n"
+            f"Стало: {TEAMS[team_id]}\n\n"
             "Твой профиль обновлен:",
             parse_mode="HTML",
             reply_markup=get_main_keyboard()
         )
         
         await db.add_history(user_id, "change_team", 
-            f"Смена команды: {user['team']} -> {team_key}")
+            f"Смена команды: {user['team']} -> {team_id}")
         
-        await callback.answer(f"Перешел в {TEAMS[team_key]['name']}!")
+        await callback.answer(f"Перешел в {TEAMS[team_id]}!")
 
 # Запуск бота
 async def main():
@@ -586,6 +512,5 @@ async def main():
 
 if __name__ == "__main__":
     asyncio.run(main())
-    # for key, team in TEAMS.items():
-    #     print("add button -------->", f"team_{key}")
+    
         
