@@ -21,7 +21,7 @@ services:
   fastapi:
     build: ./api
     container_name: fastapi
-    restart: always
+    # restart: always
     env_file:
       - .env
     volumes:
@@ -33,37 +33,28 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+      bot:
+        condition: service_healthy
 
   bot:
     build: ./bot
     container_name: bot
-    restart: always
+    # restart: always
     env_file:
       - .env
     volumes:
       - ./bot:/bot
+    healthcheck:
+      test: ["CMD", "python", "-c", "import socket; s=socket.socket(); s.connect(('localhost', 7000)); s.close()"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
     networks:
       - app_network
     depends_on:
       postgres:
         condition: service_healthy
-
-  # pgadmin:
-  #   image: dpage/pgadmin4:latest
-  #   container_name: pgadmin
-  #   restart: unless-stopped
-  #   environment:
-  #     PGADMIN_DEFAULT_EMAIL: admin@admin.com
-  #     PGADMIN_DEFAULT_PASSWORD: admin123
-  #   ports:
-  #     - "5050:80"
-  #   volumes:
-  #     - pgadmin_data:/var/lib/pgadmin
-  #   depends_on:
-  #     postgres:
-  #       condition: service_healthy
-  #   networks:
-  #     - app_network
 
 
 networks:
@@ -72,4 +63,3 @@ networks:
 
 volumes:
   postgres_data:
-  pgadmin_data:
