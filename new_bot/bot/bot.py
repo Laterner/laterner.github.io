@@ -120,7 +120,7 @@ async def start_command(message: types.Message, state: FSMContext):
         # Начинаем регистрацию
         await state.set_state(RegistrationStates.waiting_for_name)
         await message.answer(
-            "🎮 <b>Добро пожаловать в fstbot.ru!</b>\n\n"
+            "<b>Добро пожаловать!</b>\n\n"
             "Для начала игры давай познакомимся.\n"
             "Как мне к тебе обращаться?\n\n"
             "<i>Напиши свое имя (можно никнейм)</i>",
@@ -216,7 +216,7 @@ async def stats_command(message: types.Message):
             f"📊 <b>Статистика команды {user['team_name']}</b>\n\n"
             f"👥 Игроков: {team_stats['total_players']}\n"
             f"🎯 Игр сыграно: {team_stats['total_games']}\n"
-            f"🏆 Очки команды: {team_stats['total_wins']}\n"
+            f"🏆 Очки команды: {team_stats['total_score']}\n"
         )
     else:
         text = f"📊 Статистика команды {user['team_name']} пока пуста"
