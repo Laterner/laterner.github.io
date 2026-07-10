@@ -480,12 +480,20 @@ async def check_player(player_id):
     """Проверка существования игрока"""
     user = await db.get_user_by_player_id(player_id)
     if user:
-        return jsonify({
-            "exists": True,
-            "name": user['name'],
-            "score": user['score'],
-            "team": TEAMS[user['team']]
-        })
+        try:
+            return jsonify({
+                "exists": True,
+                "name": user['name'],
+                "score": user['score'],
+                "team": TEAMS[user['team']]
+            })
+        except Exception as e:
+            return jsonify({
+                "exists": True,
+                "name": user['name'],
+                "score": user['score']
+            })
+            
     else:
         return jsonify({"exists": False})
 
