@@ -419,7 +419,6 @@ async def quize_page():
 
 """ Админка роуты """
 @app.route("/admin/addscore")
-@login_required
 async def admin_addscore():
     """Главная страница с формой добавления очков"""
     return await render_template("admin_add_points_test.html", title="Добавление очков")
