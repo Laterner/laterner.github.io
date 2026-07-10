@@ -23,10 +23,7 @@ from aiogram.types import (
 from database import db
 from utils import (
     generate_player_id,
-    get_team_name,
-    get_team_description,
     format_player_id,
-    hash_user_id,
     TEAMS
 )
 
