@@ -58,20 +58,17 @@ class RegistrationStates(StatesGroup):
     waiting_for_team = State()
 
 # Клавиатуры
-def get_main_keyboard():
+def get_main_keyboard(user_id):
     """Главная клавиатура с кнопкой Mini App"""
-    button_miniapp = KeyboardButton(
-        text="🚀 Открыть MiniApps",
-        web_app=WebAppInfo(url=MINI_APP_URL)
-    )
-    
-    keyboard = ReplyKeyboardMarkup(
+    keyboard = InlineKeyboardMarkup(
         keyboard=[
-            [KeyboardButton(text="👤 Мой профиль")],
-            [KeyboardButton(text="📊 Статистика команды")],
-            [KeyboardButton(text="🏆 Топ игроков")],
-            [button_miniapp]
-            # [KeyboardButton(text="🔄 Сменить команду")]
+            [InlineKeyboardButton(text="👤 Мой профиль")],
+            [InlineKeyboardButton(text="📊 Статистика команды")],
+            [InlineKeyboardButton(text="🏆 Топ игроков")],
+            [InlineKeyboardButton(
+                text="🚀 Открыть MiniApps",
+                web_app=WebAppInfo(url=MINI_APP_URL+f"?user_id={user_id}")
+            )]
         ],
         resize_keyboard=True
     )
@@ -111,7 +108,7 @@ async def start_command(message: types.Message, state: FSMContext):
             f"⭐ Очки: {user['score']}\n"
             f"🏆 Игр сыграно: {user['wins']}"
             "Используй кнопки ниже:",
-            reply_markup=get_main_keyboard(),
+            reply_markup=get_main_keyboard(message.from_user.id),
             parse_mode="HTML"
         )
         await db.add_history(user_id, "start", "Повторный запуск")
@@ -155,7 +152,7 @@ async def profile_command(message: types.Message):
         # f"🆔 Telegram ID: <code>{user_id}</code>\n\n"
         # f"📜 <b>Последние действия:</b>\n{history_text}",
         parse_mode="HTML",
-        reply_markup=get_main_keyboard()
+        reply_markup=get_main_keyboard(message.from_user.id)
     )
     
     await db.add_history(user_id, "profile", "Просмотр профиля")
@@ -324,10 +321,8 @@ async def top_button(message: types.Message):
 #         f"ID: {format_player_id(user['player_id'])}\n"
 #         f"Команда: {TEAMS[user['team']]}",
 #         parse_mode="HTML",
-#         reply_markup=get_main_keyboard()
+#         reply_markup=get_main_keyboard(message.from_user.id)
 #     )
-    
-#     await db.add_history(user_id, "open_miniapp", "Открытие Mini App")
 
 @dp.message(F.text == "📊 Общая статистика")
 async def admin_stats(message: types.Message):
@@ -402,7 +397,7 @@ async def handle_other_messages(message: types.Message):
     if user and user.get('registered', False):
         await message.answer(
             "Используй кнопки для навигации 👇",
-            reply_markup=get_main_keyboard()
+            reply_markup=get_main_keyboard(message.from_user.id)
         )
     else:
         await message.answer(
@@ -449,7 +444,7 @@ async def process_team_selection(callback: types.CallbackQuery, state: FSMContex
             "Теперь ты можешь использовать бота.\n"
             "Нажми на кнопку ниже, чтобы открыть Mini App:",
             parse_mode="HTML",
-            reply_markup=get_main_keyboard()
+            reply_markup=get_main_keyboard(message.from_user.id)
         )
         
         await db.add_history(user_id, "register", 
@@ -486,7 +481,7 @@ async def process_team_selection(callback: types.CallbackQuery, state: FSMContex
             f"Стало: {TEAMS[team_id]}\n\n"
             "Твой профиль обновлен:",
             parse_mode="HTML",
-            reply_markup=get_main_keyboard()
+            reply_markup=get_main_keyboard(message.from_user.id)
         )
         
         await db.add_history(user_id, "change_team", 

@@ -230,6 +230,9 @@
                 // Расширяем приложение на весь экран
                 webapp.expand();
                 
+                const params = new URLSearchParams(window.location.search);
+                const userId = params.get('user_id');
+
                 // Получаем данные пользователя
                 if (webapp.initDataUnsafe && webapp.initDataUnsafe.user) {
                     tgUser = webapp.initDataUnsafe.user;
@@ -256,7 +259,21 @@
                     
                     // Автоматически авторизуемся
                     // setTimeout(() => authorize(), 500);
-                } else {
+                }
+                else if (userId){
+                    tgId = userId;
+                    
+                    debugLog('Данные пользователя получены', tgUser);
+                    
+                    // Показываем информацию
+                    document.getElementById('userInfo').style.display = 'block';
+                    document.getElementById('tgIdDisplay').textContent = tgId;
+                    document.getElementById('authBtn').disabled = false;
+                    document.getElementById('authBtn').textContent = 'Войти через Telegram';
+                    document.getElementById('status').textContent = '✅ Данные получены, нажмите кнопку';
+                    document.getElementById('status').className = 'status success';
+                } 
+                else {
                     debugLog('Данные пользователя отсутствуют в initDataUnsafe');
                     document.getElementById('status').textContent = '⚠️ Данные пользователя не найдены';
                     document.getElementById('status').className = 'status error';
