@@ -58,14 +58,14 @@ class RegistrationStates(StatesGroup):
     waiting_for_team = State()
 
 # Клавиатуры
-def get_main_keyboard(user_id):
+def get_main_keyboard(user_id=""):
     """Главная клавиатура с кнопкой Mini App"""
-    keyboard = InlineKeyboardMarkup(
+    keyboard = ReplyKeyboardMarkup(
         keyboard=[
-            [InlineKeyboardButton(text="👤 Мой профиль")],
-            [InlineKeyboardButton(text="📊 Статистика команды")],
-            [InlineKeyboardButton(text="🏆 Топ игроков")],
-            [InlineKeyboardButton(
+            [KeyboardButton(text="👤 Мой профиль")],
+            [KeyboardButton(text="📊 Статистика команды")],
+            [KeyboardButton(text="🏆 Топ игроков")],
+            [KeyboardButton(
                 text="🚀 Открыть MiniApps",
                 web_app=WebAppInfo(url=MINI_APP_URL+f"?user_id={user_id}")
             )]
@@ -323,6 +323,8 @@ async def top_button(message: types.Message):
 #         parse_mode="HTML",
 #         reply_markup=get_main_keyboard(message.from_user.id)
 #     )
+    
+#     await db.add_history(user_id, "open_miniapp", "Открытие Mini App")
 
 @dp.message(F.text == "📊 Общая статистика")
 async def admin_stats(message: types.Message):
