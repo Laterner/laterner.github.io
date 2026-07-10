@@ -228,7 +228,14 @@ async def reg_tg_id():
             player_id = user['player_id']
             
         except Exception as e:
-            print('PLAYER ID NOT ACCEPT:', e)
+            print('Пользователь ещё не зарегестрирован:', e)
+            response = await make_response(jsonify(
+                {
+                    "success": False,
+                    "message": "Пользователь ещё не зарегестирован в боте"
+                }
+            ))
+            return response
             
         response = await make_response(jsonify(
             {
@@ -282,6 +289,7 @@ async def tg_auth():
 async def tg_auth_delete():
     response = await make_response(jsonify({'message':'Cookie deleted!'}))
     response.delete_cookie('tg_user_id')
+    response.delete_cookie('player_id')
     return response
 
 @app.route("/qr")
