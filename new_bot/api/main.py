@@ -19,12 +19,12 @@ from auth import (
     get_current_user,
     require_admin
 )
-from utils import InitData, validate_init_data, eprint, QUIZES
+from utils import InitData, validate_init_data, eprint, QUIZES, TeamStatsManager
 
 
 
 
-TEAMS = []
+team_status = None
 
 @dataclass
 class GameState:
@@ -108,11 +108,14 @@ def login_required(f):
 @app.before_serving
 async def init_db():
     """Инициализация базы данных при запуске"""
-    global TEAMS
+    global team_stats
     
     logger.info("🚀 Запуск Quart приложения...")
-    TEAMS = await db.init_db()
-    print('TEAMS:', TEAMS)
+    
+    teams = await db.init_db()
+    print("---->>>>>>>>", teams)
+    team_stats = TeamStatsManager(teams)
+    
     logger.info("✅ База данных инициализирована")
 
 @app.before_serving
@@ -206,8 +209,6 @@ async def miniapp():
     else:
         print(f"QR код пользователя [{player_id}] найден")
     
-    
-    user['team'] = TEAMS[user['team']]['team']
     top_players = await db.get_top_players(10)
     top_teams = await db.get_all_teams_stats()
     player_rank = await db.get_user_rank_by_player_id(player_id)
@@ -491,7 +492,7 @@ async def check_player(player_id):
                 "exists": True,
                 "name": user['name'],
                 "score": user['score'],
-                "team": TEAMS[user['team']]
+                "team": user['team_name']
             })
         except Exception as e:
             return jsonify({

@@ -62,7 +62,7 @@ class Database:
             
             # Создаем индексы для оптимизации (если их нет)
             # await self._create_indexes()
-            return await self._init_team_stats()
+            return await self.get_all_teams_stats()
     
     async def _init_team_stats(self):
         return None
@@ -372,17 +372,39 @@ class Database:
     async def get_all_teams_stats(self) -> List[Dict[str, Any]]:
         """Получение статистики всех команд"""
         async with SessionLocal() as session:
+            # Подзапрос для получения суммы очков по командам
+            team_scores = select(
+                User.team,
+                func.sum(User.score).label('total_score')
+            ).group_by(User.team).subquery()
+            
+            # Основной запрос с объединением
             result = await session.execute(
-                select(TeamStats).order_by(TeamStats.team)
+                select(
+                    TeamStats.id,
+                    TeamStats.team,
+                    TeamStats.total_players,
+                    TeamStats.total_wins,
+                    TeamStats.total_games,
+                    func.coalesce(team_scores.c.total_score, 0).label('total_score')
+                )
+                .outerjoin(
+                    team_scores,
+                    TeamStats.id == team_scores.c.team
+                )
+                .order_by(TeamStats.team)
             )
-            stats = result.scalars().all()
+            
+            stats = result.all()
             
             return [
                 {
+                    'id': s.id,
                     'name': s.team,
                     'total_players': s.total_players,
                     'total_wins': s.total_wins,
                     'total_games': s.total_games,
+                    'total_score': int(s.total_score) if s.total_score else 0
                 }
                 for s in stats
             ]

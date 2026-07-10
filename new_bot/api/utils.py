@@ -88,10 +88,11 @@ TEAMS = [
 class TeamStats:
     """Статистика команды"""
     id: int
-    team: str
+    name: str
     total_players: int = 0
     total_wins: int = 0
     total_games: int = 0
+    total_score: int = 0
     
     @property
     def win_rate(self) -> float:
@@ -107,7 +108,7 @@ class TeamStatsManager:
     def __init__(self, data: List[Dict]):
         self._data = data
         self._teams_by_id = {item['id']: TeamStats(**item) for item in data}
-        self._teams_by_name = {item['team']: TeamStats(**item) for item in data}
+        self._teams_by_name = {item['name']: TeamStats(**item) for item in data}
         self._update_stats()
     
     def _update_stats(self):
@@ -133,14 +134,14 @@ class TeamStatsManager:
         """Получить список названий команд, отсортированных по id"""
         # Получаем все команды, сортируем по id и извлекаем названия
         return [
-            team.team 
+            team.name 
             for team in sorted(self._teams_by_id.values(), key=lambda x: x.id)
         ]
     
     def get_team_names_with_ids(self) -> List[Dict[str, int]]:
         """Получить список словарей с id и названиями команд"""
         return [
-            {'id': team.id, 'name': team.team}
+            {'id': team.id, 'name': team.name}
             for team in sorted(self._teams_by_id.values(), key=lambda x: x.id)
         ]
     
@@ -157,7 +158,7 @@ class TeamStatsManager:
         return [
             {
                 'id': t.id,
-                'team': t.team,
+                'name': t.name,
                 'total_players': t.total_players,
                 'total_wins': t.total_wins,
                 'total_games': t.total_games

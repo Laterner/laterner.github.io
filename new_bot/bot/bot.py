@@ -346,15 +346,16 @@ async def admin_stats(message: types.Message):
     text = "📊 <b>Общая статистика</b>\n\n"
     text += f"👥 Всего игроков: {total_users}\n\n"
     
-    for team in TEAMS:
-        stats = await db.get_team_stats(team)
-        if stats:
-            text += (
-                f"{TEAMS[team]['team']}:\n"
-                f"   👥 {stats['total_players']} игроков\n"
-                f"   🎯 {stats['total_games']} игр\n"
-                f"   🏆 {stats['total_wins']} побед\n\n"
-            )
+    # TODO
+    # for team in TEAMS:
+    #     stats = await db.get_team_stats(team)
+    #     if stats:
+    #         text += (
+    #             f"{TEAMS[team]['team']}:\n"
+    #             f"   👥 {stats['total_players']} игроков\n"
+    #             f"   🎯 {stats['total_games']} игр\n"
+    #             f"   🏆 {stats['total_wins']} побед\n\n"
+    #         )
     
     await message.answer(text, parse_mode="HTML")
 
@@ -503,9 +504,6 @@ async def main():
     
     # Инициализация базы данных
     pupu = await db.init_db()
-    TEAMS = {value['id']: value for key, value in enumerate(pupu)}
-    print("pu-pu-pu:", TEAMS, pupu)
-    
     team_stats = TeamStatsManager(pupu)
     print('team_stats.get_all() =======>', team_stats.get_all())
     
