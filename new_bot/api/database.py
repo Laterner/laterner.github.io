@@ -325,6 +325,29 @@ class Database:
                 for u in users
             ]
     
+    async def get_user_rank_by_player_id(self, player_id) -> List[Dict[str, Any]]:
+        """Получение своей позиции в рейтенге"""
+        subquery = select(
+            User.user_id,
+            User.score,
+            func.row_number().over(
+                order_by=User.score.desc()
+            ).label('rank')
+        ).subquery()
+        
+        # Основной запрос для получения ранга конкретного пользователя
+        query = select(
+            subquery.c.rank
+        ).where(
+            subquery.c.user_id == select(User.user_id).where(User.player_id == player_id).scalar_subquery()
+        )
+        
+        async with SessionLocal() as session:
+            result = await session.execute(query)
+            rank = result.scalar_one_or_none()
+            
+            return rank
+        
     async def get_all_teams_stats(self) -> List[Dict[str, Any]]:
         """Получение статистики всех команд"""
         async with SessionLocal() as session:

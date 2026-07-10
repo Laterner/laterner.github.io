@@ -186,27 +186,30 @@ async def miniapp():
     if user == None:
         return await render_template("miniapp_auth.html", title="TG Auth")
     
-    if not os.path.exists(f"./static/user_qrs/{user['player_id']}.png"):
+    player_id = user['player_id']
+    
+    if not os.path.exists(f"./static/user_qrs/{player_id}.png"):
         try:
             os.makedirs("./static/user_qrs", exist_ok=True)
-            img = qrcode.make(user['player_id'])
+            img = qrcode.make(player_id)
             type(img)
-            img.save(f"./static/user_qrs/{user['player_id']}.png")
-            print(f"QR код пользователя [{user['player_id']}] успешно создан")
+            img.save(f"./static/user_qrs/{player_id}.png")
+            print(f"QR код пользователя [{player_id}] успешно создан")
         except Exception as e:
             print("Ошибка создания QR кода пользователя:", e)
     else:
-        print(f"QR код пользователя [{user['player_id']}] найден")
+        print(f"QR код пользователя [{player_id}] найден")
     
     
     user['team'] = TEAMS[user['team']]
     top_players = await db.get_top_players(10)
     top_teams = await db.get_all_teams_stats()
+    player_rank = await db.get_user_rank_by_player_id(player_id)
     
     print("top_teams", top_teams)
     print("top_players", top_players)
     
-    return await render_template("index.html", title="Home", user=user, top_players=top_players, top_teams=top_teams)
+    return await render_template("index.html", title="Home", user=user, top_players=top_players, top_teams=top_teams, player_rank=player_rank)
 
 
 @app.route("/reg_tg_id", methods=['POST'])
