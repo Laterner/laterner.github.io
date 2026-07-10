@@ -36,15 +36,6 @@ def get_team_name(team: str) -> str:
     }
     return teams.get(team, "Неизвестно")
 
-def get_team_description(team: str) -> str:
-    """Получение описания команды"""
-    descriptions = {
-        "red": "🔥 Огненные воины - смелые и решительные",
-        "blue": "💎 Стражи океана - мудрые и спокойные",
-        "green": "🌿 Хранители леса - дружелюбные и сильные"
-    }
-    return descriptions.get(team, "❓ Неизвестная команда")
-
 def format_player_id(player_id: str) -> str:
     """Форматирование player_id"""
     return f"<code>{player_id}</code>"

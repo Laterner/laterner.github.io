@@ -19,7 +19,7 @@ from auth import (
     get_current_user,
     require_admin
 )
-from utils import InitData, validate_init_data, eprint, QUIZES
+from utils import InitData, validate_init_data, eprint, QUIZES, TEAMS
 
 
 
@@ -186,19 +186,21 @@ async def miniapp():
     if user == None:
         return await render_template("miniapp_auth.html", title="TG Auth")
     
-    if not os.path.exists(f"./static/user_qrs/{player_id}.png"):
+    if not os.path.exists(f"./static/user_qrs/{user['player_id']}.png"):
         try:
             os.makedirs("./static/user_qrs", exist_ok=True)
-            img = qrcode.make(player_id)
+            img = qrcode.make(user['player_id'])
             type(img)
-            img.save(f"./static/user_qrs/{player_id}.png")
-            print(f"QR код пользователя [{player_id}] успешно создан")
+            img.save(f"./static/user_qrs/{user['player_id']}.png")
+            print(f"QR код пользователя [{user['player_id']}] успешно создан")
         except Exception as e:
             print("Ошибка создания QR кода пользователя:", e)
     else:
-        print(f"QR код пользователя [{player_id}] найден")
-    top_players = await db.get_top_players(10)
+        print(f"QR код пользователя [{user['player_id']}] найден")
     
+    
+    user['team'] = TEAMS[user['team']]
+    top_players = await db.get_top_players(10)
     top_teams = await db.get_all_teams_stats()
     
     print("top_teams", top_teams)
