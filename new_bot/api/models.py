@@ -154,7 +154,7 @@ class TeamStats(Base):
         return (
             f"<UserHistory("
             f"id={self.id},"
-            f"team='{self.user_id}')>"
+            f"team='{self.team}')>"
         )
 
 

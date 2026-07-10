@@ -63,23 +63,8 @@ class Database:
             
             # Инициализируем статистику команд
             await self._init_team_stats()
-
-    # async def _init_teams(self):
-    #     """Инициализация записей статистики для всех команд"""
-    #     async with SessionLocal() as session:
-    #         for _key, _team in TEAMS.items():
-    #             # Проверяем, существует ли запись для команды
-    #             result = await session.execute(
-    #                 select(Team).where(Team.name == _team['name'])
-    #             )
-    #             stats = result.scalar_one_or_none()
-                
-    #             if stats is None:
-    #                 # Создаем запись для команды
-    #                 new_team = Team(name=_team['name'])
-    #                 session.add(new_team)
             
-    #         await session.commit()
+            return await self.get_all_teams_stats()
             
     async def _init_team_stats(self):
         """Инициализация записей статистики для всех команд"""
@@ -113,6 +98,7 @@ class Database:
                     'name': user.name,
                     'player_id': user.player_id,
                     'team': user.team,
+                    'team_name': user.team_name,
                     'registered': user.registered,
                     'registered_date': user.registered_date,
                     'score': user.score,
@@ -321,12 +307,13 @@ class Database:
         """Получение статистики всех команд"""
         async with SessionLocal() as session:
             result = await session.execute(
-                select(TeamStats).order_by(TeamStats.team)
+                select(TeamStats).order_by(TeamStats.id)
             )
             stats = result.scalars().all()
             
             return [
                 {
+                    'id': s.id,
                     'team': s.team,
                     'total_players': s.total_players,
                     'total_wins': s.total_wins,
