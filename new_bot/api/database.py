@@ -113,6 +113,7 @@ class Database:
                     'name': user.name,
                     'player_id': user.player_id,
                     'team': user.team,
+                    'team_name': user.team_name,
                     'registered': user.registered,
                     'registered_date': user.registered_date,
                     'score': user.score,
