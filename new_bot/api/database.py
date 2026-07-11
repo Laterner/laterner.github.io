@@ -1,5 +1,6 @@
 # database.py
 import os
+import asyncio
 from datetime import datetime
 from typing import Optional, Dict, List, Any
 
@@ -53,19 +54,33 @@ class Database:
 
     def __init__(self, config: Dict[str, str] = None):
         self.config = config or DB_CONFIG
+        self._initialized = False
+        self._init_lock = asyncio.Lock()
 
     async def init_db(self):
         """Инициализация базы данных (создание таблиц)"""
-        async with engine.begin() as conn:
-            # Создаем все таблицы
-            await conn.run_sync(Base.metadata.create_all)
+        async with self._init_lock:
+            if self._initialized:
+                return await self.get_all_teams_stats()
+                
+            async with engine.begin() as conn:
+                # Создаем все таблицы
+                await conn.run_sync(Base.metadata.create_all)
+
+                # Инициализируем статистику команд
+                await self._init_team_stats()
+                
+            self._initialized = True
             
-            # Создаем индексы для оптимизации (если их нет)
-            # await self._create_indexes()
         return await self.get_all_teams_stats()
     
+    async def ensure_initialized(self):
+        """Гарантирует, что база данных инициализирована"""
+        if not self._initialized:
+            await self.init_db()
+
+            
     async def _init_team_stats(self):
-        return None
         """Инициализация записей статистики для всех команд"""
         async with SessionLocal() as session:
             for _team in TEAMS:
@@ -138,6 +153,7 @@ class Database:
                     'name': user.name,
                     'player_id': user.player_id,
                     'team': user.team,
+                    'team_name': user.team_name,
                     'registered': user.registered,
                     'registered_date': user.registered_date,
                     'score': user.score,

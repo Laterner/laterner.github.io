@@ -61,28 +61,8 @@ class Database:
             # Создаем все таблицы
             await conn.run_sync(Base.metadata.create_all)
             
-            # Инициализируем статистику команд
-            await self._init_team_stats()
-            
         return await self.get_all_teams_stats()
             
-    async def _init_team_stats(self):
-        """Инициализация записей статистики для всех команд"""
-        async with SessionLocal() as session:
-            for _team in TEAMS:
-                print("--------->", _team)
-                # Проверяем, существует ли запись для команды
-                result = await session.execute(
-                    select(TeamStats).where(TeamStats.team == _team)
-                )
-                stats = result.scalar_one_or_none()
-                
-                if stats is None:
-                    # Создаем запись для команды
-                    new_stats = TeamStats(team=_team)
-                    session.add(new_stats)
-            
-            await session.commit()
 
     async def get_user(self, user_id: int) -> Optional[Dict[str, Any]]:
         """Получение данных пользователя"""
@@ -294,14 +274,21 @@ class Database:
             )
             stats = result.scalar_one_or_none()
             
-            if stats:
-                return {
-                    'team': stats.team,
-                    'total_players': stats.total_players,
-                    'total_wins': stats.total_wins,
-                    'total_games': stats.total_games,
-                }
-            return None
+            if not stats:
+                return None
+            
+            players_result = await session.execute(
+                select(func.sum(User.score)).where(User.team == stats.id)
+            )
+            total_score = players_result.scalar() or 0
+            
+            return {
+                'team': stats.team,
+                'total_players': stats.total_players,
+                'total_wins': stats.total_wins,
+                'total_games': stats.total_games,
+                'total_score': total_score, 
+            }
 
     async def get_all_teams_stats(self) -> List[Dict[str, Any]]:
         """Получение статистики всех команд"""

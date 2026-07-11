@@ -113,6 +113,7 @@ async def init_db():
     logger.info("🚀 Запуск Quart приложения...")
     
     teams = await db.init_db()
+    
     print("---->>>>>>>>", teams)
     team_stats = TeamStatsManager(teams)
     
@@ -139,6 +140,9 @@ async def shutdown():
         logging.info("Задача начисления очков остановлена")
         
 
+@app.route('/health')
+def health_check():
+    return jsonify({"status": "healthy"}), 200
 
 @app.route('/set_player_king', methods=['POST'])
 async def set_player():
@@ -189,6 +193,7 @@ async def miniapp():
     try:
         user_id = int(user_id)
         user = await db.get_user(user_id)
+        logger.info(f"user:, {user}")
     except Exception as e:
         print('Ошибка получения get_user():', e)
 
