@@ -217,11 +217,11 @@ async def miniapp():
     top_players = await db.get_top_players(10)
     top_teams = await db.get_all_teams_stats()
     player_rank = await db.get_user_rank_by_player_id(player_id)
-    
+    my_team = team_stats.get_by_id(user['team'])
     print("top_teams", top_teams)
     print("top_players", top_players)
     
-    return await render_template("index.html", title="Home", user=user, top_players=top_players, top_teams=top_teams, player_rank=player_rank)
+    return await render_template("index.html", title="Home", user=user, top_players=top_players, top_teams=top_teams, player_rank=player_rank, my_team=my_team)
 
 
 @app.route("/reg_tg_id", methods=['POST'])
@@ -362,7 +362,7 @@ async def secretcode():
         print(f"Quiz ID: {quize['id']} {quize['secret_code']}")
         
         return jsonify({'quize_id': quize['id'], 'secret_code': secret_code})
-        
+    
     except Exception as e:
         print(f"Error: {e}")
         import traceback
