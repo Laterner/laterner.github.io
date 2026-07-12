@@ -218,10 +218,20 @@ async def miniapp():
     top_teams = await db.get_all_teams_stats()
     player_rank = await db.get_user_rank_by_player_id(player_id)
     my_team = team_stats.get_by_id(user['team'])
+    team_total_score = top_teams[user["team"] - 1]['total_score']
     print("top_teams", top_teams)
     print("top_players", top_players)
     
-    return await render_template("index.html", title="Home", user=user, top_players=top_players, top_teams=top_teams, player_rank=player_rank, my_team=my_team)
+    return await render_template(
+        "index.html", 
+        title="Home", 
+        user=user, 
+        top_players=top_players, 
+        top_teams=top_teams, 
+        player_rank=player_rank, 
+        my_team=my_team, 
+        team_total_score=team_total_score
+    )
 
 
 @app.route("/reg_tg_id", methods=['POST'])

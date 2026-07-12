@@ -6,7 +6,57 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ title }}</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style_admin_score.css') }}">
+<style>
+    select {
+        padding: 12px 15px;
+        border: 2px solid #e0e0e0;
+        border-radius: 10px;
+        font-size: 16px;
+        transition: border-color 0.3s;
+        text-transform: uppercase;
+        width: 100%;
+        line-height: 40px;
+    }
+    select:focus{
+        outline: none;
+        border-color: #764ba2;
+    }
 
+    .inline2 {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+    }
+    .inline3 {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+    }
+
+    input[type="radio"] {
+        opacity: 0;
+        width: 2rem;
+        height: 1em;
+        background-color: #fff;
+        position: absolute;
+    }
+
+    input[type="radio"]:checked+div {
+        background-color: #764ba2;
+    }
+
+    .radio {
+        line-height: 46px;
+        text-align: center;
+        background-color: #667eea;
+        color: white;
+    }
+    .right-border{
+        border-radius: 0px 30px 30px 0px;
+    }
+    .left-border {
+        border-radius: 30px 0px 0px 30px;
+    }
+
+</style>
 </head>
 <body>
     <div class="container">
@@ -15,28 +65,55 @@
             <h1>Добавление очков участникам</h1>
         </div>
         
+        <div id="camera-block" class="visible">
+            <h1>📷 QR‑сканер</h1>
+
+            <div id="video-container">
+                <!-- сюда вставится видео с камеры -->
+            </div>
+
+            <!-- <div id="status">⚡ Наведите на QR-код</div>
+            <br>
+            <div class="controls" id="controls">
+                <button class="btn" id="scanBtn">▶ Запустить камеру</button>
+                
+            </div> -->
+        </div>
+
         <form id="scoreForm">
             <div class="form-group">
-                <label for="playerId">🎯 Player ID</label>
-                <input 
-                    type="text" 
-                    id="playerId" 
-                    placeholder="Введите ID игрока" 
-                    required
-                    autocomplete="off"
-                    maxlength="10"
-                >
+                <div class="inline3">
+                    <label for="ves1">
+                        <input type="radio" name="ves" id="ves1">
+                        <div class="radio left-border">Ж</div>
+                    </label>
+                    <label for="ves2">
+                        <input type="radio" name="ves" id="ves2">
+                        <div class="radio">М</div>
+                    </label>
+                    <label for="ves3">
+                        <input type="radio" name="ves" id="ves3">
+                        <div class="radio right-border">М 80+</div>
+                    </label>
+                    
+                </div>
+                <label for="playerId">Вес</label>
+                    <input 
+                        type="text" 
+                        id="vse-count" 
+                        placeholder="Введите поднятый вес" 
+                        required
+                        autocomplete="off"
+                        maxlength="10"
+                    >
             </div>
-            
-            <div>
-                <input type="select"> <!-- TODO -->
-            </div>
+
             <!-- Скрытое поле для количества очков -->
             <input type="hidden" id="amount" value="0">
             
             <!-- Блок с кнопками добавления очков -->
             <button type="submit" class="button" id="submitBtn">
-                Смеситить короля
+                Добавить в таблицу лидеров
             </button>
         </form>
         

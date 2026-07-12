@@ -2,11 +2,26 @@ import qrcode # pillow
 import os
 
 
-async def generate(user_id: str):
+def generate(user_id: str):
     img = qrcode.make(user_id)
     type(img)  # qrcode.image.pil.PilImage
-    img.save(f"./static/user_qrs/{user_id}.png")
+    img.save(f"./qrs_quiz/{user_id}.png")
+
+
+secrets = [
+    'DSFGS',
+    'CACTD',
+    'FXZJN',
+    'VGNMD',
+    'UZQYX',
+    'KBCFL',
+    'XTHFL',
+    'EGLPZ',
+    'SQVEP',
+    'MLKGL'
+]
 
 if __name__ == "__main__":
-    os.makedirs("./static/user_qrs", exist_ok=True) 
-    generate("W8R0B")
+    os.makedirs("./qrs_quiz", exist_ok=True) 
+    for el in secrets:
+        generate(el)

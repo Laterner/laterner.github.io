@@ -21,7 +21,7 @@ services:
   fastapi:
     build: ./api
     container_name: fastapi
-    # restart: always
+    restart: always
     env_file:
       - .env
     volumes:
@@ -43,7 +43,7 @@ services:
   bot:
     build: ./bot
     container_name: bot
-    # restart: always
+    restart: always
     env_file:
       - .env
     volumes:

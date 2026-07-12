@@ -12,7 +12,16 @@ from sqlalchemy.ext.asyncio import (
 )
 from sqlalchemy.exc import IntegrityError
 from utils import TEAMS
-from models import User, UserHistory, Quize, QuizeAnswer, TeamStats, UserQuizProgress, Base
+from models import (
+    User, 
+    UserHistory, 
+    Quize, 
+    QuizeAnswer, 
+    TeamStats, 
+    UserQuizProgress, 
+    Base, 
+    UserStation
+)
 
 # Конфигурация из переменных окружения
 DB_CONFIG = {
@@ -545,7 +554,59 @@ class Database:
                 await session.rollback()
                 print(f"Error recording quiz attempt: {e}")
                 raise
+    
+    async def get_station(self, station_type: int, player_id: str) -> UserStation:
+        async with SessionLocal() as session:
+            try:
+                result = await session.execute(
+                    select(UserStation).where(
+                        UserStation.player_id == player_id
+                    )
+                )
+                station = result.scalar_one_or_none()
+                
+                print("station found -->", station)
+                if station == None:
+                    return None
+                
 
+                result = {
+                    'id': station.id,
+                    'station_type': station.station_type,
+                    'user_ves': station.user_ves,
+                    'user_cat': station.user_cat
+                }
+                
+                return result
+            
+            except Exception as e:
+                print('error in database:', e)
+    
+    async def update_station(self, station_type: int, player_id: str) -> UserStation:
+        async with SessionLocal() as session:
+            try:
+                # Ищем или создаем запись прогресса
+                progress = await session.execute(
+                    select(UserQuizProgress).where(
+                        UserStation.player_id == player_id
+                    )
+                )
+                progress = progress.scalar_one_or_none()
+                
+                if not progress:
+                    progress = UserQuizProgress(
+                        player_id=player_id
+                    )
+                    session.add(progress)
+                
+                
+                await session.commit()
+                
+            except Exception as e:
+                await session.rollback()
+                print(f"Error recording quiz attempt: {e}")
+                raise
+            
     async def close(self):
         """Закрытие соединений с базой данных"""
         await engine.dispose()
