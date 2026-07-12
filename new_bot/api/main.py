@@ -457,7 +457,7 @@ async def quize_page():
 @app.route("/admin/addscore")
 async def admin_addscore():
     """Главная страница с формой добавления очков"""
-    return await render_template("admin_add_points_test.html", title="Добавление очков")
+    return await render_template("admin_add_points.html", title="Добавление очков")
 
 # api urls  
 @app.route("/api/add_score", methods=['POST'])
