@@ -218,7 +218,7 @@ async def miniapp():
     top_teams = await db.get_all_teams_stats()
     player_rank = await db.get_user_rank_by_player_id(player_id)
     
-    _team_stats = TeamStatsManager(db.get_all_teams_stats()) # TODO поменять на запрос информации об одной команде 
+    _team_stats = TeamStatsManager(await db.get_all_teams_stats()) # TODO поменять на запрос информации об одной команде 
     
     my_team = _team_stats.get_by_id(user['team'])
     
