@@ -68,7 +68,7 @@ def get_main_keyboard(user_id=""):
             [KeyboardButton(text="📊 Статистика команды")],
             [KeyboardButton(text="🏆 Топ игроков")],
             [KeyboardButton(
-                text="🚀 Открыть MiniApps",
+                text="🚀 КВЕСТ",
                 web_app=WebAppInfo(url=MINI_APP_URL+f"?user_id={user_id}")
             )]
         ],
@@ -258,7 +258,7 @@ async def help_command(message: types.Message):
         "🎮 <b>Основные функции:</b>\n"
         "• Регистрация с уникальным Player ID\n"
         "• Выбор команды из трех фракций\n"
-        "• Открытие Mini App\n"
+        "• Открытие Квеста\n"
         "• Просмотр профиля и статистики\n"
         "• Топ игроков\n\n",
         parse_mode="HTML"
@@ -308,29 +308,6 @@ async def stats_button(message: types.Message):
 async def top_button(message: types.Message):
     await top_command(message)
 
-
-# @dp.message(F.text == "🚀 Открыть MiniApps")
-# async def open_miniapp_button(message: types.Message):
-#     user_id = message.from_user.id
-#     user = await db.get_user(user_id)
-    
-#     if not user or not user.get('registered', False):
-#         await message.answer(
-#             "❌ Ты еще не зарегистрирован!\n"
-#             "Напиши /start для регистрации"
-#         )
-#         return
-    
-#     await message.answer(
-#         "🚀 <b>Открываю Mini App...</b>\n\n"
-#         f"Игрок: {user['name']}\n"
-#         f"ID: {format_player_id(user['player_id'])}\n"
-#         f"Команда: {TEAMS[user['team']]}",
-#         parse_mode="HTML",
-#         reply_markup=get_main_keyboard(message.from_user.id)
-#     )
-    
-#     await db.add_history(user_id, "open_miniapp", "Открытие Mini App")
 
 @dp.message(F.text == "📊 Общая статистика")
 async def admin_stats(message: types.Message):
@@ -450,7 +427,7 @@ async def process_team_selection(callback: types.CallbackQuery, state: FSMContex
             f"🎮 Player ID: {format_player_id(player_id)}\n"
             f"⚔️ Команда: {team_stats.get_by_id(team_id).team}\n\n"
             "Теперь ты можешь использовать бота.\n"
-            "Нажми на кнопку ниже, чтобы открыть Mini App:",
+            "Нажми на кнопку ниже, чтобы открыть Квест:",
             parse_mode="HTML",
             reply_markup=get_main_keyboard(callback.message.from_user.id)
         )
