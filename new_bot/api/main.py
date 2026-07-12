@@ -24,7 +24,7 @@ from utils import InitData, validate_init_data, eprint, QUIZES, TeamStatsManager
 
 
 
-team_status = None
+team_stats = None
 
 @dataclass
 class GameState:
@@ -217,7 +217,11 @@ async def miniapp():
     top_players = await db.get_top_players(10)
     top_teams = await db.get_all_teams_stats()
     player_rank = await db.get_user_rank_by_player_id(player_id)
-    my_team = team_stats.get_by_id(user['team'])
+    
+    _team_stats = TeamStatsManager(db.get_all_teams_stats()) # TODO поменять на запрос информации об одной команде 
+    
+    my_team = _team_stats.get_by_id(user['team'])
+    
     team_total_score = top_teams[user["team"] - 1]['total_score']
     print("top_teams", top_teams)
     print("top_players", top_players)
