@@ -486,12 +486,13 @@ class Database:
                 )
                 
                 answers = answers.scalars().all()
-                answers = [el.answer for el in answers]
+                answers = [el.answer for el in answers] # возможно здесь
 
                 result = {
                     'id': quize.id,
                     'question': quize.question,
                     'secret_code': quize.secret_code,
+                    'answer': quize.answer,
                     'answers': answers
                 }
                 return result
@@ -536,17 +537,18 @@ class Database:
                     session.add(progress)
                 
                 # Обновляем статистику
-                progress.attempts += 1
+                # progress.attempts += 1
                 
                 if not is_correct:
-                    progress.wrong_answers += 1
+                    pass
+                    # progress.wrong_answers += 1
                 else:
                     progress.completed = True
                     # Обновляем общую статистику пользователя
-                    user = await session.get(User, player_id)
-                    if user:
-                        user.games_played += 1
-                        user.score += amount
+                    # user = await session.get(User, player_id)
+                    # if user:
+                    #     user.games_played += 1
+                    #     user.score += amount
                 
                 await session.commit()
                 

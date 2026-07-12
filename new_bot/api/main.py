@@ -364,6 +364,8 @@ async def secretcode():
         
         quize = await db.get_quize(secret_code)
         
+        if not quize:
+            return jsonify({'error': 'quize not found'}) 
         is_quiz_completed = await db.is_quiz_completed(player_id, quize['id'])
         
         if is_quiz_completed:
@@ -401,12 +403,17 @@ async def answer():
                 logger.error(f"Игрок с ID {player_id} не найден")
             
             quize = await db.get_quize(secret_code)
-            is_correct = ans == quize.answer
+            
+            if not quize:
+                logger.error(f"quize is none")
+                return jsonify({'error': "quize is none"}), 500
+            
+            is_correct = ans == quize['answer']
             
             await db.update_quize_status(player_id, quize_id, is_correct, amount)
     
             # Добавляем очки
-            success = await db.add_score(player_id, amount)
+            success = await db.add_score(player_id, 10)
             
             if success:
                 logger.error(f"Успешно добавлены очки")
