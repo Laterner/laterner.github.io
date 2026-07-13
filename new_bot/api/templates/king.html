@@ -1,70 +1,76 @@
 <!-- api/templates/index.html -->
 <!DOCTYPE html>
 <html lang="ru">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ title }}</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style_admin_score.css') }}">
-<style>
-    select {
-        padding: 12px 15px;
-        border: 2px solid #e0e0e0;
-        border-radius: 10px;
-        font-size: 16px;
-        transition: border-color 0.3s;
-        text-transform: uppercase;
-        width: 100%;
-        line-height: 40px;
-    }
-    select:focus{
-        outline: none;
-        border-color: #764ba2;
-    }
+    <script src="{{ url_for('static', filename='qr-reader.js') }}"></script>
+    <style>
+        select {
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+            text-transform: uppercase;
+            width: 100%;
+            line-height: 40px;
+        }
 
-    .inline2 {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-    }
-    .inline3 {
-        display: grid;
-        grid-template-columns: 1fr 1fr 1fr;
-    }
+        select:focus {
+            outline: none;
+            border-color: #764ba2;
+        }
 
-    input[type="radio"] {
-        opacity: 0;
-        width: 2rem;
-        height: 1em;
-        background-color: #fff;
-        position: absolute;
-    }
+        .inline2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+        }
 
-    input[type="radio"]:checked+div {
-        background-color: #764ba2;
-    }
+        .inline3 {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+        }
 
-    .radio {
-        line-height: 46px;
-        text-align: center;
-        background-color: #667eea;
-        color: white;
-    }
-    .right-border{
-        border-radius: 0px 30px 30px 0px;
-    }
-    .left-border {
-        border-radius: 30px 0px 0px 30px;
-    }
+        input[type="radio"] {
+            opacity: 0;
+            width: 2rem;
+            height: 1em;
+            background-color: #fff;
+            position: absolute;
+        }
 
-</style>
+        input[type="radio"]:checked+div {
+            background-color: #764ba2;
+        }
+
+        .radio {
+            line-height: 46px;
+            text-align: center;
+            background-color: #667eea;
+            color: white;
+        }
+
+        .right-border {
+            border-radius: 0px 30px 30px 0px;
+        }
+
+        .left-border {
+            border-radius: 30px 0px 0px 30px;
+        }
+    </style>
 </head>
+
 <body>
     <div class="container">
         <div class="header">
             <div class="logo">🎮</div>
             <h1>Добавление очков участникам</h1>
         </div>
-        
+
         <div id="camera-block" class="visible">
             <h1>📷 QR‑сканер</h1>
 
@@ -95,31 +101,25 @@
                         <input type="radio" name="ves" id="ves3">
                         <div class="radio right-border">М 80+</div>
                     </label>
-                    
+
                 </div>
                 <label for="playerId">Вес</label>
-                    <input 
-                        type="text" 
-                        id="vse-count" 
-                        placeholder="Введите результат" 
-                        required
-                        autocomplete="off"
-                        maxlength="10"
-                    >
+                <input type="text" id="vse-count" placeholder="Введите результат" required autocomplete="off"
+                    maxlength="10">
             </div>
 
             <!-- Скрытое поле для количества очков -->
             <input type="hidden" id="amount" value="0">
-            
+
             <!-- Блок с кнопками добавления очков -->
             <button type="submit" class="button" id="submitBtn">
                 Добавить в таблицу лидеров
             </button>
         </form>
-        
+
         <!-- Статус игрока -->
         <div id="playerStatus" class="player-status"></div>
-        
+
         <!-- Информация об игроке -->
         <div id="playerInfo" class="player-info">
             <h3 style="margin-bottom: 10px; color: #333;">👤 Информация об игроке</h3>
@@ -136,10 +136,10 @@
                 <span class="info-value" id="infoTeam">-</span>
             </div>
         </div>
-        
+
         <div id="result" class="result"></div>
     </div>
-    
+
     <script>
         const form = document.getElementById('scoreForm');
         const playerIdInput = document.getElementById('playerId');
@@ -149,42 +149,41 @@
         const playerInfoDiv = document.getElementById('playerInfo');
         const playerStatusDiv = document.getElementById('playerStatus');
         const submitBtn = document.getElementById('submitBtn');
-        
+
         let currentPlayerId = '';
         let selectedAmount = 0;
         let isProcessing = false;
-        
+
         // Проверка игрока при вводе
         let checkTimeout;
-        playerIdInput.addEventListener('input', function() {
+        playerIdInput.addEventListener('input', function () {
             clearTimeout(checkTimeout);
             const playerId = this.value.trim().toUpperCase();
             this.value = playerId;
-            
+
             if (playerId.length >= 3) {
                 checkTimeout = setTimeout(() => checkPlayer(playerId), 500);
             } else {
                 hidePlayerInfo();
             }
         });
-        
-        
+
+
         async function checkPlayer(playerId) {
             try {
                 const response = await fetch(`/api/check_player/${playerId}`);
                 const data = await response.json();
-                
+
                 if (data.exists) {
                     currentPlayerId = playerId;
                     document.getElementById('infoName').textContent = data.name;
                     document.getElementById('infoScore').textContent = data.score;
                     document.getElementById('infoTeam').textContent = data.team || 'Нет команды';
                     playerInfoDiv.classList.add('visible');
-                    // scoreButtons.classList.add('visible');
-                    
+
                     // Показываем статус "найден"
                     showPlayerStatus('✅ Игрок найден! Выберите количество очков', 'found');
-                    
+
                     // Активируем кнопки
                     document.querySelectorAll('.score-btn').forEach(b => {
                         b.disabled = false;
@@ -194,7 +193,7 @@
                 } else {
                     hidePlayerInfo();
                     showPlayerStatus('❌ Игрок не найден. Проверьте ID', 'not-found');
-                    
+
                     // Деактивируем кнопки
                     document.querySelectorAll('.score-btn').forEach(b => {
                         b.disabled = true;
@@ -208,14 +207,11 @@
         }
 
 
-
-
-
-        form.addEventListener('submit', async function(e) {
+        form.addEventListener('submit', async function (e) {
             e.preventDefault();
-            
+
             const playerId = playerIdInput.value.trim().toUpperCase();
-            
+
             if (!playerId) {
                 showResult('❌ Введите Player ID', 'error');
                 return;
@@ -252,36 +248,38 @@
         });
 
 
-        
+
         async function addScore(playerId, amount) {
             if (!playerId) {
                 showResult('❌ Сначала найдите игрока', 'error');
                 return;
             }
-            
+
             if (!amount || amount < 1) {
                 showResult('❌ Выберите количество очков', 'error');
                 return;
             }
-            
+
             isProcessing = true;
-            
+
             // Блокируем кнопки
             document.querySelectorAll('.score-btn').forEach(b => {
                 b.disabled = true;
                 b.innerHTML = '<span class="spinner" style="width:16px;height:16px;"></span>';
             });
-            
+
             try {
                 const formData = new FormData();
                 formData.append('player_id', playerId);
                 formData.append('amount', amount);
-                
-                const response = await fetch('/api/add_score', {
+                formData.append('user_cat', 0);
+                formData.append('user_ves', 100);
+
+                const response = await fetch('/api/update_king', {
                     method: 'POST',
                     body: formData
                 });
-                
+
                 const data = await response.json();
 
                 const playerIdInput = document.getElementById('playerId');
@@ -304,7 +302,7 @@
                             scoreElement.style.transform = 'scale(1)';
                         }, 300);
                     }
-                    
+
                     // Сбрасываем выделение кнопок
                     document.querySelectorAll('.score-btn').forEach(b => {
                         b.style.opacity = '0';
@@ -314,7 +312,7 @@
 
                     hidePlayerInfo();
                     playerIdInput.value = '';
-                    
+
                 } else {
                     showResult(`❌ ${data.message}`, 'error');
                 }
@@ -328,43 +326,43 @@
                     const amount = b.dataset.amount;
                     b.innerHTML = `
                         <span class="plus-icon">+${amount}</span>
-                        <span>${'⭐'.repeat(amount/5)}</span>
+                        <span>${'⭐'.repeat(amount / 5)}</span>
                     `;
                 });
             }
         }
-        
+
         function showPlayerStatus(message, type) {
             playerStatusDiv.textContent = message;
             playerStatusDiv.className = 'player-status ' + type;
             playerStatusDiv.style.display = 'block';
         }
-        
+
         function hidePlayerInfo() {
             playerInfoDiv.classList.remove('visible');
             playerStatusDiv.style.display = 'none';
             currentPlayerId = '';
         }
-        
+
         function showResult(message, type) {
             resultDiv.textContent = message;
             resultDiv.className = 'result ' + type;
             resultDiv.style.display = 'block';
-            
+
             // Автоматически скрываем через 5 секунд
             clearTimeout(resultDiv._timeout);
             resultDiv._timeout = setTimeout(() => {
                 resultDiv.style.display = 'none';
             }, 5000);
         }
-        
+
         // Автоматическое преобразование в верхний регистр
-        playerIdInput.addEventListener('blur', function() {
+        playerIdInput.addEventListener('blur', function () {
             this.value = this.value.trim().toUpperCase();
         });
-        
+
         // Обработка Enter в поле ввода
-        playerIdInput.addEventListener('keypress', function(e) {
+        playerIdInput.addEventListener('keypress', function (e) {
             if (e.key === 'Enter') {
                 e.preventDefault();
                 const playerId = this.value.trim().toUpperCase();
@@ -373,11 +371,68 @@
                 }
             }
         });
-        
+
         // Инициализация - деактивируем кнопки
         document.querySelectorAll('.score-btn').forEach(b => {
             b.disabled = true;
         });
+
+        const scanner = new Html5Qrcode("video-container");
+        let started = false;
+
+        document.getElementById("scanBtn").onclick = async () => {
+            if (started) return;
+            started = true;
+
+            try {
+                await scanner.start(
+                    {
+                        facingMode: "environment"
+                    },
+                    {
+                        fps: 10,
+                        qrbox: {
+                            width: 250,
+                            height: 250
+                        }
+                    },
+                    async (text) => {
+                        if (!/^[A-Za-z0-9]{5}$/.test(text)) {
+                            document.getElementById("status").textContent =
+                                "QR должен содержать 5 букв/цифр";
+                            started = false;
+                            return;
+                        }
+
+                        await scanner.stop();
+
+                        const playerId = text.trim().toUpperCase();
+                        checkPlayer(playerId);
+                        started = false;
+                        HideCamera();
+                    }
+                );
+
+            } catch (e) {
+                started = false;
+                document.getElementById("status").textContent =
+                    "Не удалось открыть камеру: " + e;
+                console.error(e);
+            }
+        };
+
+        function HideCamera() {
+            cameraBlock.classList.add('hidden');
+        }
+        function resetScanner() {
+            document.getElementById("controls").innerHTML =
+                `<button class="btn" id="scanBtn">📷 Сканировать QR</button>`;
+            // Перезагружаем страницу или перепривязываем обработчик  btn-primary
+            location.reload(); // Простой способ, но можно и перепривязать 
+            cameraBlock.classList.remove('hidden');
+        }
+
     </script>
 </body>
+
 </html>

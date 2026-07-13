@@ -9,7 +9,7 @@ from dataclasses import dataclass
 import logging
 from quart import (
     Quart, render_template, request, redirect, 
-    url_for, make_response, jsonify, session
+    url_for, make_response, jsonify
 )
 from database import db
 from auth import (
@@ -40,35 +40,35 @@ game_state = GameState()
 score_task = None
 score_lock = asyncio.Lock()
 
-async def add_points_periodically():
-    """Фоновая задача для начисления очков каждые 3 секунды"""
-    while True:
-        try:
-            async with score_lock:
-                if game_state.current_player_id:
-                    player_id = game_state.current_player_id
+# async def add_points_periodically():
+#     """Фоновая задача для начисления очков каждые 3 секунды"""
+#     while True:
+#         try:
+#             async with score_lock:
+#                 if game_state.current_player_id:
+#                     player_id = game_state.current_player_id
                     
-                    success = await db.add_score(player_id, 1)
-                    if success:
-                        logger.error(f"Успешно добавлены очки")
-                    else:
-                        logger.error(f"Произошла ошибка при добавлении")
+#                     success = await db.add_score(player_id, 1)
+#                     if success:
+#                         logger.error(f"Успешно добавлены очки")
+#                     else:
+#                         logger.error(f"Произошла ошибка при добавлении")
                         
-                    # Инициализируем счет игрока, если его нет
-                    if player_id not in game_state.player_scores:
-                        game_state.player_scores[player_id] = 0
+#                     # Инициализируем счет игрока, если его нет
+#                     if player_id not in game_state.player_scores:
+#                         game_state.player_scores[player_id] = 0
                     
-                    # Начисляем очки
-                    game_state.player_scores[player_id] += 1
-                    # logging.info(f"Игроку {player_id} начислено очко. Текущий счет: {game_state.player_scores[player_id]}")
+#                     # Начисляем очки
+#                     game_state.player_scores[player_id] += 1
+#                     # logging.info(f"Игроку {player_id} начислено очко. Текущий счет: {game_state.player_scores[player_id]}")
             
-            await asyncio.sleep(3)  # Ждем 3 секунды
-        except asyncio.CancelledError:
-            logging.info("Задача начисления очков остановлена")
-            break
-        except Exception as e:
-            logging.error(f"Ошибка в задаче начисления очков: {e}")
-            await asyncio.sleep(3)
+#             await asyncio.sleep(3)  # Ждем 3 секунды
+#         except asyncio.CancelledError:
+#             logging.info("Задача начисления очков остановлена")
+#             break
+#         except Exception as e:
+#             logging.error(f"Ошибка в задаче начисления очков: {e}")
+#             await asyncio.sleep(3)
 
 
 
@@ -119,25 +119,25 @@ async def init_db():
     
     logger.info("✅ База данных инициализирована")
 
-@app.before_serving
-async def startup():
-    """Запуск фоновой задачи при старте сервера"""
-    global score_task
-    if score_task is None or score_task.done():
-        score_task = asyncio.create_task(add_points_periodically())
-        logging.info("Задача начисления очков запущена")
+# @app.before_serving
+# async def startup():
+#     """Запуск фоновой задачи при старте сервера"""
+#     global score_task
+#     if score_task is None or score_task.done():
+#         score_task = asyncio.create_task(add_points_periodically())
+#         logging.info("Задача начисления очков запущена")
 
-@app.after_serving
-async def shutdown():
-    """Остановка фоновой задачи при завершении сервера"""
-    global score_task
-    if score_task and not score_task.done():
-        score_task.cancel()
-        try:
-            await score_task
-        except asyncio.CancelledError:
-            pass
-        logging.info("Задача начисления очков остановлена")
+# @app.after_serving
+# async def shutdown():
+#     """Остановка фоновой задачи при завершении сервера"""
+#     global score_task
+#     if score_task and not score_task.done():
+#         score_task.cancel()
+#         try:
+#             await score_task
+#         except asyncio.CancelledError:
+#             pass
+#         logging.info("Задача начисления очков остановлена")
         
 
 @app.route('/health')
@@ -697,6 +697,54 @@ async def king():
     """Начисление очков со временем"""
     
     return await render_template("king.html", title="Добавление очков")
+
+@app.route("/api/update_king")
+async def update_king():
+    try:
+        form = await request.form
+        player_id = form.get('player_id')
+        station_type = form.get('station_type', type=int)
+        user_cat = form.get('user_cat', type=int)
+        user_ves = form.get('user_ves', type=int)
+        
+        if not player_id or station_type or user_cat or user_ves is None:
+            return jsonify({
+                "success": False, 
+                "message": "Пожалуйста, заполните все данные"
+            }), 400
+        
+        # Проверяем игрока
+        user = await db.get_user_by_player_id(player_id)
+        if not user:
+            return jsonify({
+                "success": False, 
+                "message": f"Игрок с ID {player_id} не найден"
+            }), 404
+        
+        # Добавляем очки
+        success = await db.update_station(station_type, player_id, user_cat, user_ves)
+        
+        if success:
+            return jsonify({
+                "success": True,
+                "message": f"Игрок {user['name']} успешно добавлен в таблицу",
+                "player": {
+                    "name": user['name'],
+                    "player_id": player_id,
+                }
+            })
+        else:
+            return jsonify({
+                "success": False, 
+                "message": "Ошибка при добавлении очков"
+            }), 500
+            
+    except Exception as e:
+        logger.error(f"Error adding score: {e}")
+        return jsonify({
+            "success": False, 
+            "message": str(e)
+        }), 500
 
 @app.route("/api/create_quize")
 async def create_quize():

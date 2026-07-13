@@ -584,11 +584,11 @@ class Database:
             except Exception as e:
                 print('error in database:', e)
     
-    async def update_station(self, station_type: int, player_id: str) -> UserStation:
+    async def update_station(self, station_type: int, player_id: str, user_cat, user_ves) -> UserStation:
         async with SessionLocal() as session:
             try:
                 # Ищем или создаем запись прогресса
-                progress = await session.execute(
+                progress: UserStation = await session.execute(
                     select(UserQuizProgress).where(
                         UserStation.player_id == player_id
                     )
@@ -597,17 +597,22 @@ class Database:
                 
                 if not progress:
                     progress = UserQuizProgress(
-                        player_id=player_id
+                        player_id=player_id,
+                        station_type=station_type,
+                        user_cat=user_cat,
+                        user_ves=user_ves
                     )
                     session.add(progress)
-                
+                elif progress.user_ves < user_ves:
+                    progress.user_ves=user_ves
                 
                 await session.commit()
-                
+                return True
+            
             except Exception as e:
                 await session.rollback()
                 print(f"Error recording quiz attempt: {e}")
-                raise
+                return None
             
     async def close(self):
         """Закрытие соединений с базой данных"""
