@@ -749,32 +749,17 @@ async def update_king():
             "message": str(e)
         }), 500
 
-# @app.route('/set_player_king', methods=['POST'])
-# async def set_player():
-#     """Установка текущего игрока"""
-#     data = await request.get_json()
-#     if not data or 'player_id' not in data:
-#         return jsonify({'error': 'Не указан player_id'}), 400
+@app.route('/set_all_scores_in_station', methods=['POST'])
+async def set_all_scores_in_station():
+    # Проходим по всем категориям
+    data = await db.get_top_players_king(limit=10)
+    for category, players in data.items():
+        for player in players:
+            await db.add_score(player['player_id'], 80)
     
-#     station_type = int(data['station_type'])
-#     player_id = str(data['player_id'])
-#     user_cat = int(data['user_cat'])
-#     user_ves = int(data['user_ves'])
-
-#     print("king data ------->>>>>>>", str(data))
-    
-    
-#     result = await db.update_station(station_type, player_id, user_cat, user_ves)
-#     if result:
-#         return jsonify({
-#             'message': f'Текущий игрок установлен: {player_id}',
-#             'current_player': player_id
-#         }), 200
-#     return jsonify({
-#             'message': f'Произошла ошибка',
-#             'current_player': player_id,
-#             'data':data
-#         })
+    all_players = db.get_all_players_stations()
+    for player in all_players:
+        await db.add_score(player.player_id, 20)  
 
 @app.route("/api/create_quize")
 async def create_quize():

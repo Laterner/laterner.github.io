@@ -405,7 +405,23 @@ class Database:
                     ]
             
             return result
+    
+    
+    async def get_all_players_stations(self):
+        """Добавить очки всем игрокам через addscore"""
+        async with SessionLocal() as session:
+            # Получаем всех игроков
+            result = await session.execute(select(UserStation))
+            all_players = result.scalars().all()
+            return [
+                {
+                    "player_id": p.player_id,
+                    "score": p.user_ves
+                }
+                for p in all_players
+            ]
             
+               
     async def get_user_rank_by_player_id(self, player_id) -> List[Dict[str, Any]]:
         """Получение своей позиции в рейтенге"""
         subquery = select(
