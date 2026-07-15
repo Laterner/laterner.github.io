@@ -23,7 +23,6 @@ from utils import InitData, validate_init_data, eprint, QUIZES, TeamStatsManager
 
 
 
-
 team_stats = None
 
 @dataclass
@@ -210,6 +209,11 @@ async def miniapp():
         team_total_score=team_total_score
     )
 
+@app.route("/kings_top")
+async def kings_top():
+    kings = await db.get_top_players_king()
+    print(kings)
+    return await render_template("kings.html", title="King", kings=kings)
 
 @app.route("/reg_tg_id", methods=['POST'])
 async def reg_tg_id():

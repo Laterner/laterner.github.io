@@ -12,10 +12,10 @@ body {
 
 .wrap {
     height: calc(100vh - 90px);
-    display: flex;
+    /* display: flex;
     justify-content: center;
     align-items: center;
-    flex-direction: column;
+    flex-direction: column; */
     padding: 0px;
     overflow-y: scroll;
 }

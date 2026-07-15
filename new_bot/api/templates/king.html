@@ -92,26 +92,26 @@
             <div class="form-group">
                 <div class="inline3">
                     <label for="ves1">
-                        <input type="radio" name="ves" id="ves1">
+                        <input type="radio" name="cat" id="ves1">
                         <div class="radio left-border">Ж</div>
                     </label>
                     <label for="ves2">
-                        <input type="radio" name="ves" id="ves2">
+                        <input type="radio" name="cat" id="ves2">
                         <div class="radio">М</div>
                     </label>
                     <label for="ves3">
-                        <input type="radio" name="ves" id="ves3">
+                        <input type="radio" name="cat" id="ves3">
                         <div class="radio right-border">М 80+</div>
                     </label>
                 </div>
                 <br>
                 <div class="inline2">
-                    <label for="cat1">
-                        <input type="radio" name="cat" id="cat1">
+                    <label for="type1">
+                        <input type="radio" name="type" id="type1">
                         <div class="radio left-border">Жим лёжа</div>
                     </label>
-                    <label for="cat2">
-                        <input type="radio" name="cat" id="cat2">
+                    <label for="type2">
+                        <input type="radio" name="type" id="type2">
                         <div class="radio right-border">Динамометр</div>
                     </label>
                 </div>
@@ -155,7 +155,6 @@
     <script>
         const form = document.getElementById('scoreForm');
         const playerIdInput = document.getElementById('playerId');
-        const amountInput = document.getElementById('amount');
         const scoreButtons = document.getElementById('scoreButtons');
         const resultDiv = document.getElementById('result');
         const playerInfoDiv = document.getElementById('playerInfo');
@@ -235,6 +234,9 @@
             // submitBtn.innerHTML = '<span class="spinner"></span> Обработка...';
 
             try {
+                const stationTypeRadio = document.querySelector('input[name="type"]:checked');
+                const userCat = document.querySelector('input[name="cat"]:checked');
+
                 const formData = new FormData();
                 formData.append('station_type', 1);
                 formData.append('player_id', playerId);
