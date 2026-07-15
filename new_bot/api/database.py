@@ -375,125 +375,36 @@ class Database:
                 for u in users
             ]
     
-    async def get_top_players_king(self, limit: int = 10) -> List[Dict[str, Any]]:
+    async def get_top_players_king(self, limit: int = 10) -> Dict[str, List[Dict[str, Any]]]:
         """Получение топ игроков"""
         async with SessionLocal() as session:
-            result_dinamo_cat_1 = await session.execute(
-                select(UserStation)
-                .where(and_(
-                    UserStation.station_type == 1,
-                    UserStation.user_cat == 1)
-                )
-                .order_by(desc(UserStation.user_ves))
-                .limit(limit)
-            )
-            dinamo_cat_1 = result_dinamo_cat_1.scalars().all()
+            result = {}
             
-            result_dinamo_cat_2 = await session.execute(
-                select(UserStation)
-                .where(and_(
-                    UserStation.station_type == 1,
-                    UserStation.user_cat == 2)
-                )
-                .order_by(desc(UserStation.user_ves))
-                .limit(limit)
-            )
-            dinamo_cat_2 = result_dinamo_cat_1.scalars().all()
-            
-            result_dinamo_cat_3 = await session.execute(
-                select(UserStation)
-                .where(and_(
-                    UserStation.station_type == 1,
-                    UserStation.user_cat == 3)
-                )
-                .order_by(desc(UserStation.user_ves))
-                .limit(limit)
-            )
-            dinamo_cat_3 = result_dinamo_cat_1.scalars().all()
-            
-            result_ves_cat_1 = await session.execute(
-                select(UserStation)
-                .where(and_(
-                    UserStation.station_type == 2,
-                    UserStation.user_cat == 1)
+            for station_type in [1, 2]:
+                station_name = "dinamo" if station_type == 1 else "ves"
+                
+                for cat in [1, 2, 3]:
+                    query = await session.execute(
+                        select(UserStation)
+                        .where(and_(
+                            UserStation.station_type == station_type,
+                            UserStation.user_cat == cat
+                        ))
+                        .order_by(desc(UserStation.user_ves))
+                        .limit(limit)
                     )
-                .order_by(desc(UserStation.user_ves))
-                .limit(limit)
-            )
-            ves_cat_1 = result_ves_cat_1.scalars().all()
+                    players = query.scalars().all()
+                    
+                    result[f"{station_name}_cat_{cat}"] = [
+                        {
+                            "name": "Динамометр",
+                            "player_id": p.player_id,
+                            "score": p.user_ves
+                        }
+                        for p in players
+                    ]
             
-            result_ves_cat_2 = await session.execute(
-                select(UserStation)
-                .where(and_(
-                    UserStation.station_type == 2,
-                    UserStation.user_cat == 2)
-                    )
-                .order_by(desc(UserStation.user_ves))
-                .limit(limit)
-            )
-            ves_cat_2 = result_ves_cat_2.scalars().all()
-            
-            result_ves_cat_3 = await session.execute(
-                select(UserStation)
-                .where(and_(
-                    UserStation.station_type == 2,
-                    UserStation.user_cat == 3)
-                    )
-                .order_by(desc(UserStation.user_ves))
-                .limit(limit)
-            )
-            ves_cat_3 = result_ves_cat_3.scalars().all()
-            
-            return {
-                "dinamo_cat_1": [
-                {
-                    "name": "Динамометр",
-                    "player_id": t.player_id,
-                    "score": t.user_ves
-                }
-                for t in dinamo_cat_1
-                ],
-                "dinamo_cat_2": [
-                {
-                    "name": "Динамометр",
-                    "player_id": t.player_id,
-                    "score": t.user_ves
-                }
-                for t in dinamo_cat_2
-                ],
-                "dinamo_cat_3": [
-                {
-                    "name": "Динамометр",
-                    "player_id": t.player_id,
-                    "score": t.user_ves
-                }
-                for t in dinamo_cat_3
-                ],
-                "ves_cat_1": [
-                {
-                    "name": "Динамометр",
-                    "player_id": t.player_id,
-                    "score": t.user_ves
-                }
-                for t in ves_cat_1
-                ],
-                "ves_cat_2": [
-                {
-                    "name": "Динамометр",
-                    "player_id": t.player_id,
-                    "score": t.user_ves
-                }
-                for t in ves_cat_2
-                ],
-                "ves_cat_3": [
-                {
-                    "name": "Динамометр",
-                    "player_id": t.player_id,
-                    "score": t.user_ves
-                }
-                for t in ves_cat_3
-                ],
-            }
+            return result
             
     async def get_user_rank_by_player_id(self, player_id) -> List[Dict[str, Any]]:
         """Получение своей позиции в рейтенге"""
