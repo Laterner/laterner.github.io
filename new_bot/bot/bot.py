@@ -140,12 +140,6 @@ async def profile_command(message: types.Message):
         )
         return
     
-    history = await db.get_user_history(user_id, 5)
-    history_text = "\n".join([
-        f"• {h['action']} ({h['timestamp'][:16]})" 
-        for h in history
-    ]) if history else "Нет записей"
-    
     await message.answer(
         f"👤 <b>Твой профиль</b>\n\n"
         f"📛 Имя: {user['name']}\n"
@@ -153,8 +147,6 @@ async def profile_command(message: types.Message):
         f"⚔️ Команда: {user['team_name']}\n"
         f"⭐ Очки: {user['score']}\n"
         f"🏆 Игр сыграно: {user['games_played']}\n",
-        # f"🆔 Telegram ID: <code>{user_id}</code>\n\n"
-        # f"📜 <b>Последние действия:</b>\n{history_text}",
         parse_mode="HTML",
         reply_markup=get_main_keyboard(message.from_user.id)
     )
