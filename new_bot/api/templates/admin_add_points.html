@@ -37,6 +37,7 @@
             <!-- Скрытое поле для количества очков -->
             <input type="hidden" id="playerId" value="">
             <input type="hidden" id="amount" value="0">
+            <input type="hidden" id="animatorId" value="{animatorId}">
             
             <!-- Блок с кнопками добавления очков -->
             <div id="scoreButtons" class="score-buttons">
@@ -91,6 +92,7 @@
 <script>
     const form = document.getElementById('scoreForm');
     const playerIdInput = document.getElementById('playerId');
+    const animatorIdInput = document.getElementById('animatorId');
     const amountInput = document.getElementById('amount');
     const scoreButtons = document.getElementById('scoreButtons');
     const resultDiv = document.getElementById('result');
@@ -123,6 +125,8 @@
             if (isProcessing) return;
             
             const amount = parseInt(this.dataset.amount);
+            const animatorId = animatorIdInput.value;
+            
             selectedAmount = amount;
             amountInput.value = amount;
             
@@ -135,7 +139,7 @@
             this.style.transform = 'scale(1.05)';
             
             // Добавляем очки
-            await addScore(currentPlayerId, amount);
+            await addScore(currentPlayerId, amount, animatorId);
             resetScanner();
         });
     });
@@ -179,7 +183,7 @@
         }
     }
     
-    async function addScore(playerId, amount) {
+    async function addScore(playerId, amount, animatorId) {
         if (!playerId) {
             showResult('❌ Сначала найдите игрока', 'error');
             return;
@@ -202,6 +206,7 @@
             const formData = new FormData();
             formData.append('player_id', playerId);
             formData.append('amount', amount);
+            formData.append('animatorId', animatorId);
             
             const response = await fetch('/api/add_score', {
                 method: 'POST',

@@ -197,6 +197,10 @@ class UserHistory(Base):
         back_populates="history"
     )
 
+    animator_id: Mapped[str] = mapped_column(
+        String(64)
+    )
+
     def __repr__(self):
         return (
             f"<UserHistory("
@@ -343,3 +347,36 @@ class UserQuizProgress(Base):
             f"quize_id={self.quize_id}, "
             f"completed={self.completed})>"
         )
+
+class UserStation(Base):
+    __tablename__ = "user_stations"
+    
+    id: Mapped[int] = mapped_column(
+        BigInteger,
+        primary_key=True
+    )
+    
+    player_id: Mapped[str] = mapped_column(
+        ForeignKey(
+            "users.player_id",
+            ondelete="CASCADE"
+        ),
+        nullable=False,
+        index=True
+    )
+    
+    station_type: Mapped[int] = mapped_column(
+        Integer,
+        nullable=False
+    )
+    
+    user_cat: Mapped[int] = mapped_column(
+        Integer,
+        nullable=False
+    )
+    
+    user_ves: Mapped[int] = mapped_column(
+        Integer,
+        nullable=False
+    )
+

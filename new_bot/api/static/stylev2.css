@@ -85,20 +85,6 @@ h1 {
     transform: translateY(-2px);
 }
 
-@media (max-width: 480px) {
-    .container {
-        padding: 18px;
-        border-radius: 20px;
-    }
-
-    .btn {
-        padding: 12px 18px;
-        font-size: 0.9rem;
-    }
-}
-
-@import url('https://fonts.googleapis.com/css?family=Ubuntu+Condensed');
-
 footer {
     width: 100%;
 }
@@ -160,6 +146,26 @@ footer {
     background: #f1f4ff;
     border-bottom: 3px solid #6366f1;
 }
+
+summary {
+    font-size: large;
+    font-weight: 600;
+}
+
+@media (max-width: 480px) {
+    .container {
+        padding: 18px;
+        border-radius: 20px;
+    }
+
+    .btn {
+        padding: 12px 18px;
+        font-size: 0.9rem;
+    }
+}
+
+@import url('https://fonts.googleapis.com/css?family=Ubuntu+Condensed');
+
 
 @media (max-width: 550px) {
     .menu-main {

@@ -26,6 +26,7 @@ services:
       - .env
     volumes:
       - ./api:/app
+      - /app/__pycache__  # Игнорируем кэш
     ports:
       - "8000:8000"
     networks:

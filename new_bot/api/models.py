@@ -197,6 +197,10 @@ class UserHistory(Base):
         back_populates="history"
     )
 
+    animator_id: Mapped[str] = mapped_column(
+        String(64)
+    )
+
     def __repr__(self):
         return (
             f"<UserHistory("

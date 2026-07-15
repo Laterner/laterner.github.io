@@ -2,21 +2,19 @@
 {% block content %}
 <style>
     img {
-        width: calc(100% - 36px);
-        height: 100%;
+        width: 100%;
+        /* height: 100%; */
         object-fit: cover;
     }
     .container {
         margin-bottom: 20px;
     }
-    summary {
-        font-size: large;
-    }
 </style>
+
 <div class="container">
+    
     <img src="{{ url_for('static', filename='map.jpg') }}">
-</div>
-<div class="container">
+
     <h1>Станции</h1>
 
 

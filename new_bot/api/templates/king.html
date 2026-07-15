@@ -78,15 +78,17 @@
                 <!-- сюда вставится видео с камеры -->
             </div>
 
-            <!-- <div id="status">⚡ Наведите на QR-код</div>
+            <div id="status">⚡ Наведите на QR-код</div>
             <br>
             <div class="controls" id="controls">
                 <button class="btn" id="scanBtn">▶ Запустить камеру</button>
                 
-            </div> -->
+            </div>
         </div>
 
-        <form id="scoreForm">
+        <form id="scoreForm" class="hidden">
+            <input type="hidden" id="playerId" value="">
+
             <div class="form-group">
                 <div class="inline3">
                     <label for="ves1">
@@ -101,10 +103,20 @@
                         <input type="radio" name="ves" id="ves3">
                         <div class="radio right-border">М 80+</div>
                     </label>
-
+                </div>
+                <br>
+                <div class="inline2">
+                    <label for="cat1">
+                        <input type="radio" name="cat" id="cat1">
+                        <div class="radio left-border">Жим лёжа</div>
+                    </label>
+                    <label for="cat2">
+                        <input type="radio" name="cat" id="cat2">
+                        <div class="radio right-border">Планка</div>
+                    </label>
                 </div>
                 <label for="playerId">Вес</label>
-                <input type="text" id="vse-count" placeholder="Введите результат" required autocomplete="off"
+                <input type="text" id="ves-count" placeholder="Введите результат" required autocomplete="off"
                     maxlength="10">
             </div>
 
@@ -149,6 +161,7 @@
         const playerInfoDiv = document.getElementById('playerInfo');
         const playerStatusDiv = document.getElementById('playerStatus');
         const submitBtn = document.getElementById('submitBtn');
+        const cameraBlock = document.getElementById('camera-block');
 
         let currentPlayerId = '';
         let selectedAmount = 0;
@@ -182,7 +195,7 @@
                     playerInfoDiv.classList.add('visible');
 
                     // Показываем статус "найден"
-                    showPlayerStatus('✅ Игрок найден! Выберите количество очков', 'found');
+                    showPlayerStatus('✅ Игрок найден! Заполните форму', 'found');
 
                     // Активируем кнопки
                     document.querySelectorAll('.score-btn').forEach(b => {
@@ -209,8 +222,8 @@
 
         form.addEventListener('submit', async function (e) {
             e.preventDefault();
-
-            const playerId = playerIdInput.value.trim().toUpperCase();
+            
+            const playerId = currentPlayerId;
 
             if (!playerId) {
                 showResult('❌ Введите Player ID', 'error');
@@ -218,27 +231,34 @@
             }
 
             // Отключаем кнопку
-            submitBtn.disabled = true;
-            submitBtn.innerHTML = '<span class="spinner"></span> Обработка...';
+            // submitBtn.disabled = true;
+            // submitBtn.innerHTML = '<span class="spinner"></span> Обработка...';
 
             try {
-                const response = await fetch('/set_player_king', {
+                const formData = new FormData();
+                formData.append('station_type', 1);
+                formData.append('player_id', playerId);
+                formData.append('user_cat', 3);
+                formData.append('user_ves', 6);
+
+                const response = await fetch('/api/update_king', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        player_id: playerId
-                    })
+                    body: formData
                 });
 
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
-
+                
                 const data = await response.json();
                 console.log('Ответ сервера:', data);
-                return data;
+                
+                
+                if (data.success) {
+                    resetScanner()
+                } else {
+                    showResult(`❌ ${data.message}`, 'error');
+                }
             } catch (error) {
                 showResult('Ошибка при установке игрока:', 'error');
                 console.log('Ошибка при установке игрока:', error);
@@ -248,97 +268,15 @@
         });
 
 
-
-        async function addScore(playerId, amount) {
-            if (!playerId) {
-                showResult('❌ Сначала найдите игрока', 'error');
-                return;
-            }
-
-            if (!amount || amount < 1) {
-                showResult('❌ Выберите количество очков', 'error');
-                return;
-            }
-
-            isProcessing = true;
-
-            // Блокируем кнопки
-            document.querySelectorAll('.score-btn').forEach(b => {
-                b.disabled = true;
-                b.innerHTML = '<span class="spinner" style="width:16px;height:16px;"></span>';
-            });
-
-            try {
-                const formData = new FormData();
-                formData.append('player_id', playerId);
-                formData.append('amount', amount);
-                formData.append('user_cat', 0);
-                formData.append('user_ves', 100);
-
-                const response = await fetch('/api/update_king', {
-                    method: 'POST',
-                    body: formData
-                });
-
-                const data = await response.json();
-
-                const playerIdInput = document.getElementById('playerId');
-                const amountInput = document.getElementById('amount');
-                const scoreButtons = document.getElementById('scoreButtons');
-                const resultDiv = document.getElementById('result');
-                const playerInfoDiv = document.getElementById('playerInfo');
-                const playerStatusDiv = document.getElementById('playerStatus');
-
-                if (data.success) {
-                    showResult(`✅ ${data.message}`, 'success');
-                    // Обновляем информацию об игроке
-                    if (data.player) {
-                        document.getElementById('infoScore').textContent = data.player.new_score;
-                        // Анимация обновления
-                        const scoreElement = document.getElementById('infoScore');
-                        scoreElement.style.transition = 'all 0.3s';
-                        scoreElement.style.transform = 'scale(1.3)';
-                        setTimeout(() => {
-                            scoreElement.style.transform = 'scale(1)';
-                        }, 300);
-                    }
-
-                    // Сбрасываем выделение кнопок
-                    document.querySelectorAll('.score-btn').forEach(b => {
-                        b.style.opacity = '0';
-                        b.style.transform = 'scale(1)';
-                        b.disabled = true;
-                    });
-
-                    hidePlayerInfo();
-                    playerIdInput.value = '';
-
-                } else {
-                    showResult(`❌ ${data.message}`, 'error');
-                }
-            } catch (error) {
-                showResult(`❌ Ошибка: ${error.message}`, 'error');
-            } finally {
-                isProcessing = false;
-                // Восстанавливаем кнопки
-                document.querySelectorAll('.score-btn').forEach(b => {
-                    b.disabled = false;
-                    const amount = b.dataset.amount;
-                    b.innerHTML = `
-                        <span class="plus-icon">+${amount}</span>
-                        <span>${'⭐'.repeat(amount / 5)}</span>
-                    `;
-                });
-            }
-        }
-
         function showPlayerStatus(message, type) {
+            form.classList.remove('hidden');
             playerStatusDiv.textContent = message;
             playerStatusDiv.className = 'player-status ' + type;
             playerStatusDiv.style.display = 'block';
         }
 
         function hidePlayerInfo() {
+            form.classList.add('hidden');
             playerInfoDiv.classList.remove('visible');
             playerStatusDiv.style.display = 'none';
             currentPlayerId = '';

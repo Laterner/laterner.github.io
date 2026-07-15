@@ -112,25 +112,31 @@ def health_check():
     return jsonify({"status": "healthy"}), 200
 
 @app.route('/set_player_king', methods=['POST'])
-async def set_player():
+async def set_player_king():
     """Установка текущего игрока"""
     data = await request.get_json()
     if not data or 'player_id' not in data:
         return jsonify({'error': 'Не указан player_id'}), 400
     
+    station_type = int(data['station_type'])
     player_id = str(data['player_id'])
-    
-    async with score_lock:
-        game_state.current_player_id = player_id
-        # Инициализируем счет для нового игрока
-        if player_id not in game_state.player_scores:
-            game_state.player_scores[player_id] = 0
-    
-    return jsonify({
-        'message': f'Текущий игрок установлен: {player_id}',
-        'current_player': player_id
-    })
+    user_cat = int(data['user_cat'])
+    user_ves = int(data['user_ves'])
 
+    print("king data ------->>>>>>>", str(data))
+    
+    
+    result = await db.update_station(station_type, player_id, user_cat, user_ves)
+    if result:
+        return jsonify({
+            'message': f'Текущий игрок установлен: {player_id}',
+            'current_player': player_id
+        }), 200
+    return jsonify({
+            'message': f'Произошла ошибка',
+            'current_player': player_id,
+            'data':data
+        })
 
 
 def get_user_from_session() -> tuple[int, str]:
@@ -384,7 +390,7 @@ async def answer():
             await db.update_quize_status(player_id, quize_id, is_correct, amount)
     
             # Добавляем очки
-            success = await db.add_score(player_id, 10)
+            success = await db.add_score(player_id, 10, "system")
             
             if success:
                 logger.error(f"Успешно добавлены очки")
@@ -427,7 +433,7 @@ async def admin_addscore():
     animator_id = request.cookies.get("animator_id", None)
     
     if animator_id is not None:
-        return await render_template("admin_add_points.html", title="Добавление очков")
+        return await render_template("admin_add_points.html", title="Добавление очков", animator_id=animator_id)
     
     return await make_response("<h1>Не задан id аниматора</h1>")
 
@@ -437,7 +443,8 @@ async def add_score():
     """API для добавления очков"""
     try:
         form = await request.form
-        player_id = form.get('player_id')
+        player_id = form.get('player_id', type=str)
+        animator_id = form.get('animator_id', type=str, default="test")
         amount = form.get('amount', type=int)
         
         if not player_id or amount is None:
@@ -455,7 +462,7 @@ async def add_score():
             }), 404
         
         # Добавляем очки
-        success = await db.add_score(player_id, amount)
+        success = await db.add_score(player_id, amount, animator_id)
         
         if success:
             return jsonify({
@@ -688,7 +695,7 @@ async def king():
     
     return await render_template("king.html", title="Добавление очков")
 
-@app.route("/api/update_king")
+@app.route("/api/update_king", methods=['POST'])
 async def update_king():
     try:
         form = await request.form
@@ -697,10 +704,11 @@ async def update_king():
         user_cat = form.get('user_cat', type=int)
         user_ves = form.get('user_ves', type=int)
         
-        if not player_id or station_type or user_cat or user_ves is None:
+        if not player_id or not station_type or not user_cat or not user_ves:
             return jsonify({
                 "success": False, 
-                "message": "Пожалуйста, заполните все данные"
+                "message": "Пожалуйста, заполните все данные",
+                "data":[player_id, station_type, user_cat, user_ves]
             }), 400
         
         # Проверяем игрока
@@ -735,6 +743,33 @@ async def update_king():
             "success": False, 
             "message": str(e)
         }), 500
+
+# @app.route('/set_player_king', methods=['POST'])
+# async def set_player():
+#     """Установка текущего игрока"""
+#     data = await request.get_json()
+#     if not data or 'player_id' not in data:
+#         return jsonify({'error': 'Не указан player_id'}), 400
+    
+#     station_type = int(data['station_type'])
+#     player_id = str(data['player_id'])
+#     user_cat = int(data['user_cat'])
+#     user_ves = int(data['user_ves'])
+
+#     print("king data ------->>>>>>>", str(data))
+    
+    
+#     result = await db.update_station(station_type, player_id, user_cat, user_ves)
+#     if result:
+#         return jsonify({
+#             'message': f'Текущий игрок установлен: {player_id}',
+#             'current_player': player_id
+#         }), 200
+#     return jsonify({
+#             'message': f'Произошла ошибка',
+#             'current_player': player_id,
+#             'data':data
+#         })
 
 @app.route("/api/create_quize")
 async def create_quize():

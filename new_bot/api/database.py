@@ -198,7 +198,7 @@ class Database:
                 for u in users
             ]
 
-    async def add_score(self, player_id: str, amount: int) -> bool:
+    async def add_score(self, player_id: str, amount: int, animator_id: str) -> bool:
         """Добавление очков игроку"""
         async with SessionLocal() as session:
             try:
@@ -221,7 +221,8 @@ class Database:
                 history = UserHistory(
                     user_id=user.user_id,
                     action="add_score",
-                    details=f"Добавлено {amount} очков (через API)"
+                    details=f"Добавлено {amount} очков (через API)",
+                    animator_id=animator_id
                 )
                 
                 result = await session.execute(
@@ -264,7 +265,8 @@ class Database:
                 history = UserHistory(
                     user_id=user.user_id,
                     action="update_name",
-                    details=f"Имя изменено с '{old_name}' на '{new_name}' (через API)"
+                    details=f"Имя изменено с '{old_name}' на '{new_name}' (через API)",
+                    animator_id="admin"
                 )
                 session.add(history)
                 
@@ -298,7 +300,8 @@ class Database:
                 history = UserHistory(
                     user_id=user.user_id,
                     action="update_score",
-                    details=f"Очки изменены с {old_score} на {new_score} (через API)"
+                    details=f"Очки изменены с {old_score} на {new_score} (через API)",
+                    animator_id="admin"
                 )
                 session.add(history)
                 
@@ -587,16 +590,16 @@ class Database:
     async def update_station(self, station_type: int, player_id: str, user_cat, user_ves) -> UserStation:
         async with SessionLocal() as session:
             try:
-                # Ищем или создаем запись прогресса
+                # Ищем или создаем запись
                 progress: UserStation = await session.execute(
-                    select(UserQuizProgress).where(
+                    select(UserStation).where(
                         UserStation.player_id == player_id
                     )
                 )
                 progress = progress.scalar_one_or_none()
                 
                 if not progress:
-                    progress = UserQuizProgress(
+                    progress = UserStation(
                         player_id=player_id,
                         station_type=station_type,
                         user_cat=user_cat,
