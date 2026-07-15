@@ -9,61 +9,61 @@
     }
 </style>
 <div class="container">
-    <h2>Топ игроков Динамометр среди женщин</h2>
+    <h4>Топ игроков Динамометр среди женщин</h4>
     <table>
         {% for user in kings.dinamo_cat_1 %}
             <tr>
-                <td>{{ user.player_id}}</td>
+                <td>{{ user.player_id}} | {{ user.name }}</td>
                 <td class="dts">{{ user.score}}</td>
             </tr>
         {% endfor %}
     </table>
     <br>
-    <h2>Топ игроков Динамометр среди мужчин</h2>
+    <h4>Топ игроков Динамометр среди мужчин</h4>
     <table>
         {% for user in kings.dinamo_cat_2 %}
             <tr>
-                <td>{{ user.player_id}}</td>
+                <td>{{ user.player_id}} | {{ user.name }}</td>
                 <td class="dts">{{ user.score}}</td>
             </tr>
         {% endfor %}
     </table>
     <br>
-    <h2>Топ игроков Динамометр среди мужчин 80кг+</h2>
+    <h4>Топ игроков Динамометр среди мужчин 80кг+</h4>
     <table>
         {% for user in kings.dinamo_cat_3 %}
             <tr>
-                <td>{{ user.player_id}}</td>
+                <td>{{ user.player_id}} | {{ user.name }}</td>
                 <td class="dts">{{ user.score}}</td>
             </tr>
         {% endfor %}
     </table>
     <br>
-    <h2>Топ игроков Жим лёжа среди женщин</h2>
+    <h4>Топ игроков Жим лёжа среди женщин</h4>
     <table>
         {% for user in kings.ves_cat_1 %}
             <tr>
-                <td>{{ user.player_id}}</td>
+                <td>{{ user.player_id}} | {{ user.name }}</td>
                 <td class="dts">{{ user.score}}</td>
             </tr>
         {% endfor %}
     </table>
     <br>
-    <h2>Топ игроков Жим лёжа среди мужчин</h2>
+    <h4>Топ игроков Жим лёжа среди мужчин</h4>
     <table>
         {% for user in kings.ves_cat_2 %}
             <tr>
-                <td>{{ user.player_id}}</td>
+                <td>{{ user.player_id}} | {{ user.name }}</td>
                 <td class="dts">{{ user.score}}</td>
             </tr>
         {% endfor %}
     </table>
     <br>
-    <h2>Топ игроков Жим лёжа среди мужчин 80кг+</h2>
+    <h4>Топ игроков Жим лёжа среди мужчин 80кг+</h4>
     <table>
         {% for user in kings.ves_cat_3 %}
             <tr>
-                <td>{{ user.player_id}}</td>
+                <td>{{ user.player_id}} | {{ user.name }}</td>
                 <td class="dts">{{ user.score}}</td>
             </tr>
         {% endfor %}

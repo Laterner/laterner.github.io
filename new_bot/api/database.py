@@ -4,6 +4,7 @@ import asyncio
 from datetime import datetime
 from typing import Optional, Dict, List, Any
 
+from sqlalchemy.orm import joinedload
 from sqlalchemy import select, func, or_, and_, desc
 from sqlalchemy.ext.asyncio import (
     create_async_engine,
@@ -385,7 +386,8 @@ class Database:
                 
                 for cat in [1, 2, 3]:
                     query = await session.execute(
-                        select(UserStation)
+                        select(UserStation, User.name)
+                        .join(User, UserStation.player_id == User.player_id)
                         .where(and_(
                             UserStation.station_type == station_type,
                             UserStation.user_cat == cat
@@ -393,15 +395,15 @@ class Database:
                         .order_by(desc(UserStation.user_ves))
                         .limit(limit)
                     )
-                    players = query.scalars().all()
+                    results = query.all()
                     
                     result[f"{station_name}_cat_{cat}"] = [
                         {
-                            "name": "Динамометр",
-                            "player_id": p.player_id,
-                            "score": p.user_ves
+                            "name": user_name,  # Берем имя из User
+                            "player_id": us.player_id,
+                            "score": us.user_ves
                         }
-                        for p in players
+                        for us, user_name in results
                     ]
             
             return result

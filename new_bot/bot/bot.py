@@ -67,7 +67,7 @@ commands = [
     BotCommand(command="profile", description="Профиль"),
     BotCommand(command="top", description="Топ игроков"),
     BotCommand(command="stats", description="Статистика команды"),
-    BotCommand(command="help", description="Показать справку")
+    BotCommand(command="help", description="Помощь по боту")
 ]
 
 
@@ -264,7 +264,6 @@ async def help_command(message: types.Message):
         "/profile - Показать профиль\n"
         "/top - Топ игроков\n"
         "/stats - Статистика команды\n"
-        "/history - История действий\n"
         "/help - Показать эту справку\n\n"
         "🎮 <b>Основные функции:</b>\n"
         "• Регистрация с уникальным Player ID\n"
