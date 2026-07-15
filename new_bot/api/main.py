@@ -40,39 +40,6 @@ game_state = GameState()
 score_task = None
 score_lock = asyncio.Lock()
 
-# async def add_points_periodically():
-#     """Фоновая задача для начисления очков каждые 3 секунды"""
-#     while True:
-#         try:
-#             async with score_lock:
-#                 if game_state.current_player_id:
-#                     player_id = game_state.current_player_id
-                    
-#                     success = await db.add_score(player_id, 1)
-#                     if success:
-#                         logger.error(f"Успешно добавлены очки")
-#                     else:
-#                         logger.error(f"Произошла ошибка при добавлении")
-                        
-#                     # Инициализируем счет игрока, если его нет
-#                     if player_id not in game_state.player_scores:
-#                         game_state.player_scores[player_id] = 0
-                    
-#                     # Начисляем очки
-#                     game_state.player_scores[player_id] += 1
-#                     # logging.info(f"Игроку {player_id} начислено очко. Текущий счет: {game_state.player_scores[player_id]}")
-            
-#             await asyncio.sleep(3)  # Ждем 3 секунды
-#         except asyncio.CancelledError:
-#             logging.info("Задача начисления очков остановлена")
-#             break
-#         except Exception as e:
-#             logging.error(f"Ошибка в задаче начисления очков: {e}")
-#             await asyncio.sleep(3)
-
-
-
-
 # Настройка логирования
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -278,8 +245,8 @@ async def reg_tg_id():
         ))
     
         # Установка куки с параметрами (значение, время жизни, защита) player_id
-        response.set_cookie("tg_user_id", str(tg_id), max_age=18000, secure=True, httponly=True)
-        response.set_cookie("player_id", str(player_id), max_age=18000, secure=True, httponly=True)
+        response.set_cookie("tg_user_id", str(tg_id), max_age=36000, secure=True, httponly=True)
+        response.set_cookie("player_id", str(player_id), max_age=36000, secure=True, httponly=True)
         
         
         return response
@@ -457,7 +424,12 @@ async def quize_page():
 @app.route("/admin/addscore")
 async def admin_addscore():
     """Главная страница с формой добавления очков"""
-    return await render_template("admin_add_points.html", title="Добавление очков")
+    animator_id = request.cookies.get("animator_id", None)
+    
+    if animator_id is not None:
+        return await render_template("admin_add_points.html", title="Добавление очков")
+    
+    return await make_response("<h1>Не задан id аниматора</h1>")
 
 # api urls  
 @app.route("/api/add_score", methods=['POST'])
@@ -530,6 +502,24 @@ async def check_player(player_id):
     else:
         return jsonify({"exists": False})
 
+
+@app.route("/admin/log_animator/<animator_id>")
+async def log_animator(animator_id):
+    """Проверка существования игрока"""
+    c_animator_id = request.cookies.get("animator_id", None)
+    if animator_id == None:
+        return await make_response("<h1>Не задан id аниматора</h1>")
+    else:
+        response = await make_response(redirect(url_for("admin_addscore")))
+        
+        if c_animator_id is not None:
+            return response
+    
+    # Установка куки с параметрами (значение, время жизни, защита) player_id
+    response.set_cookie("animator_id", str(animator_id), max_age=36000, secure=True, httponly=True)
+    
+    return response
+    
 @app.route("/admin", methods=['GET'])
 async def admin_login_page():
     """Страница входа в админку"""
