@@ -126,7 +126,7 @@ async def start_command(message: types.Message, state: FSMContext):
             f"🎮 Player ID: {format_player_id(user['player_id'])}\n"
             f"⚔️ Команда: {user['team_name']}\n"
             f"⭐ Очки: {user['score']}\n"
-            f"🏆 Игр сыграно: {user['wins']}"
+            f"🏆 Игр сыграно: {user['wins']}\n"
             "Используй кнопки ниже:",
             reply_markup=get_main_keyboard(message.from_user.id),
             parse_mode="HTML"
