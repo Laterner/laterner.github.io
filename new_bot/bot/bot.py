@@ -256,6 +256,9 @@ async def history_command(message: types.Message):
 async def help_command(message: types.Message):
     await message.answer(
         "🤖 <b>Помощь по боту</b>\n\n"
+        "Команда поддержки Т‑Фестиваля работает круглосуточно, в чате - можете написать нам.\n"
+        "Возник вопрос или просто хотите пообщаться:\n"
+        "@FestBotAssistant\n\n"
         "📌 <b>Доступные команды:</b>\n"
         "/start - Начать / Зарегистрироваться\n"
         "/profile - Показать профиль\n"
