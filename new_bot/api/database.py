@@ -4,7 +4,7 @@ import asyncio
 from datetime import datetime
 from typing import Optional, Dict, List, Any
 
-from sqlalchemy import select, func, or_, desc
+from sqlalchemy import select, func, or_, and_, desc
 from sqlalchemy.ext.asyncio import (
     create_async_engine,
     async_sessionmaker,
@@ -388,7 +388,10 @@ class Database:
             
             result_ves_cat_1 = await session.execute(
                 select(UserStation)
-                .where(UserStation.station_type == 1 and UserStation.user_cat == 1)
+                .where(and_(
+                    UserStation.station_type == 1,
+                    UserStation.user_cat == 1)
+                    )
                 .order_by(desc(UserStation.user_ves))
                 .limit(limit)
             )
@@ -396,7 +399,10 @@ class Database:
             
             result_ves_cat_2 = await session.execute(
                 select(UserStation)
-                .where(UserStation.station_type == 1 and UserStation.user_cat == 2)
+                .where(and_(
+                    UserStation.station_type == 1,
+                    UserStation.user_cat == 2)
+                    )
                 .order_by(desc(UserStation.user_ves))
                 .limit(limit)
             )
@@ -404,42 +410,45 @@ class Database:
             
             result_ves_cat_3 = await session.execute(
                 select(UserStation)
-                .where(UserStation.station_type == 1 and UserStation.user_cat == 3)
+                .where(and_(
+                    UserStation.station_type == 1,
+                    UserStation.user_cat == 3)
+                    )
                 .order_by(desc(UserStation.user_ves))
                 .limit(limit)
             )
             ves_cat_3 = result_ves_cat_3.scalars().all()
             
             return {
-                'dinamo': [
+                "dinamo": [
                 {
-                    'name': "Динамометр",
-                    'player_id': t.player_id,
-                    'score': t.user_ves
+                    "name": "Динамометр",
+                    "player_id": t.player_id,
+                    "score": t.user_ves
                 }
                 for t in top_dinamo
                 ],
-                'ves_cat_1': [
+                "ves_cat_1": [
                 {
-                    'name': "Динамометр",
-                    'player_id': t.player_id,
-                    'score': t.user_ves
+                    "name": "Динамометр",
+                    "player_id": t.player_id,
+                    "score": t.user_ves
                 }
                 for t in ves_cat_1
                 ],
-                'ves_cat_2': [
+                "ves_cat_2": [
                 {
-                    'name': "Динамометр",
-                    'player_id': t.player_id,
-                    'score': t.user_ves
+                    "name": "Динамометр",
+                    "player_id": t.player_id,
+                    "score": t.user_ves
                 }
                 for t in ves_cat_2
                 ],
-                'ves_cat_3': [
+                "ves_cat_3": [
                 {
-                    'name': "Динамометр",
-                    'player_id': t.player_id,
-                    'score': t.user_ves
+                    "name": "Динамометр",
+                    "player_id": t.player_id,
+                    "score": t.user_ves
                 }
                 for t in ves_cat_3
                 ],
