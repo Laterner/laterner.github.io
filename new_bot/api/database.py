@@ -380,7 +380,7 @@ class Database:
         async with SessionLocal() as session:
             result_dinamo = await session.execute(
                 select(UserStation)
-                .where(UserStation.station_type == 0)
+                .where(UserStation.station_type == 1)
                 .order_by(desc(UserStation.user_ves))
                 .limit(limit)
             )
@@ -389,7 +389,7 @@ class Database:
             result_ves_cat_1 = await session.execute(
                 select(UserStation)
                 .where(and_(
-                    UserStation.station_type == 1,
+                    UserStation.station_type == 2,
                     UserStation.user_cat == 1)
                     )
                 .order_by(desc(UserStation.user_ves))
@@ -400,7 +400,7 @@ class Database:
             result_ves_cat_2 = await session.execute(
                 select(UserStation)
                 .where(and_(
-                    UserStation.station_type == 1,
+                    UserStation.station_type == 2,
                     UserStation.user_cat == 2)
                     )
                 .order_by(desc(UserStation.user_ves))
@@ -411,7 +411,7 @@ class Database:
             result_ves_cat_3 = await session.execute(
                 select(UserStation)
                 .where(and_(
-                    UserStation.station_type == 1,
+                    UserStation.station_type == 2,
                     UserStation.user_cat == 3)
                     )
                 .order_by(desc(UserStation.user_ves))

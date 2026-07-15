@@ -80,7 +80,7 @@ async def init_db():
     
     teams = await db.init_db()
     
-    print("---->>>>>>>>", teams)
+    # print("---->>>>>>>>", teams)
     team_stats = TeamStatsManager(teams)
     
     logger.info("✅ База данных инициализирована")
