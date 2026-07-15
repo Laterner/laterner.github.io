@@ -378,13 +378,38 @@ class Database:
     async def get_top_players_king(self, limit: int = 10) -> List[Dict[str, Any]]:
         """Получение топ игроков"""
         async with SessionLocal() as session:
-            result_dinamo = await session.execute(
+            result_dinamo_cat_1 = await session.execute(
                 select(UserStation)
-                .where(UserStation.station_type == 1)
+                .where(and_(
+                    UserStation.station_type == 1,
+                    UserStation.user_cat == 1)
+                )
                 .order_by(desc(UserStation.user_ves))
                 .limit(limit)
             )
-            top_dinamo = result_dinamo.scalars().all()
+            dinamo_cat_1 = result_dinamo_cat_1.scalars().all()
+            
+            result_dinamo_cat_2 = await session.execute(
+                select(UserStation)
+                .where(and_(
+                    UserStation.station_type == 1,
+                    UserStation.user_cat == 2)
+                )
+                .order_by(desc(UserStation.user_ves))
+                .limit(limit)
+            )
+            dinamo_cat_2 = result_dinamo_cat_1.scalars().all()
+            
+            result_dinamo_cat_3 = await session.execute(
+                select(UserStation)
+                .where(and_(
+                    UserStation.station_type == 1,
+                    UserStation.user_cat == 3)
+                )
+                .order_by(desc(UserStation.user_ves))
+                .limit(limit)
+            )
+            dinamo_cat_3 = result_dinamo_cat_1.scalars().all()
             
             result_ves_cat_1 = await session.execute(
                 select(UserStation)
@@ -420,13 +445,29 @@ class Database:
             ves_cat_3 = result_ves_cat_3.scalars().all()
             
             return {
-                "dinamo": [
+                "dinamo_cat_1": [
                 {
                     "name": "Динамометр",
                     "player_id": t.player_id,
                     "score": t.user_ves
                 }
-                for t in top_dinamo
+                for t in dinamo_cat_1
+                ],
+                "dinamo_cat_2": [
+                {
+                    "name": "Динамометр",
+                    "player_id": t.player_id,
+                    "score": t.user_ves
+                }
+                for t in dinamo_cat_2
+                ],
+                "dinamo_cat_3": [
+                {
+                    "name": "Динамометр",
+                    "player_id": t.player_id,
+                    "score": t.user_ves
+                }
+                for t in dinamo_cat_3
                 ],
                 "ves_cat_1": [
                 {
@@ -669,6 +710,15 @@ class Database:
     async def update_station(self, station_type: int, player_id: str, user_cat, user_ves) -> UserStation:
         async with SessionLocal() as session:
             try:
+                result_user = await session.execute(
+                    select(UserStation).where(
+                        UserStation.player_id == player_id
+                    )
+                )
+                user: User = result_user.scalar_one_or_none()
+                user.games_played += 1
+                user.wins += 1
+                
                 # Ищем или создаем запись
                 progress: UserStation = await session.execute(
                     select(UserStation)

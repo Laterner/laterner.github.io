@@ -9,9 +9,29 @@
     }
 </style>
 <div class="container">
-    <h2>Топ игроков Динамометр</h2>
+    <h2>Топ игроков Динамометр среди женщин</h2>
     <table>
-        {% for user in kings.dinamo %}
+        {% for user in kings.dinamo_cat_1 %}
+            <tr>
+                <td>{{ user.player_id}}</td>
+                <td class="dts">{{ user.score}}</td>
+            </tr>
+        {% endfor %}
+    </table>
+    <br>
+    <h2>Топ игроков Динамометр среди мужчин</h2>
+    <table>
+        {% for user in kings.dinamo_cat_2 %}
+            <tr>
+                <td>{{ user.player_id}}</td>
+                <td class="dts">{{ user.score}}</td>
+            </tr>
+        {% endfor %}
+    </table>
+    <br>
+    <h2>Топ игроков Динамометр среди мужчин 80кг+</h2>
+    <table>
+        {% for user in kings.dinamo_cat_3 %}
             <tr>
                 <td>{{ user.player_id}}</td>
                 <td class="dts">{{ user.score}}</td>
