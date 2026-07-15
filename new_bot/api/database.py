@@ -671,8 +671,11 @@ class Database:
             try:
                 # Ищем или создаем запись
                 progress: UserStation = await session.execute(
-                    select(UserStation).where(
-                        UserStation.player_id == player_id
+                    select(UserStation)
+                    .where(and_(
+                        UserStation.player_id == player_id,
+                        UserStation.station_type == station_type
+                        )
                     )
                 )
                 progress = progress.scalar_one_or_none()

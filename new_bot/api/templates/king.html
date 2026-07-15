@@ -92,30 +92,30 @@
             <div class="form-group">
                 <div class="inline3">
                     <label for="ves1">
-                        <input type="radio" name="cat" id="ves1">
+                        <input type="radio" name="cat" id="ves1" value="1" checked>
                         <div class="radio left-border">Ж</div>
                     </label>
                     <label for="ves2">
-                        <input type="radio" name="cat" id="ves2">
+                        <input type="radio" name="cat" id="ves2" value="2">
                         <div class="radio">М</div>
                     </label>
                     <label for="ves3">
-                        <input type="radio" name="cat" id="ves3">
+                        <input type="radio" name="cat" id="ves3" value="3">
                         <div class="radio right-border">М 80+</div>
                     </label>
                 </div>
                 <br>
                 <div class="inline2">
                     <label for="type1">
-                        <input type="radio" name="type" id="type1">
-                        <div class="radio left-border">Жим лёжа</div>
+                        <input type="radio" name="type" id="type1" value="1" checked>
+                        <div class="radio left-border">Динамометр</div>
                     </label>
                     <label for="type2">
-                        <input type="radio" name="type" id="type2">
-                        <div class="radio right-border">Динамометр</div>
+                        <input type="radio" name="type" id="type2" value="2">
+                        <div class="radio right-border">Жим лёжа</div>
                     </label>
                 </div>
-                <label for="playerId">Вес</label>
+                <label for="playerId">Результат</label>
                 <input type="text" id="ves-count" placeholder="Введите результат" required autocomplete="off"
                     maxlength="10">
             </div>
@@ -234,14 +234,15 @@
             // submitBtn.innerHTML = '<span class="spinner"></span> Обработка...';
 
             try {
-                const stationTypeRadio = document.querySelector('input[name="type"]:checked');
-                const userCat = document.querySelector('input[name="cat"]:checked');
+                const stationTypeRadio = document.querySelector('input[name="type"]:checked').value;
+                const userCat = document.querySelector('input[name="cat"]:checked').value;
+                const s_result = document.getElementById("ves-count").value;
 
                 const formData = new FormData();
-                formData.append('station_type', 1);
+                formData.append('station_type', stationTypeRadio);
                 formData.append('player_id', playerId);
-                formData.append('user_cat', 3);
-                formData.append('user_ves', 6);
+                formData.append('user_cat', userCat);
+                formData.append('user_ves', s_result);
 
                 const response = await fetch('/api/update_king', {
                     method: 'POST',
