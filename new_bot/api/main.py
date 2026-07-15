@@ -755,11 +755,11 @@ async def set_all_scores_in_station():
     data = await db.get_top_players_king(limit=10)
     for category, players in data.items():
         for player in players:
-            await db.add_score(player['player_id'], 80)
+            await db.add_score(player['player_id'], 80, "system_admin_stations")
     
     all_players = db.get_all_players_stations()
     for player in all_players:
-        await db.add_score(player.player_id, 20)  
+        await db.add_score(player.player_id, 20, "system_admin_stations")  
 
 @app.route("/api/create_quize")
 async def create_quize():
