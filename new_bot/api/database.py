@@ -674,7 +674,8 @@ class Database:
                     select(UserStation)
                     .where(and_(
                         UserStation.player_id == player_id,
-                        UserStation.station_type == station_type
+                        UserStation.station_type == station_type,
+                        UserStation.user_cat == user_cat,
                         )
                     )
                 )
