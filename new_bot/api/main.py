@@ -196,8 +196,8 @@ async def miniapp():
     my_team = _team_stats.get_by_id(user['team'])
     
     team_total_score = top_teams[user["team"] - 1]['total_score']
-    print("top_teams", top_teams)
-    print("top_players", top_players)
+    # print("top_teams", top_teams)
+    # print("top_players", top_players)
     
     return await render_template(
         "index.html", 
@@ -396,6 +396,7 @@ async def answer():
                 logger.error(f"Успешно добавлены очки")
             else:
                 logger.error(f"Произошла ошибка при добавлении")
+                return jsonify({'ans': 0, 'player_id': player_id})
                 
         except Exception as e:
             logger.error(f"Error adding score: {e}")
