@@ -16,6 +16,7 @@ from aiogram.types import (
     ReplyKeyboardMarkup,
     ReplyKeyboardRemove,
     WebAppInfo,
+    BotCommand,
     InlineKeyboardMarkup,
     InlineKeyboardButton
 )
@@ -59,6 +60,21 @@ class RegistrationStates(StatesGroup):
     waiting_for_name = State()
     waiting_for_team = State()
 
+
+commands = [
+    BotCommand(command="start", description="Запустить бота"),
+    BotCommand(command="help", description="Справка и помощь"),
+    BotCommand(command="profile", description="Профиль"),
+    BotCommand(command="top", description="Топ игроков"),
+    BotCommand(command="stats", description="Статистика команды"),
+    BotCommand(command="help", description="Показать справку")
+]
+
+
+async def on_startup(bot: Bot):
+    # 2. Устанавливаем команды для меню
+    await bot.set_my_commands(commands)
+    
 # Клавиатуры
 def get_main_keyboard(user_id=""):
     """Главная клавиатура с кнопкой Mini App"""

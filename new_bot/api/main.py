@@ -759,7 +759,7 @@ async def set_all_scores_in_station():
     
     all_players = await db.get_all_players_stations()
     for player in all_players:
-        await db.add_score(player.player_id, 20, "system_admin_stations")  
+        await db.add_score(player['player_id'], 20, "system_admin_stations")  
 
 @app.route("/api/create_quize")
 async def create_quize():
