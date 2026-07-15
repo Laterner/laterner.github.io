@@ -757,7 +757,7 @@ async def set_all_scores_in_station():
         for player in players:
             await db.add_score(player['player_id'], 80, "system_admin_stations")
     
-    all_players = db.get_all_players_stations()
+    all_players = await db.get_all_players_stations()
     for player in all_players:
         await db.add_score(player.player_id, 20, "system_admin_stations")  
 
