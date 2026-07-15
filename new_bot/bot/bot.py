@@ -495,6 +495,8 @@ async def main():
     
     logger.info("База данных инициализирована")
     
+    await on_startup(bot)
+    
     logger.info(f"Mini App URL: {MINI_APP_URL}")
     logger.info("Бот готов к работе!")
     
