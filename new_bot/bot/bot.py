@@ -67,7 +67,8 @@ commands = [
     BotCommand(command="profile", description="Профиль"),
     BotCommand(command="top", description="Топ игроков"),
     BotCommand(command="stats", description="Статистика команды"),
-    BotCommand(command="help", description="Помощь по боту")
+    BotCommand(command="help", description="Помощь по боту"),
+    BotCommand(command="send_message", description="send_message")
 ]
 
 
