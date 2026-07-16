@@ -69,6 +69,7 @@ class Database:
 
     async def init_db(self):
         """Инициализация базы данных (создание таблиц)"""
+        print("DATABASE_URL ---------------------->>>>>>>>>>>>>>>", DATABASE_URL)
         async with self._init_lock:
             if self._initialized:
                 return await self.get_all_teams_stats()

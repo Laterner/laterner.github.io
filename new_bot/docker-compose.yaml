@@ -3,7 +3,6 @@ services:
     image: postgres:16-alpine
     container_name: my_postgres
     restart: unless-stopped
-    # command: postgres -c 'listen_addresses=127.0.0.1'
     env_file:
       - .env
     ports:
@@ -76,7 +75,6 @@ services:
     volumes:
       - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
       - ./api/static:/usr/share/nginx/html/static:ro
-      # - ./api/media:/usr/share/nginx/html/media:ro
       - ./certs:/etc/nginx/certs/fstbot.ru:ro
       - ./logs/nginx:/var/log/nginx
     depends_on:
