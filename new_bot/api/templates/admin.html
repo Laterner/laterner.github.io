@@ -295,8 +295,9 @@
     <div class="container">
         <div class="header">
             <h1>🔐 Админ панель <span>fstbot.ru</span></h1>
+            <h4 id="message-er"></h4>
             <div class="header-actions">
-                <button onclick="closeEvent()" class="btn btn-outline btn-sm">Закрыть эвент</button>
+                <button onclick="closeEvent()" id="closeBtn" class="btn btn-outline btn-sm">Закрыть эвент</button>
                 <a href="/" class="btn btn-outline btn-sm">🏠 На главную</a>
                 <a href="/admin/logout" class="btn btn-danger btn-sm">🚪 Выйти</a>
             </div>
@@ -408,6 +409,20 @@
     </div>
     
     <script>
+        async function closeEvent(){
+            const response = await fetch('/set_all_scores_in_station', {
+                method: 'POST'
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                showMessage('✅ Очки успешно выданы!', 'success');
+            } else {
+                showMessage('❌ Произошла ошибка при выдачи очков', 'error');
+            }
+        }
+
         function showMessage(text, type = 'success') {
             const div = document.getElementById('messageDiv');
             div.textContent = text;
@@ -565,20 +580,6 @@
                 searchUsers(this.value);
             }
         });
-
-        function closeEvent(){
-            const response = await fetch('/set_all_scores_in_station', {
-                method: 'POST'
-            });
-            
-            const data = await response.json();
-            
-            if (data.success) {
-                showMessage('✅ ' + data.message, 'success');
-            } else {
-                showMessage('❌ ' + data.message, 'error');
-            }
-        }
     </script>
 </body>
 </html>
