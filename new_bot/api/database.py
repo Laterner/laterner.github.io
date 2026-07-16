@@ -659,9 +659,10 @@ class Database:
                         )
                     )
                 )
-                progress = progress.first()
+                progress = progress.scalar_one_or_none()
                 
                 if not progress:
+                    print("king not in database -> create")
                     progress = UserStation(
                         player_id=player_id,
                         station_type=station_type,
@@ -669,9 +670,11 @@ class Database:
                         user_ves=user_ves
                     )
                     session.add(progress)
+                    
                 elif progress.user_ves < user_ves:
                     progress.user_ves=user_ves
-                
+                    
+                    
                 await session.commit()
                 return True
             
