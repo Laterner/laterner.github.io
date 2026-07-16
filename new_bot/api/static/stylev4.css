@@ -4,7 +4,10 @@
 }
 
 body {
-    font-family: system-ui, -apple-system, sans-serif;
+    /* font-family: system-ui, -apple-system, sans-serif; */
+    font-family: "SN Pro", sans-serif;
+    font-optical-sizing: auto;
+    font-style: normal;
     background: #f5f7fa;
     width: 100vw;
     height: 100vh;
@@ -26,6 +29,7 @@ body {
     transition: all 0.3s ease;
     margin-bottom: 16px;
 }
+
 .container:hover {
     transform: translateY(-10px);
     box-shadow: 0 12px 40px rgba(0, 0, 0, 0.08);
@@ -40,6 +44,7 @@ details {
     border: 1px solid rgba(0, 0, 0, 0.04);
     transition: all 0.3s ease;
 }
+
 details:hover {
     transform: translateY(-10px);
     box-shadow: 0 12px 40px rgba(0, 0, 0, 0.08);
@@ -66,9 +71,11 @@ details[open] summary {
 details summary::-webkit-details-marker {
     color: white;
 }
+
 .d-text {
     padding: 10px;
 }
+
 a {
     color: #398cc9;
     text-decoration: none;
@@ -138,27 +145,21 @@ footer {
 .menu {
     width: 100vw;
     display: table;
-    margin-top: 30px;
     position: fixed;
     bottom: 0;
     left: 0;
-    background: #ffffff;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px);
     box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.04);
     line-height: 60px;
-}
-
-.menu ul {
-    display: table-row;
+    border-top: 1px solid rgba(0, 0, 0, 0.04);
 }
 
 .menu li {
     display: table-cell;
-    background: #ffffff;
-    transition: all 0.2s ease;
-}
-
-.menu li:hover {
-    background: #f8fafc;
+    background: transparent;
+    transition: all 0.3s ease;
+    position: relative;
 }
 
 .menu li a {
@@ -168,36 +169,34 @@ footer {
     text-align: center;
     text-decoration: none;
     font-weight: 500;
-    font-size: 0.9rem;
-    transition: all 0.2s ease;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    position: relative;
 }
 
-.menu li a:hover {
-    color: #6366f1;
-    background: #f1f4f9;
+.menu li a::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 3px;
+    background: #6366f1;
+    transition: all 0.3s ease;
+    border-radius: 3px 3px 0 0;
+}
+
+.menu li a:hover::after,
+.menu li.active a::after {
+    width: 60%;
 }
 
 .menu li a i {
     display: block;
-    font-size: 1.2rem;
-    margin-bottom: 4px;
+    font-size: 1.4rem;
+    margin-bottom: 2px;
 }
-
-.menu li.active a {
-    color: #6366f1;
-    font-weight: 600;
-}
-
-.menu li.active {
-    background: #f1f4ff;
-    border-bottom: 3px solid #6366f1;
-}
-
-/* summary {
-    font-size: large;
-    font-weight: 600;
-} */
-
 
 @media (max-width: 480px) {
     .btn {
@@ -206,8 +205,8 @@ footer {
     }
 }
 
-@import url('https://fonts.googleapis.com/css?family=Ubuntu+Condensed');
-
+/* @import url('https://fonts.googleapis.com/css?family=Ubuntu+Condensed'); */
+@import url('https://fonts.googleapis.com/css2?family=SN+Pro:ital,wght@0,200..900;1,200..900&display=swap');
 
 @media (max-width: 550px) {
     .menu-main {
