@@ -644,27 +644,18 @@ class Database:
     
     async def update_station(self, station_type: int, player_id: str, user_cat, user_ves) -> UserStation:
         async with SessionLocal() as session:
-            try:
-                result_user = await session.execute(
-                    select(UserStation).where(
-                        UserStation.player_id == player_id
-                    )
-                )
-                user: User = result_user.scalar_one_or_none()
-                user.games_played += 1
-                user.wins += 1
-                
+            try:                
                 # Ищем или создаем запись
-                progress: UserStation = await session.execute(
+                progress = await session.execute(
                     select(UserStation)
                     .where(and_(
                         UserStation.player_id == player_id,
                         UserStation.station_type == station_type,
-                        UserStation.user_cat == user_cat,
+                        UserStation.user_cat == user_cat
                         )
                     )
                 )
-                progress = progress.scalar_one_or_none()
+                progress = progress.first()
                 
                 if not progress:
                     progress = UserStation(
@@ -682,7 +673,7 @@ class Database:
             
             except Exception as e:
                 await session.rollback()
-                print(f"Error recording quiz attempt: {e}")
+                print(f"Error update king: {e}")
                 return None
             
     async def close(self):

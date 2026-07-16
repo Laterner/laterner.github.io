@@ -748,17 +748,20 @@ async def update_king():
 
 @app.route('/set_all_scores_in_station', methods=['POST'])
 async def set_all_scores_in_station():
-    # Проходим по всем категориям
-    data = await db.get_top_players_king(limit=10)
-    for category, players in data.items():
-        for player in players:
-            await db.add_score(player['player_id'], 80, "system_admin_stations")
+    try:
+        # Проходим по всем категориям
+        data = await db.get_top_players_king(limit=10)
+        for category, players in data.items():
+            for player in players:
+                await db.add_score(player['player_id'], 80, "system_admin_stations")
+        
+        all_players = await db.get_all_players_stations()
+        for player in all_players:
+            await db.add_score(player['player_id'], 20, "system_admin_stations") 
+        return await make_response(jsonify({'success':True}))
+    except:
+        return await make_response(jsonify({'success':False}))
     
-    all_players = await db.get_all_players_stations()
-    for player in all_players:
-        await db.add_score(player['player_id'], 20, "system_admin_stations") 
-    return await make_response(jsonify({'satus':'успешно'}))
-
 @app.route("/api/create_quize")
 async def create_quize():
     for q in QUIZES:

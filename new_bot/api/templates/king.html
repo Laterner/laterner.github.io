@@ -230,8 +230,8 @@
             }
 
             // Отключаем кнопку
-            // submitBtn.disabled = true;
-            // submitBtn.innerHTML = '<span class="spinner"></span> Обработка...';
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<span class="spinner"></span> Обработка...';
 
             try {
                 const stationTypeRadio = document.querySelector('input[name="type"]:checked').value;
