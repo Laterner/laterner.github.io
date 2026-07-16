@@ -198,7 +198,8 @@ class UserHistory(Base):
     )
 
     animator_id: Mapped[str] = mapped_column(
-        String(64)
+        String(64),
+        nullable=True
     )
 
     def __repr__(self):

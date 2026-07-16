@@ -589,25 +589,31 @@ class Database:
                     session.add(progress)
                 
                 # Обновляем статистику
-                # progress.attempts += 1
+                progress.attempts += 1
                 
                 if not is_correct:
                     pass
-                    # progress.wrong_answers += 1
+                    progress.wrong_answers += 1
                 else:
                     progress.completed = True
                     # Обновляем общую статистику пользователя
-                    # user = await session.get(User, player_id)
-                    # if user:
-                    #     user.games_played += 1
-                    #     user.score += amount
+                    result = await session.execute(
+                        select(User)
+                        .where(User.player_id == player_id)
+                        )
+                    user = result.scalar_one_or_none()
+                    if user:
+                        user.games_played += 1
+                        user.wins += 1
+                        user.score += amount
                 
                 await session.commit()
+                return True
                 
             except Exception as e:
                 await session.rollback()
                 print(f"Error recording quiz attempt: {e}")
-                raise
+                return False
     
     async def get_station(self, station_type: int, player_id: str) -> UserStation:
         async with SessionLocal() as session:

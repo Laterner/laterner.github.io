@@ -371,43 +371,40 @@ async def answer():
 
     print("/api/answer :::>", ans, quize_id, player_id)
 
-    if ans == QUIZES[quize_id]['ans']:
-        try:
-            amount = 5
+    try:            
+        if not player_id is None:
+            f"Не указан player_id"
+        
+        # Проверяем игрока
+        user = await db.get_user_by_player_id(player_id)
+        if not user:
+            logger.error(f"Игрок с ID {player_id} не найден")
+            return jsonify({'error': f"Игрок с ID {player_id} не найден"}), 500
+        
+        quize = await db.get_quize(secret_code)
+        
+        if not quize:
+            logger.error(f"quize is none")
+            return jsonify({'error': "quize is none"}), 500
+        
+        is_correct = ans == quize['answer']
+        
+        success = await db.update_quize_status(player_id, quize_id, is_correct, 10)
+
+        # Добавляем очки
+        # success = await db.add_score(player_id, 10, "system")
+        
+        if success:
+            logger.error(f"Успешно добавлены очки")
+            return jsonify({'ans': 1, 'player_id': player_id})
+        else:
+            logger.error(f"Произошла ошибка при добавлении")
+            return jsonify({'ans': 0, 'player_id': player_id})
             
-            if not player_id is None:
-                f"Не указан player_id"
-            
-            # Проверяем игрока
-            user = await db.get_user_by_player_id(player_id)
-            if not user:
-                logger.error(f"Игрок с ID {player_id} не найден")
-            
-            quize = await db.get_quize(secret_code)
-            
-            if not quize:
-                logger.error(f"quize is none")
-                return jsonify({'error': "quize is none"}), 500
-            
-            is_correct = ans == quize['answer']
-            
-            await db.update_quize_status(player_id, quize_id, is_correct, amount)
-    
-            # Добавляем очки
-            success = await db.add_score(player_id, 10, "system")
-            
-            if success:
-                logger.error(f"Успешно добавлены очки")
-            else:
-                logger.error(f"Произошла ошибка при добавлении")
-                return jsonify({'ans': 0, 'player_id': player_id})
-                
-        except Exception as e:
-            logger.error(f"Error adding score: {e}")
+    except Exception as e:
+        logger.error(f"Error adding score: {e}")
         
         return jsonify({'ans': 1, 'player_id': player_id})
-    else:
-        return jsonify({'ans': 0, 'player_id': player_id})
 
 @app.route("/quize")
 async def quize_page():

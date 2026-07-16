@@ -15,7 +15,7 @@
             {{quize.question}}
         </h1>
         {% for item in quize.answers %}
-                <button class="btn" onclick="answer({{ loop.index0 }})">{{ item }}</button>
+                <button class="btn" onclick="answer({{ loop.index0 + 1 }})">{{ item }}</button>
         {% endfor %}
 
         <h3 id="server-answer"></h3>
