@@ -70,7 +70,7 @@
         <table class="d-text">
             {% for top in top_players %}
             <tr>
-                <td>{{ top.name}}</td>
+                <td>{{ top.name}} | {{ user.player_id}}</td>
                 <td class="dts">{{ top.score}}</td>
             </tr>
         {% endfor %}
