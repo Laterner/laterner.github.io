@@ -206,7 +206,7 @@
             const formData = new FormData();
             formData.append('player_id', playerId);
             formData.append('amount', amount);
-            formData.append('animatorId', animatorId);
+            formData.append('animator_id', animatorId);
             
             const response = await fetch('/api/add_score', {
                 method: 'POST',
