@@ -585,7 +585,9 @@ class Database:
                 if not progress:
                     progress = UserQuizProgress(
                         player_id=player_id,
-                        quize_id=quize_id
+                        quize_id=quize_id,
+                        attempts=0,
+                        wrong_answers=0
                     )
                     session.add(progress)
                 
@@ -595,6 +597,8 @@ class Database:
                 if not is_correct:
                     pass
                     progress.wrong_answers += 1
+                    await session.commit()
+                    return False
                 else:
                     progress.completed = True
                     # Обновляем общую статистику пользователя
@@ -607,9 +611,8 @@ class Database:
                         user.games_played += 1
                         user.wins += 1
                         user.score += amount
-                
-                await session.commit()
-                return True
+                    await session.commit()
+                    return True
                 
             except Exception as e:
                 await session.rollback()
