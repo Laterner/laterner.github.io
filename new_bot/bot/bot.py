@@ -504,6 +504,35 @@ async def main():
     
     await dp.start_polling(bot)
 
+from aiogram import Bot, Dispatcher, F
+from aiogram.filters import Command
+from aiogram.types import Message
+
+# Обработчик команды вида: /send_message 123456789 Привет!
+@dp.message(Command("send_message"))
+async def send_message_to_user(message: Message):
+    # Разделяем команду на части: /send_message, id, и сам текст
+    user_id = 1016066508
+    text_to_send = "Ричард, пожалуйста, свяжитесь с @FestBotAssistant для получения вашего приза за первое место!!"
+
+    try:
+        # Отправка сообщения по ID
+        await bot.send_message(chat_id=user_id, text=text_to_send)
+        await message.answer(f"Сообщение успешно отправлено пользователю {user_id}")
+    except Exception as e:
+        await message.answer(f"Не удалось отправить сообщение: {e}")
+        
+    # Разделяем команду на части: /send_message, id, и сам текст
+    user_id = 427310232
+    text_to_send = "Ричард, пожалуйста, свяжитесь с @FestBotAssistant для получения вашего приза за первое место!!"
+
+    try:
+        # Отправка сообщения по ID
+        await bot.send_message(chat_id=user_id, text=text_to_send)
+        await message.answer(f"Сообщение успешно отправлено пользователю {user_id}")
+    except Exception as e:
+        await message.answer(f"Не удалось отправить сообщение: {e}")
+        
 if __name__ == "__main__":
     asyncio.run(main())
     
