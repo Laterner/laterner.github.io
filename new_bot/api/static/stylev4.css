@@ -12,21 +12,66 @@ body {
 
 .wrap {
     height: calc(100vh - 90px);
-    /* display: flex;
-    justify-content: center;
-    align-items: center;
-    flex-direction: column; */
-    padding: 0px;
+    width: 100vw;
+    padding-bottom: 80px;
     overflow-y: scroll;
 }
 
 .container {
     background: #ffffff;
-    border-radius: 28px;
-    padding: 30px;
-    max-width: 640px;
+    border-radius: 20px;
+    padding: 10px;
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
     border: 1px solid rgba(0, 0, 0, 0.04);
+    transition: all 0.3s ease;
+    margin-bottom: 16px;
+}
+.container:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.08);
+}
+
+details {
+    margin: 15px auto;
+    width: 100%;
+    background: #ffffff;
+    border-radius: 20px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
+    border: 1px solid rgba(0, 0, 0, 0.04);
+    transition: all 0.3s ease;
+}
+details:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.08);
+}
+
+details summary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 12px 20px;
+    border-radius: 16px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+details summary:hover {
+    transform: scale(1.02);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+details[open] summary {
+    border-radius: 16px 16px 0 0;
+}
+
+details summary::-webkit-details-marker {
+    color: white;
+}
+.d-text {
+    padding: 10px;
+}
+a {
+    color: #398cc9;
+    text-decoration: none;
 }
 
 h1 {
@@ -53,6 +98,7 @@ h1 {
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
     flex: 1 1 auto;
     justify-content: center;
+    margin: auto 0;
 }
 
 .btn:hover {
@@ -147,17 +193,13 @@ footer {
     border-bottom: 3px solid #6366f1;
 }
 
-summary {
+/* summary {
     font-size: large;
     font-weight: 600;
-}
+} */
+
 
 @media (max-width: 480px) {
-    .container {
-        padding: 18px;
-        border-radius: 20px;
-    }
-
     .btn {
         padding: 12px 18px;
         font-size: 0.9rem;

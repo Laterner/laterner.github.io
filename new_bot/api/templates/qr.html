@@ -90,7 +90,7 @@
     <div id="status">⚡ Наведите на QR-код</div>
     <br>
     <div class="controls" id="controls">
-        <button class="btn" id="scanBtn">▶ Запустить камеру</button>
+        <button class="btn btn-primary" id="scanBtn">▶ Запустить камеру</button>
         
     </div>
 
@@ -149,7 +149,7 @@
                             if (result.quize_id >= 0) {
                                 document.getElementById("controls").innerHTML = 
                                     `<br><br><a href="/quize?quize_id=${result.quize_id}&secret_code=${result.secret_code}">
-                                        <button class="btn">Открыть квиз #${result.quize_id + 1}</button>
+                                        <button class="btn btn-primary">Открыть квиз #${result.quize_id + 1}</button>
                                     </a>`;
                                 document.getElementById("status").textContent = 
                                     `✅ Код найден! Переходите к квизу`;
@@ -190,7 +190,7 @@
 
     function resetScanner() {
         document.getElementById("controls").innerHTML = 
-            `<button class="btn" id="scanBtn">📷 Сканировать QR</button>`;
+            `<button class="btn btn-primary" id="scanBtn">📷 Сканировать QR</button>`;
         // Перезагружаем страницу или перепривязываем обработчик  btn-primary
         location.reload(); // Простой способ, но можно и перепривязать 
     }

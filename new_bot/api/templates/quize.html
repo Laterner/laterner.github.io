@@ -15,7 +15,7 @@
             {{quize.question}}
         </h1>
         {% for item in quize.answers %}
-                <button class="btn" onclick="answer({{ loop.index0 + 1 }})">{{ item }}</button>
+                <button class="btn btn-primary" onclick="answer({{ loop.index0 + 1 }})">{{ item }}</button>
         {% endfor %}
 
         <h3 id="server-answer"></h3>
@@ -39,7 +39,7 @@
         if(result.ans == 1){
             document.getElementById("container").innerHTML = `
             <h1 id="server-answer">Ответ верный!</h1>
-            <a href="/miniapp"><button class="btn">Вернуться</button></a>
+            <a href="/miniapp"><button class="btn btn-primary">Вернуться</button></a>
             `
 
         }

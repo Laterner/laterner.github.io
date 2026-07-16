@@ -81,7 +81,7 @@
             <div id="status">⚡ Наведите на QR-код</div>
             <br>
             <div class="controls" id="controls">
-                <button class="btn" id="scanBtn">▶ Запустить камеру</button>
+                <button class="btn btn-primary" id="scanBtn">▶ Запустить камеру</button>
                 
             </div>
         </div>
@@ -367,7 +367,7 @@
         }
         function resetScanner() {
             document.getElementById("controls").innerHTML =
-                `<button class="btn" id="scanBtn">📷 Сканировать QR</button>`;
+                `<button class="btn btn-primary" id="scanBtn">📷 Сканировать QR</button>`;
             // Перезагружаем страницу или перепривязываем обработчик  btn-primary
             location.reload(); // Простой способ, но можно и перепривязать 
             cameraBlock.classList.remove('hidden');
