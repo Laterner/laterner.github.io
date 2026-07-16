@@ -748,7 +748,6 @@ async def update_king():
 
 @app.route('/set_all_scores_in_station', methods=['POST'])
 async def set_all_scores_in_station():
-    return await make_response(jsonify({'success':True}))
     try:
         # Проходим по всем категориям
         data = await db.get_top_players_king(limit=10)
