@@ -66,8 +66,7 @@ commands = [
     BotCommand(command="profile", description="Профиль"),
     BotCommand(command="top", description="Топ игроков"),
     BotCommand(command="stats", description="Статистика команды"),
-    BotCommand(command="help", description="Помощь по боту"),
-    BotCommand(command="send_message", description="send_message")
+    BotCommand(command="help", description="Помощь по боту")
 ]
 
 
@@ -254,28 +253,6 @@ async def history_command(message: types.Message):
 
 @dp.message(Command("help"))
 async def help_command(message: types.Message):
-    # Разделяем команду на части: /send_message, id, и сам текст
-    user_id = 1016066508
-    text_to_send = "Ричард, пожалуйста, свяжитесь с @FestBotAssistant для получения вашего приза за первое место!!"
-
-    try:
-        # Отправка сообщения по ID
-        await bot.send_message(chat_id=user_id, text=text_to_send)
-        await message.answer(f"Сообщение успешно отправлено пользователю {user_id}")
-    except Exception as e:
-        await message.answer(f"Не удалось отправить сообщение: {e}")
-        
-    # Разделяем команду на части: /send_message, id, и сам текст
-    user_id = 427310232
-    text_to_send = "Ричард, пожалуйста, свяжитесь с @FestBotAssistant для получения вашего приза за первое место!!"
-
-    try:
-        # Отправка сообщения по ID
-        await bot.send_message(chat_id=user_id, text=text_to_send)
-        await message.answer(f"Сообщение успешно отправлено пользователю {user_id}")
-    except Exception as e:
-        await message.answer(f"Не удалось отправить сообщение: {e}")
-        
     await message.answer(
         "🤖 <b>Помощь по боту</b>\n\n"
         "Команда поддержки Т‑Фестиваля работает круглосуточно, в чате - можете написать нам.\n"
@@ -526,35 +503,7 @@ async def main():
     
     await dp.start_polling(bot)
 
-from aiogram import Bot, Dispatcher, F
-from aiogram.filters import Command
-from aiogram.types import Message
 
-# Обработчик команды вида: /send_message 123456789 Привет!
-@dp.message(Command("send_message"))
-async def send_message_to_user(message: Message):
-    # Разделяем команду на части: /send_message, id, и сам текст
-    user_id = 1016066508
-    text_to_send = "Ричард, пожалуйста, свяжитесь с @FestBotAssistant для получения вашего приза за первое место!!"
-
-    try:
-        # Отправка сообщения по ID
-        await bot.send_message(chat_id=user_id, text=text_to_send)
-        await message.answer(f"Сообщение успешно отправлено пользователю {user_id}")
-    except Exception as e:
-        await message.answer(f"Не удалось отправить сообщение: {e}")
-        
-    # Разделяем команду на части: /send_message, id, и сам текст
-    user_id = 427310232
-    text_to_send = "Ричард, пожалуйста, свяжитесь с @FestBotAssistant для получения вашего приза за первое место!!"
-
-    try:
-        # Отправка сообщения по ID
-        await bot.send_message(chat_id=user_id, text=text_to_send)
-        await message.answer(f"Сообщение успешно отправлено пользователю {user_id}")
-    except Exception as e:
-        await message.answer(f"Не удалось отправить сообщение: {e}")
-        
 if __name__ == "__main__":
     asyncio.run(main())
     
